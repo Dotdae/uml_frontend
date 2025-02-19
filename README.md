@@ -56,6 +56,7 @@ uml-diagram-maker/
 ├── angular.json                   # Configuración del proyecto Angular
 ├── package.json                   # Dependencias y scripts del proyecto
 └── README.md                      # Documentación del proyecto
+```
 
 ## 📜 Licencia  
 Este proyecto está bajo la licencia **MIT**.  
