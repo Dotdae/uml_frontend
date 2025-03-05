@@ -1,0 +1,31 @@
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <div class="w-1/4 bg-gray-200 p-4 border-r">
+    <h3 class="font-bold text-lg mb-4">Objetos</h3>
+    <div class="space-y-2">
+      <button (click)="addNode('Class')" class="w-full bg-white p-2 border rounded shadow">
+        ⬜ Clase
+      </button>
+      <button (click)="addNode('Association')" class="w-full bg-white p-2 border rounded shadow">
+        ↔ Asociación
+      </button>
+      <button (click)="addNode('Aggregation')" class="w-full bg-white p-2 border rounded shadow">
+        ◇ Agregación
+      </button>
+      <button (click)="addNode('Composition')" class="w-full bg-white p-2 border rounded shadow">
+        ◆ Composición
+      </button>
+      <button (click)="addNode('Inheritance')" class="w-full bg-white p-2 border rounded shadow">
+        △ Herencia
+      </button>
+      <button (click)="addNode('Dependency')" class="w-full bg-white p-2 border rounded shadow">
+        ╌╌ Dependencia
+      </button>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="flex-1 bg-gray-100 relative">
+    <div #umlCanvas class="w-full h-full"></div>
+  </div>
+</div>
