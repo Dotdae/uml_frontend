@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PasswordInputComponent } from 'src/app/presentation/components/password-input/password-input.component';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [RouterLink],
+  imports: [RouterLink, PasswordInputComponent],
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.css'
 })
