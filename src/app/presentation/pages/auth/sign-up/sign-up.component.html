@@ -1,0 +1,68 @@
+<div>
+    <img src="/UMLForgeIcon.png" alt="BufetePDFReaderLogo" class="h-16 w-auto mb-3" />
+    <h2 class="text-4xl font-bold mb-6">Registrarme</h2>
+
+    <form class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-600" for="email">Correo electrónico</label>
+            <input id="names" type="email" placeholder="correo@ejemplo.com"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-600" for="names">Usuario</label>
+            <input id="username" type="text" placeholder="Nombre de Usuario"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-600" for="names">Nombres</label>
+            <input id="names" type="text" placeholder="Nombres"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-600" for="lastnames">Apellidos</label>
+            <input id="lastnames" type="text" placeholder="Apellidos"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div>
+            <label class="flex justify-between text-sm font-medium text-gray-600" for="password">
+                Contraseña
+            </label>
+            <input id="password" type="password" placeholder="••••••"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div>
+            <label class="flex justify-between text-sm font-medium text-gray-600" for="confirm-password">
+                Confirmar contraseña
+            </label>
+            <input id="confirm-password" type="password" placeholder="••••••"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+        <button
+            class="w-full p-2 mt-2 mb-4 font-semibold text-white bg-blue-900 rounded-lg hover:bg-blue-800 transition-colors duration-300">
+            Registrarse
+        </button>
+    </form>
+
+    <div class="relative flex items-center justify-center my-4">
+        <span class="absolute px-4 bg-white text-sm">o</span>
+        <hr class="w-full border" />
+    </div>
+
+    <button
+        class="w-full mt-7 p-2 font-semibold text-gray-700 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-300">
+        <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5 mr-2" alt="Google logo" />
+        Registrarme con Google
+    </button>
+
+    <p class="text-sm mt-7 text-center">
+        ¿Ya tienes una cuenta?
+        <a href="#" onClick={handleRegisterClick} class="ml-1 text-blue-900 font-bold no-underline link-underline">
+            Iniciar sesión
+        </a>
+    </p>
+</div>

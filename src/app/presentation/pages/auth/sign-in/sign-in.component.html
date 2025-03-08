@@ -1,0 +1,60 @@
+<div>
+    <img src="/UMLForgeIcon.png" alt="BufetePDFReaderLogo" class="h-16 w-auto mb-3" />
+    <h2 class="text-4xl font-bold mb-6">Iniciar sesión</h2>
+
+    <form class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-600" for="emailOrUsername">Correo electrónico o nombre de
+                usuario</label>
+            <input id="emailOrUsername" type="text" placeholder="correo@ejemplo.com o username"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-yellow-400 focus:ring-yellow-400" />
+        </div>
+
+        <div>
+            <label class="flex justify-between text-sm font-medium text-gray-600" for="password">
+                Contraseña
+                <!-- <a href="#" class="text-yellow-500 hover:underline">Forgot your password?</a> -->
+            </label>
+            <input id="password" type="password" placeholder="••••••"
+                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-yellow-400 focus:ring-yellow-400" />
+        </div>
+
+        <div class="flex items-center justify-between">
+
+            <div class="flex items-center">
+                <input id="remember" type="checkbox" class="w-4 h-4 mr-2 checked:accent-yellow-500" />
+                <label class="text-sm" for="remember">Recuérdame</label>
+            </div>
+
+            <a href="#" class="text-sm text-yellow-500 font-bold no-underline link-underline">¿Olvidaste tú
+                contraseña?</a>
+
+        </div>
+
+        <button
+            class="w-full p-2 mt-2 font-semibold text-white bg-yellow-500 rounded-lg hover:bg-yellow-400 transition-colors duration-300">
+            Iniciar sesión
+        </button>
+    </form>
+
+
+    <p class="text-sm mt-7 mb-7 text-center">
+        ¿No tienes una cuenta?
+        <a routerLink="/auth/sign-up" class="ml-1 text-yellow-500 font-bold no-underline link-underline">
+            Registrarme
+        </a>
+    </p>
+
+
+
+    <div class="relative flex items-center justify-center my-4">
+        <span class="absolute px-4 bg-white text-sm">o</span>
+        <hr class="w-full border" />
+    </div>
+
+    <button
+        class="w-full mt-7 p-2 font-semibold text-gray-700 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-300">
+        <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5 mr-2" alt="Google logo" />
+        Iniciar sesión con Google
+    </button>
+</div>
