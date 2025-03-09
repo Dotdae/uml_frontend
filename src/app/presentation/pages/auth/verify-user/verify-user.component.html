@@ -1,1 +1,66 @@
-<p>verify-user works!</p>
+<div class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-lg max-w-5xl w-full h-[25em] relative">
+
+        <!-- Columna de la imagen -->
+        <div class="absolute top-6 left-6">
+            <!-- Imagen arriba del título -->
+            <img src="/UMLForgeIcon.png" alt="UMLForge logo" class="h-24 w-auto mb-[1em]">
+        </div>
+ 
+        <!-- Regresar a Auth -->
+        <!-- <div class="h-full flex items-center justify-center">
+            <div class=" max-w-[30em] flex flex-col items-center justify-center text-center">
+                <p class="gray-900 mb-6 text-5xl font-medium ">
+                    ¡Verificación de correo exitosa!
+                </p>
+    
+                <div>
+                    <p class="text-not-important-text text-lg mb-3 w-[16rem]">
+                        Da clic al siguiente botón para iniciar sesión
+                    </p>
+                </div>
+    
+                <div class="flex gap-4 pt-2">
+                    <button type="button" (click)="goBackToLog()"
+                        class="px-4 py-[0.5rem] w-[16rem] text-white text-2xl font-medium bg-teal-600 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                        Regresar a iniciar sesión
+                    </button>
+                </div>
+            </div>
+        </div> -->
+        <!-- Content section -->
+        <div class="h-full flex items-center justify-center">
+            <div class="max-w-[30em] flex flex-col items-center justify-center text-center">
+                @if (!VerificationError) {
+                    <p class="gray-900 mb-6 text-5xl font-medium">
+                        ¡Verificación de correo exitosa!
+                    </p>
+                    <div>
+                        <p class="text-not-important-text text-lg mb-3 w-[16rem]">
+                            Da clic al siguiente botón para iniciar sesión
+                        </p>
+                    </div>
+                } @else {
+                    <p class="text-red-600 mb-6 text-5xl font-medium">
+                        Error en la verificación
+                    </p>
+                    <div>
+                        <p class="text-not-important-text text-lg mb-3 w-[16rem]">
+                            No se pudo verificar tu cuenta. Por favor, intenta de nuevo
+                        </p>
+                    </div>
+                }
+
+                <div class="flex gap-4 pt-2">
+                    <button type="button" (click)="goBackToLog()"
+                        [class]="VerificationError ? 
+                            'px-4 py-[0.5rem] w-[16rem] text-white text-2xl font-medium bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2' :
+                            'px-4 py-2 w-[16rem] text-white text-2xl font-medium bg-yellow-500 rounded-lg hover:bg-yellow-400 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2'">
+                        Regresar a iniciar sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
