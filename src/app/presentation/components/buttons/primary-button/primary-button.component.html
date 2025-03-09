@@ -1,1 +1,4 @@
-<p>primary-button works!</p>
+<button type="button" (click)="onClick.emit()" [ngClass]="class"
+    class="flex items-center px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-400 focus:outline-none transition-colors duration-300">
+    {{ text }}
+</button>

@@ -9,27 +9,19 @@
             <input id="emailOrUsername" type="text" placeholder="correo@ejemplo.com o username"
                 class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-yellow-400 focus:ring-yellow-400" />
         </div>
-
-        <!-- <div>
-            <label class="flex justify-between text-sm font-medium text-gray-600" for="password">
-                Contraseña
-            </label>
-            <input id="password" type="password" placeholder="••••••"
-                class="w-full p-2 mt-1 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:border-yellow-400 focus:ring-yellow-400" />
-        </div> -->
         
         <div>
-            <app-password-input label="Contraseña" inputId="password" placeholder="••••••" />
+            <password-input label="Contraseña" inputId="password" placeholder="••••••" />
         </div>
 
         <div class="flex items-center justify-between">
 
             <div class="flex items-center">
-                <input id="remember" type="checkbox" class="w-4 h-4 mr-2 checked:accent-yellow-500" />
+                <input id="remember" type="checkbox" class="w-4 h-4 mr-2 accent-yellow-400" />
                 <label class="text-sm" for="remember">Recuérdame</label>
             </div>
 
-            <a href="#" class="text-sm text-yellow-500 font-bold no-underline link-underline">¿Olvidaste tú
+            <a routerLink="/recover-password" class="text-sm text-yellow-500 font-bold no-underline link-underline">¿Olvidaste tú
                 contraseña?</a>
 
         </div>

@@ -1,0 +1,34 @@
+<div class="w-full h-full relative">
+    <!-- Logo en esquina superior izquierda -->
+    <div class="absolute top-6 left-6">
+        <img
+            src="/UMLForgeIcon.png"
+            alt="UMLForge logo"
+            class="h-24 w-auto"
+        />
+    </div>
+
+    <!-- Contenedor centrado -->
+    <div class="h-full flex items-center justify-center">
+        <div class="max-w-[30em] flex flex-col items-center justify-center text-center mt-14">
+            <h1 class="text-5xl font-medium text-gray-900 mb-6">
+                ¡Cambio de contraseña exitoso!
+            </h1>
+
+            <div>
+                <p class="text-gray-600 text-lg mb-3 w-[16rem]">
+                    Da clic al siguiente botón para iniciar sesión
+                </p>
+            </div>
+
+            <div class="flex gap-4 pt-2">
+                <button
+                    (click)="onGoBackToLog()"
+                    class="px-4 py-2 w-[16rem] text-white text-2xl font-medium bg-yellow-500 rounded-lg hover:bg-yellow-400 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                    Regresar a iniciar sesión
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

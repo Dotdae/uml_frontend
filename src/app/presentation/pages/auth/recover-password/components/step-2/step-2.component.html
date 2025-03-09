@@ -1,0 +1,43 @@
+<div class="flex w-full">
+    <!-- Columna izquierda - Título -->
+    <div class="w-1/2 p-10">
+        <img src="/UMLForgeIcon.png" alt="UMLForge logo" class="h-24 w-auto mb-[1em]" />
+        <h1 class="text-5xl font-medium text-gray-900 mt-8">
+            Recuperación de contraseña
+        </h1>
+    </div>
+
+    <!-- Columna derecha - Formulario -->
+    <div class="w-1/2 mt-16 p-12">
+        <form class="space-y-6">
+            <div>
+                <label class="block text-gray-600 mt-4 mb-6">
+                    Ingresa el código que enviamos a tu correo:
+                </label>
+                <!-- Inputs section -->
+                <div class="flex justify-start mb-6">
+                    @for (digit of code; track $index) {
+                        <div [class]="$index === 3 ? 'ml-5' : 'ml-2'" [class.ml-0]="$index === 0">
+                            <input [id]="'digit-' + $index" 
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="1"
+                                [value]="digit"
+                                class="w-12 h-12 text-center border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-1 focus:border-yellow-500 focus:ring-yellow-500"
+                                (keyup)="handleInputChange($event, $index)"
+                                (paste)="handlePaste($event)"
+                                (input)="handleInputValueChange($event, $index)" />
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Button section -->
+            <div class="flex justify-end gap-4 pt-[5.2rem]">
+                <secondary-button [text]="TextSecondary" (onClick)="prevStepFunction()" />
+                <primary-button [text]="TextPrimary" (onClick)="nextStepFunction()" />
+            </div>
+        </form>
+    </div>
+</div>
