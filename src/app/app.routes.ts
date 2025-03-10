@@ -29,7 +29,7 @@ export const routes: Routes = [
         path: "auth", component: AuthComponent, title: "UMLForge - Inicio de sesión",
         children: [
             {
-                path: "", component: SignInComponent
+                path: "sign-in", component: SignInComponent
             },
             {
                 path: "sign-up", component: SignUpComponent, title: "UMLForge - Registrarse"
@@ -42,7 +42,7 @@ export const routes: Routes = [
     {
         path: "verify-user", component: VerifyUserComponent, title: "UMLForge - Verificar usuario"
     }
-   
+
     // Aquí se agregarían las rutas de las páginas faltantes
 
 ];
