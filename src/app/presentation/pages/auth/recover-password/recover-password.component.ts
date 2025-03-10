@@ -32,6 +32,6 @@ export class RecoverPasswordComponent {
   }
 
   goBackToLog(){
-    this.router.navigate(['/auth'])
+    this.router.navigate(['/auth/sign-in'])
   }
 }
