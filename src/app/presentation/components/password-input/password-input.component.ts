@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'password-input',
@@ -14,9 +14,17 @@ export class PasswordInputComponent {
   @Input() labelClass: string = 'flex justify-between text-sm font-medium text-gray-600';
   @Input() iconTopPosition: string = 'top-[2.2rem]';
 
+  @Input() password: string = ''; // Add this input
+  @Output() passwordChange = new EventEmitter<string>();
+
   showPassword: boolean = false;
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
+  }
+
+  onPasswordChange(event: any) {
+    this.password = event.target.value;
+    this.passwordChange.emit(this.password);
   }
 }
