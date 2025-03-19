@@ -7,6 +7,8 @@ import { SignInComponent } from './presentation/pages/auth/sign-in/sign-in.compo
 import { SignUpComponent } from './presentation/pages/auth/sign-up/sign-up.component';
 import { RecoverPasswordComponent } from './presentation/pages/auth/recover-password/recover-password.component';
 import { VerifyUserComponent } from './presentation/pages/auth/verify-user/verify-user.component';
+import { DashboardComponent } from './presentation/pages/dashboard/dashboard.component';
+import { CanvasComponent } from './presentation/pages/canvas/canvas.component';
 /*
     Faltan los componentes de:
     - Dashboard
@@ -41,8 +43,19 @@ export const routes: Routes = [
     },
     {
         path: "verify-user", component: VerifyUserComponent, title: "UMLForge - Verificar usuario"
-    }
+    },
 
     // Aquí se agregarían las rutas de las páginas faltantes
+    {
+      path: "dashboard", component: DashboardComponent, title: "UMLForge - Panel de control"
+    },
+    {
+      path: "canvas", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
+      children: [
+        {
+          path: ":id", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas"
+        }
+      ]
+    }
 
 ];

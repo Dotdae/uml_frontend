@@ -1,0 +1,181 @@
+<div class="flex flex-col h-screen bg-gray-100">
+  <!-- Barra superior -->
+  <div class="flex items-center bg-white border-b border-gray-300 p-1">
+    <button class="px-2 py-1 rounded hover:bg-gray-100" (click)="undo()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100" (click)="redo()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
+    <div class="border-l border-gray-300 h-6 mx-2"></div>
+
+    <!-- Menú principal -->
+    <div class="flex space-x-4">
+      <div class="relative group">
+        <button class="px-2 py-1 rounded hover:bg-gray-100">Archivo</button>
+        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-md border border-gray-200 mt-1 z-10">
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" (click)="exportDiagram()">Exportar</button>
+          <label class="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer">
+            Importar
+            <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
+          </label>
+        </div>
+      </div>
+      <div class="relative group">
+        <button class="px-2 py-1 rounded hover:bg-gray-100">Editar</button>
+        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-md border border-gray-200 mt-1 z-10">
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" (click)="deleteSelection()">Eliminar</button>
+        </div>
+      </div>
+      <button class="px-2 py-1 rounded hover:bg-gray-100">Seleccionar</button>
+      <button class="px-2 py-1 rounded hover:bg-gray-100">Visualizar</button>
+      <button class="px-2 py-1 rounded hover:bg-gray-100">Insertar</button>
+      <button class="px-2 py-1 rounded hover:bg-gray-100">Ordenar</button>
+      <button class="px-2 py-1 rounded hover:bg-gray-100">Compartir</button>
+      <button class="px-2 py-1 rounded hover:bg-gray-100">Ayuda</button>
+    </div>
+
+    <div class="ml-auto flex items-center space-x-2">
+      <button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Compartir</button>
+    </div>
+  </div>
+
+  <!-- Barra de herramientas secundaria -->
+  <div class="flex items-center bg-white border-b border-gray-300 p-1">
+    <select class="border border-gray-300 rounded px-2 py-1 mr-2">
+      <option>Inter</option>
+      <option>Arial</option>
+      <option>Helvetica</option>
+    </select>
+
+    <select class="border border-gray-300 rounded px-2 py-1 mr-2" [(ngModel)]="selectedFontSize">
+      <option *ngFor="let size of fontSizes; let i = index" [value]="i">{{ size }}pt</option>
+    </select>
+
+    <div class="border-l border-gray-300 h-6 mx-2"></div>
+
+    <button class="px-2 py-1 rounded hover:bg-gray-100">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zm0 2h10v8H5V6z" clip-rule="evenodd" />
+      </svg>
+    </button>
+
+    <div class="border-l border-gray-300 h-6 mx-2"></div>
+
+    <!-- Colores -->
+    <div class="flex space-x-1">
+      <button *ngFor="let color of colors; let i = index"
+              [class]="'w-6 h-6 rounded border ' + color.border + ' ' + color.bg"
+              [class.ring-2]="selectedColor === i"
+              [class.ring-blue-500]="selectedColor === i"
+              (click)="setColor(i)">
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Barra lateral -->
+    <div class="w-64 bg-white border-r border-gray-300 flex flex-col">
+      <div class="p-2 border-b border-gray-300 flex justify-between items-center">
+        <h3 class="font-medium">Figuras</h3>
+        <button class="p-1 rounded hover:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-2 border-b border-gray-300">
+        <div class="flex justify-between items-center mb-2">
+          <h4 class="text-sm font-medium">Figuras en uso</h4>
+          <button class="p-1 rounded hover:bg-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-2">
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addClass()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zm0 2h10v8H5V6z" clip-rule="evenodd" />
+            </svg>
+            Clase
+          </button>
+
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addInterface()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zm0 2h10v8H5V6z" clip-rule="evenodd" />
+            </svg>
+            Interface
+          </button>
+        </div>
+      </div>
+
+      <div class="p-2 border-b border-gray-300">
+        <div class="flex justify-between items-center mb-2">
+          <h4 class="text-sm font-medium">Relaciones</h4>
+          <button class="p-1 rounded hover:bg-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-2">
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addInheritance()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+            Herencia
+          </button>
+
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addAssociation()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+            Asociación
+          </button>
+
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addAssociation()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+            Agregación
+          </button>
+
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addComposition()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+            </svg>
+            Composición
+          </button>
+
+          <button class="w-full flex items-center p-1 hover:bg-gray-100 rounded" (click)="addDependency()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Dependencia
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Área de dibujo -->
+    <div class="flex-1 relative">
+      <div #diagramDiv class="w-full h-full"></div>
+    </div>
+  </div>
+
+  <!-- Barra de estado -->
+  <div class="bg-white border-t border-gray-300 p-1 flex items-center">
+    <div class="text-sm text-gray-600">Clase UML</div>
+    <div class="ml-auto text-sm text-gray-600">50%</div>
+  </div>
+</div>
+
