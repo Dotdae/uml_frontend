@@ -21,14 +21,12 @@ export class Step2Component {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
-    // Prevent non-numeric input
     if (event.key !== 'Backspace' && !/^[0-9]$/.test(event.key)) {
       event.preventDefault();
       input.value = '';
       return;
     }
 
-    // Handle backspace
     if (event.key === 'Backspace' && !value) {
       const prevInput = document.getElementById(`digit-${index - 1}`);
       prevInput?.focus();
@@ -52,7 +50,7 @@ export class Step2Component {
     event.preventDefault();
     const pastedData = event.clipboardData?.getData('text').replace(/[^0-9]/g, '');
     if (!pastedData) return;
-    
+
     const digits = pastedData.split('').slice(0, 6);
 
     if (digits.length > 0) {

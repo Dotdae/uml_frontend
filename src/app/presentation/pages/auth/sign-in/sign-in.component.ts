@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LoginUseCase } from '@application/auth/login.usecase';
 import { PasswordInputComponent } from 'src/app/presentation/components/password-input/password-input.component';
 import { FormsModule } from '@angular/forms';
+import { HotToastService } from '@ngxpert/hot-toast';
+import { LoginGoogleUseCase } from '@application/auth/loginGoogle.usecase';
 
 @Component({
   selector: 'app-sign-in',
@@ -15,15 +17,26 @@ import { FormsModule } from '@angular/forms';
 export class SignInComponent {
   email: string = '';
   password: string = '';
+  private toast = inject(HotToastService);
 
-  constructor(private loginUseCase: LoginUseCase) { }
+  constructor(
+    private loginUseCase: LoginUseCase,
+    private loginGoogleUseCase: LoginGoogleUseCase
+  ) { }
 
   public async signIn() {
     const success = await this.loginUseCase.execute(this.email, this.password);
     if (success) {
-      alert(success)
+      this.toast.success("Inicio sesión", { position: 'top-right' });
+      // alert(success)
     } else {
-      console.error('Login failed');
+      console.log(success)
+      this.toast.error("Credenciales Incorrectas", { position: 'top-right' });
     }
+  }
+
+  public async loginGoogle() {
+    const success = await this.loginGoogleUseCase.execute();
+    console.log(success);
   }
 }

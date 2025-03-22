@@ -34,9 +34,10 @@ export class Step1Component {
     const success = await this.requestPassworsUseCase.execute(this.email);
     if (success) {
       this.doNextStep();
+      this.toast.success("Correo enviado exitosamente.", { position: 'top-right' })
     } else {
-      this.toast.error("Correo no encontrado.")
-      console.error('reset failed');
+      this.toast.error("Correo no encontrado.", { position: 'top-right' })
+      // console.error('reset failed');
     }
   }
 

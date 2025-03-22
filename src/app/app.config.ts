@@ -17,6 +17,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(withFetch()), provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes),
 
+    provideHotToastConfig(),
+
     // Clean architecture providers.
     { provide: USER_REPOSITORY_TOKEN, useClass: UserRepositoryImplementation },
 
