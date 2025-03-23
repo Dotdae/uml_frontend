@@ -9,6 +9,8 @@ import { RecoverPasswordComponent } from './presentation/pages/auth/recover-pass
 import { VerifyUserComponent } from './presentation/pages/auth/verify-user/verify-user.component';
 import { DashboardComponent } from './presentation/pages/dashboard/dashboard.component';
 import { CanvasComponent } from './presentation/pages/canvas/canvas.component';
+import { authGuard } from '@infrastructure/auth/guards/auth.guard';
+import { GoogleCallbackComponent } from './presentation/components/google-callback/google-callback.component';
 /*
     Faltan los componentes de:
     - Dashboard
@@ -21,41 +23,48 @@ import { CanvasComponent } from './presentation/pages/canvas/canvas.component';
 
 export const routes: Routes = [
 
-    // Página de inicio
-    {
-        path: "", component: HomePageComponent, title: "UMLForge - De ideas a código"
-    },
+  // Página de inicio
+  {
+    path: "", component: HomePageComponent, title: "UMLForge - De ideas a código"
+  },
 
-    // Control de inicio de sesión, registro y verificación de correo del usuario
-    {
-        path: "auth", component: AuthComponent, title: "UMLForge - Inicio de sesión",
-        children: [
-            {
-                path: "sign-in", component: SignInComponent
-            },
-            {
-                path: "sign-up", component: SignUpComponent, title: "UMLForge - Registrarse"
-            }
-        ],
-    },
-    {
-        path: "recover-password", component: RecoverPasswordComponent, title: "UMLForge - Recuperar contraseña"
-    },
-    {
-        path: "verify-user", component: VerifyUserComponent, title: "UMLForge - Verificar usuario"
-    },
+  // Control de inicio de sesión, registro y verificación de correo del usuario
+  {
+    path: "auth", component: AuthComponent, title: "UMLForge - Inicio de sesión",
+    children: [
+      {
+        path: "sign-in", component: SignInComponent
+      },
+      {
+        path: "sign-up", component: SignUpComponent, title: "UMLForge - Registrarse"
+      },
+      {
+        path: "google-callback", component: GoogleCallbackComponent
+      }
 
-    // Aquí se agregarían las rutas de las páginas faltantes
-    {
-      path: "dashboard", component: DashboardComponent, title: "UMLForge - Panel de control"
-    },
-    {
-      path: "canvas", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
-      children: [
-        {
-          path: ":id", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas"
-        }
-      ]
-    }
+    ],
+  },
+  {
+    path: "recover-password", component: RecoverPasswordComponent, title: "UMLForge - Recuperar contraseña"
+  },
+  {
+    path: "verify-user", component: VerifyUserComponent, title: "UMLForge - Verificar usuario"
+  },
+
+  // Aquí se agregarían las rutas de las páginas faltantes
+  {
+    path: "dashboard", component: DashboardComponent,
+    title: "UMLForge - Panel de control",
+    canActivate: [authGuard]
+  },
+  {
+    path: "canvas", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
+    canActivate: [authGuard],
+    children: [
+      {
+        path: ":id", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas"
+      }
+    ]
+  }
 
 ];
