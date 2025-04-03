@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 
 
 interface Template {
-  id: number
+  type: string
   title: string
   image: string
 }
@@ -18,27 +18,27 @@ export class TemplatesComponent {
 
   templates: Template[] = [
     {
-      id: 1,
+      type: "sequence",
       title: "Diagrama de Secuencia",
       image: "https://via.assets.so/img.jpg?height=100&width=100",
     },
     {
-      id: 2,
+      type: "class",
       title: "Diagrama de Clases",
       image: "https://via.assets.so/img.jpg?height=100&width=100",
     },
     {
-      id: 3,
+      type: "package",
       title: "Diagrama de Paquetes",
       image: "https://via.assets.so/img.jpg?height=100&width=100",
     },
     {
-      id: 4,
+      type: "usecase",
       title: "Diagrama de Casos de Uso",
       image: "https://via.assets.so/img.jpg?height=100&width=100",
     },
     {
-      id: 5,
+      type: "component",
       title: "Diagrama de Componentes",
       image: "https://via.assets.so/img.jpg?height=100&width=100",
     },

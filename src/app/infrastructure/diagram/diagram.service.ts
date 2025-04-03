@@ -458,7 +458,7 @@ export class DiagramService {
       new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
       $(
         go.Shape,
-        "Package",
+        "Rectangle",
         {
           fill: "white",
           stroke: "black",
