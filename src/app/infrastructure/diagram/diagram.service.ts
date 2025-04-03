@@ -864,8 +864,9 @@ export class DiagramService {
     )
   }
 
-  // Datos de ejemplo según el tipo de diagrama.
-
+  /**
+   * Carga datos de ejemplo según el tipo de diagrama
+   */
   private loadSampleData(type: DiagramType): void {
     let nodeDataArray: any[] = []
     let linkDataArray: any[] = []
@@ -897,154 +898,469 @@ export class DiagramService {
     this.diagramModel = this.diagram.model as go.GraphLinksModel
   }
 
+  /**
+   * Datos de ejemplo para diagrama de clases
+   */
   private getSampleClassNodes(): any[] {
     return [
       {
         key: 1,
-        name: "Clase Abstracta",
-        properties: ["+ operacion(param1:int):void", "+ operacion2(param2:String):boolean", "+ atributo1:int"],
-        methods: ["+ operacion3():void"],
+        name: "Persona",
+        isAbstract: true,
+        properties: ["- nombre: String", "- apellido: String", "- edad: int", "# direccion: String"],
+        methods: ["+ getNombreCompleto(): String", "+ getEdad(): int", "+ abstract trabajar(): void"],
         loc: "150 150",
-      },
-      {
-        methods: ["+ operacion3():void"],
-        loc: "150 150",
+        color: "#DCFCE7", // verde claro
       },
       {
         key: 2,
-        name: "Interface",
-        properties: ["+ atributo:String"],
-        methods: [],
-        loc: "400 150",
+        name: "Empleado",
+        properties: ["- salario: double", "- departamento: String", "- fechaContratacion: Date"],
+        methods: ["+ getSalario(): double", "+ calcularBonificacion(): double", "+ trabajar(): void"],
+        loc: "150 350",
+        color: "#FEF9C3", // amarillo claro
       },
       {
         key: 3,
-        name: "Clase",
-        properties: ["+ atributo:String + valor", "+ atributo2:type", "+ atributo3:type"],
-        methods: ["+ operacion1():void", "+ operacion2(param):type"],
-        loc: "400 300",
+        name: "Cliente",
+        properties: ["- numeroCliente: String", "- fechaRegistro: Date", "- historialCompras: List<Compra>"],
+        methods: ["+ getNumeroCliente(): String", "+ realizarCompra(Producto): void", "+ trabajar(): void"],
+        loc: "400 350",
+        color: "#FEF9C3", // amarillo claro
       },
-    ]
-  }
-
-  // Relaciones de ejemplo.
-
-  private getSampleClassLinks(): any[] {
-    return [
-      { from: 1, to: 2, toArrow: "OpenTriangle", dash: [10, 5] },
-      { from: 3, to: 2, toArrow: "OpenTriangle", dash: [10, 5] },
-      { from: 3, to: 1, fromArrow: "Diamond", fromText: "1", toText: "0..n" },
-    ]
-  }
-
-  // Datos de ejemplo para diagrama de secuencia
-
-   private getSampleSequenceNodes(): any[] {
-    return [
-      { key: 1, name: "Cliente", category: "", loc: "100 50" },
-      { key: "1_lifeline", category: "LifeLine", loc: "100 70" },
-      { key: 2, name: "Sistema", category: "", loc: "300 50" },
-      { key: "2_lifeline", category: "LifeLine", loc: "300 70" },
-      { key: 3, name: "BaseDatos", category: "", loc: "500 50" },
-      { key: "3_lifeline", category: "LifeLine", loc: "500 70" },
-    ]
-  }
-
-  private getSampleSequenceLinks(): any[] {
-    return [
-      { from: "1_lifeline", to: "2_lifeline", text: "solicitar()", points: [100, 100, 300, 100] },
-      { from: "2_lifeline", to: "3_lifeline", text: "consultar()", points: [300, 150, 500, 150] },
-      { from: "3_lifeline", to: "2_lifeline", text: "resultado", points: [500, 200, 300, 200] },
-      { from: "2_lifeline", to: "1_lifeline", text: "respuesta", points: [300, 250, 100, 250] },
-    ]
-  }
-
-  // Datos de ejemplo para diagrama de paquetes
-
-  private getSamplePackageNodes(): any[] {
-    return [
-      { key: 1, name: "Presentación", loc: "150 150" },
-      { key: 2, name: "Lógica de Negocio", loc: "400 150" },
-      { key: 3, name: "Acceso a Datos", loc: "400 300" },
-      { key: 4, name: "Utilidades", loc: "150 300" },
-    ]
-  }
-
-  private getSamplePackageLinks(): any[] {
-    return [
-      { from: 1, to: 2, text: "usa", dash: [5, 5] },
-      { from: 2, to: 3, text: "usa", dash: [5, 5] },
-      { from: 1, to: 4, text: "usa", dash: [5, 5] },
-      { from: 2, to: 4, text: "usa", dash: [5, 5] },
-    ]
-  }
-
-  // Datos de ejemplo para diagrama de casos de uso
-
-  private getSampleUseCaseNodes(): any[] {
-    return [
-      { key: 1, name: "Usuario", category: "Actor", loc: "100 200" },
-      { key: 2, name: "Administrador", category: "Actor", loc: "100 400" },
-      { key: 3, name: "Iniciar Sesión", category: "UseCase", loc: "300 150" },
-      { key: 4, name: "Gestionar Usuarios", category: "UseCase", loc: "300 250" },
-      { key: 5, name: "Generar Reportes", category: "UseCase", loc: "300 350" },
-      { key: 6, name: "Configurar Sistema", category: "UseCase", loc: "300 450" },
+      {
+        key: 4,
+        name: "Gerente",
+        properties: ["- nivelAcceso: int", "- equipoTrabajo: List<Empleado>"],
+        methods: [
+          "+ asignarTarea(Empleado, Tarea): void",
+          "+ evaluarDesempeño(Empleado): Evaluacion",
+          "+ calcularBonificacion(): double",
+        ],
+        loc: "150 550",
+        color: "#FEF9C3", // amarillo claro
+      },
+      {
+        key: 5,
+        name: "Compra",
+        properties: ["- id: String", "- fecha: Date", "- monto: double", "- productos: List<Producto>"],
+        methods: ["+ getId(): String", "+ getMonto(): double", "+ agregarProducto(Producto): void"],
+        loc: "650 350",
+        color: "#FEE2E2", // rojo claro
+      },
+      {
+        key: 6,
+        name: "Producto",
+        properties: ["- codigo: String", "- nombre: String", "- precio: double", "- stock: int"],
+        methods: ["+ getCodigo(): String", "+ getPrecio(): double", "+ actualizarStock(int): void"],
+        loc: "650 550",
+        color: "#FEE2E2", // rojo claro
+      },
       {
         key: 7,
-        name: "Sistema de Gestión",
-        category: "System",
-        loc: "500 300",
-        elements: [{ name: "Validar Credenciales" }, { name: "Procesar Datos" }],
+        name: "<<Interface>> Pagable",
+        properties: ["+ TASA_IMPUESTO: double = 0.16"],
+        methods: ["+ calcularTotal(): double", "+ aplicarImpuesto(): double"],
+        loc: "400 150",
+        color: "white",
+      },
+      {
+        key: 8,
+        name: "Empresa",
+        properties: ["- nombre: String", "- rfc: String", "- empleados: List<Empleado>", "- clientes: List<Cliente>"],
+        methods: [
+          "+ contratarEmpleado(Empleado): void",
+          "+ despedirEmpleado(Empleado): void",
+          "+ registrarCliente(Cliente): void",
+        ],
+        loc: "400 550",
+        color: "#DCFCE7", // verde claro
       },
     ]
   }
 
-  private getSampleUseCaseLinks(): any[] {
+  /**
+   * Enlaces de ejemplo para diagrama de clases
+   */
+  private getSampleClassLinks(): any[] {
     return [
-      { from: 1, to: 3, text: "usa" },
-      { from: 1, to: 4, text: "usa" },
-      { from: 2, to: 4, text: "usa" },
-      { from: 2, to: 5, text: "usa" },
-      { from: 2, to: 6, text: "usa" },
-      { from: 3, to: 7, text: "incluye" },
-      { from: 4, to: 7, text: "incluye" },
-      { from: 5, to: 7, text: "incluye" },
-      { from: 6, to: 7, text: "incluye" },
+      { from: 2, to: 1, toArrow: "OpenTriangle", dash: [10, 5], text: "herencia" },
+      { from: 3, to: 1, toArrow: "OpenTriangle", dash: [10, 5], text: "herencia" },
+      { from: 4, to: 2, toArrow: "OpenTriangle", dash: [10, 5], text: "herencia" },
+      { from: 3, to: 5, fromArrow: "Diamond", fromText: "1", toText: "0..n", text: "realiza" },
+      { from: 5, to: 6, fromArrow: "Diamond", fromText: "1", toText: "1..n", text: "contiene" },
+      { from: 5, to: 7, toArrow: "OpenTriangle", dash: [10, 5], text: "implementa" },
+      { from: 6, to: 7, toArrow: "OpenTriangle", dash: [10, 5], text: "implementa" },
+      { from: 8, to: 2, fromArrow: "FilledDiamond", fromText: "1", toText: "0..n", text: "contiene" },
+      { from: 8, to: 3, fromText: "1", toText: "0..n", text: "atiende" },
+      { from: 4, to: 8, dash: [5, 5], text: "gestiona" },
     ]
   }
 
-  // Datos de ejemplo para diagrama de componentes
+  /**
+   * Datos de ejemplo para diagrama de secuencia
+   */
+  private getSampleSequenceNodes(): any[] {
+    return [
+      // Objetos
+      { key: 1, name: "Cliente", category: "", loc: "100 50", color: "#FEF9C3" },
+      { key: 2, name: "InterfazUsuario", category: "", loc: "300 50", color: "#DCFCE7" },
+      { key: 3, name: "ControladorPedido", category: "", loc: "500 50", color: "#DCFCE7" },
+      { key: 4, name: "ServicioValidacion", category: "", loc: "700 50", color: "#DCFCE7" },
+      { key: 5, name: "BaseDatos", category: "", loc: "900 50", color: "#FEE2E2" },
 
+      // Líneas de vida
+      { key: "1_lifeline", category: "LifeLine", loc: "100 70" },
+      { key: "2_lifeline", category: "LifeLine", loc: "300 70" },
+      { key: "3_lifeline", category: "LifeLine", loc: "500 70" },
+      { key: "4_lifeline", category: "LifeLine", loc: "700 70" },
+      { key: "5_lifeline", category: "LifeLine", loc: "900 70" },
+
+      // Activaciones
+      { key: "act1", category: "Activation", loc: "100 120" },
+      { key: "act2", category: "Activation", loc: "300 120" },
+      { key: "act3", category: "Activation", loc: "500 150" },
+      { key: "act4", category: "Activation", loc: "700 200" },
+      { key: "act5", category: "Activation", loc: "900 250" },
+      { key: "act6", category: "Activation", loc: "500 300" },
+      { key: "act7", category: "Activation", loc: "300 350" },
+      { key: "act8", category: "Activation", loc: "100 400" },
+    ]
+  }
+
+  /**
+   * Enlaces de ejemplo para diagrama de secuencia
+   */
+  private getSampleSequenceLinks(): any[] {
+    return [
+      // Mensajes síncronos
+      {
+        from: "act1",
+        to: "act2",
+        text: "realizarPedido(items)",
+        category: "SyncMessage",
+        points: [100, 120, 300, 120],
+      },
+      {
+        from: "act2",
+        to: "act3",
+        text: "crearPedido(cliente, items)",
+        category: "SyncMessage",
+        points: [300, 150, 500, 150],
+      },
+      { from: "act3", to: "act4", text: "validarDatos(pedido)", category: "SyncMessage", points: [500, 200, 700, 200] },
+      {
+        from: "act4",
+        to: "act5",
+        text: "verificarInventario(items)",
+        category: "SyncMessage",
+        points: [700, 250, 900, 250],
+      },
+
+      // Mensajes de retorno
+      {
+        from: "act5",
+        to: "act6",
+        text: "inventarioDisponible",
+        category: "ReturnMessage",
+        points: [900, 300, 500, 300],
+      },
+      { from: "act6", to: "act7", text: "pedidoCreado", category: "ReturnMessage", points: [500, 350, 300, 350] },
+      { from: "act7", to: "act8", text: "confirmacionPedido", category: "ReturnMessage", points: [300, 400, 100, 400] },
+
+      // Mensaje asíncrono
+      {
+        from: "act6",
+        to: "act5",
+        text: "actualizarInventario()",
+        category: "AsyncMessage",
+        points: [500, 320, 900, 320],
+      },
+    ]
+  }
+
+  /**
+   * Datos de ejemplo para diagrama de paquetes
+   */
+  private getSamplePackageNodes(): any[] {
+    return [
+      // Paquetes principales
+      { key: 1, name: "com.empresa.app", loc: "400 100", color: "#E0F2FE" },
+
+      // Paquetes de presentación
+      { key: 2, name: "com.empresa.app.presentacion", loc: "200 200", color: "#DCFCE7" },
+      { key: 3, name: "com.empresa.app.presentacion.vistas", loc: "100 300", color: "#DCFCE7" },
+      { key: 4, name: "com.empresa.app.presentacion.controladores", loc: "300 300", color: "#DCFCE7" },
+
+      // Paquetes de negocio
+      { key: 5, name: "com.empresa.app.negocio", loc: "500 200", color: "#FEF9C3" },
+      { key: 6, name: "com.empresa.app.negocio.servicios", loc: "400 300", color: "#FEF9C3" },
+      { key: 7, name: "com.empresa.app.negocio.modelos", loc: "600 300", color: "#FEF9C3" },
+
+      // Paquetes de datos
+      { key: 8, name: "com.empresa.app.datos", loc: "800 200", color: "#FEE2E2" },
+      { key: 9, name: "com.empresa.app.datos.repositorios", loc: "700 300", color: "#FEE2E2" },
+      { key: 10, name: "com.empresa.app.datos.dao", loc: "900 300", color: "#FEE2E2" },
+
+      // Paquetes de utilidades
+      { key: 11, name: "com.empresa.app.util", loc: "400 400", color: "#E0F2FE" },
+      { key: 12, name: "com.empresa.app.util.validacion", loc: "300 500", color: "#E0F2FE" },
+      { key: 13, name: "com.empresa.app.util.seguridad", loc: "500 500", color: "#E0F2FE" },
+
+      // Paquetes externos
+      { key: 14, name: "org.framework.mvc", loc: "100 500", color: "#F5D0FE" },
+      { key: 15, name: "org.framework.orm", loc: "900 500", color: "#F5D0FE" },
+    ]
+  }
+
+  /**
+   * Enlaces de ejemplo para diagrama de paquetes
+   */
+  private getSamplePackageLinks(): any[] {
+    return [
+      // Relaciones jerárquicas
+      { from: 2, to: 1, text: "contiene" },
+      { from: 5, to: 1, text: "contiene" },
+      { from: 8, to: 1, text: "contiene" },
+      { from: 11, to: 1, text: "contiene" },
+
+      { from: 3, to: 2, text: "contiene" },
+      { from: 4, to: 2, text: "contiene" },
+
+      { from: 6, to: 5, text: "contiene" },
+      { from: 7, to: 5, text: "contiene" },
+
+      { from: 9, to: 8, text: "contiene" },
+      { from: 10, to: 8, text: "contiene" },
+
+      { from: 12, to: 11, text: "contiene" },
+      { from: 13, to: 11, text: "contiene" },
+
+      // Dependencias
+      { from: 3, to: 4, text: "usa", dash: [5, 5] },
+      { from: 4, to: 6, text: "usa", dash: [5, 5] },
+      { from: 6, to: 7, text: "usa", dash: [5, 5] },
+      { from: 6, to: 9, text: "usa", dash: [5, 5] },
+      { from: 9, to: 10, text: "usa", dash: [5, 5] },
+
+      // Importaciones
+      { from: 3, to: 14, category: "Import" },
+      { from: 10, to: 15, category: "Import" },
+
+      // Accesos
+      { from: 4, to: 12, category: "Access" },
+      { from: 6, to: 13, category: "Access" },
+      { from: 9, to: 12, category: "Access" },
+    ]
+  }
+
+  /**
+   * Datos de ejemplo para diagrama de casos de uso
+   */
+  private getSampleUseCaseNodes(): any[] {
+    return [
+      // Actores
+      { key: 1, name: "Usuario", category: "Actor", loc: "100 300" },
+      { key: 2, name: "Administrador", category: "Actor", loc: "100 500" },
+      { key: 3, name: "Sistema de Pagos", category: "Actor", loc: "900 300" },
+      { key: 4, name: "Sistema de Notificaciones", category: "Actor", loc: "900 500" },
+
+      // Límite del sistema
+      {
+        key: 5,
+        name: "Sistema de Gestión de Tienda Online",
+        category: "Boundary",
+        loc: "500 350",
+        width: 600,
+        height: 500,
+      },
+
+      // Casos de uso - Gestión de usuarios
+      { key: 6, name: "Iniciar Sesión", category: "UseCase", loc: "300 200", color: "#DCFCE7" },
+      { key: 7, name: "Registrar Usuario", category: "UseCase", loc: "300 300", color: "#DCFCE7" },
+      { key: 8, name: "Recuperar Contraseña", category: "UseCase", loc: "300 400", color: "#DCFCE7" },
+      { key: 9, name: "Gestionar Perfil", category: "UseCase", loc: "300 500", color: "#DCFCE7" },
+
+      // Casos de uso - Gestión de productos
+      { key: 10, name: "Buscar Productos", category: "UseCase", loc: "500 200", color: "#FEF9C3" },
+      { key: 11, name: "Ver Detalles de Producto", category: "UseCase", loc: "500 300", color: "#FEF9C3" },
+      { key: 12, name: "Añadir al Carrito", category: "UseCase", loc: "500 400", color: "#FEF9C3" },
+      { key: 13, name: "Gestionar Inventario", category: "UseCase", loc: "500 500", color: "#FEF9C3" },
+
+      // Casos de uso - Gestión de compras
+      { key: 14, name: "Realizar Compra", category: "UseCase", loc: "700 200", color: "#FEE2E2" },
+      { key: 15, name: "Procesar Pago", category: "UseCase", loc: "700 300", color: "#FEE2E2" },
+      { key: 16, name: "Generar Factura", category: "UseCase", loc: "700 400", color: "#FEE2E2" },
+      { key: 17, name: "Enviar Notificación", category: "UseCase", loc: "700 500", color: "#FEE2E2" },
+    ]
+  }
+
+  /**
+   * Enlaces de ejemplo para diagrama de casos de uso
+   */
+  private getSampleUseCaseLinks(): any[] {
+    return [
+      // Relaciones de usuario
+      { from: 1, to: 6, text: "usa" },
+      { from: 1, to: 7, text: "usa" },
+      { from: 1, to: 8, text: "usa" },
+      { from: 1, to: 9, text: "usa" },
+      { from: 1, to: 10, text: "usa" },
+      { from: 1, to: 11, text: "usa" },
+      { from: 1, to: 12, text: "usa" },
+      { from: 1, to: 14, text: "usa" },
+
+      // Relaciones de administrador
+      { from: 2, to: 6, text: "usa" },
+      { from: 2, to: 9, text: "usa" },
+      { from: 2, to: 13, text: "usa" },
+
+      // Relaciones de sistemas externos
+      { from: 15, to: 3, text: "usa" },
+      { from: 17, to: 4, text: "usa" },
+
+      // Relaciones de extensión
+      { from: 8, to: 6, category: "Extends" },
+      { from: 11, to: 10, category: "Extends" },
+
+      // Relaciones de inclusión
+      { from: 14, to: 12, category: "Includes" },
+      { from: 14, to: 15, category: "Includes" },
+      { from: 15, to: 16, category: "Includes" },
+      { from: 16, to: 17, category: "Includes" },
+    ]
+  }
+
+  /**
+   * Datos de ejemplo para diagrama de componentes
+   */
   private getSampleComponentNodes(): any[] {
     return [
+      // Componentes de la capa de presentación
       {
         key: 1,
         name: "Interfaz de Usuario",
         ports: [{ name: "API UI" }, { name: "Eventos" }],
-        loc: "150 150",
+        loc: "200 100",
+        color: "#DCFCE7",
       },
       {
         key: 2,
-        name: "Controlador",
-        ports: [{ name: "API Controlador" }, { name: "Servicios" }],
-        loc: "400 150",
+        name: "Controlador Web",
+        ports: [{ name: "API Web" }, { name: "Servicios" }],
+        loc: "200 250",
+        color: "#DCFCE7",
       },
       {
         key: 3,
-        name: "Modelo de Datos",
-        ports: [{ name: "DAO" }, { name: "Entidades" }],
-        loc: "400 300",
+        name: "Gestor de Vistas",
+        ports: [{ name: "Renderizado" }, { name: "Plantillas" }],
+        loc: "200 400",
+        color: "#DCFCE7",
       },
-      { key: 4, name: "IServicioAutenticación", category: "Interface", loc: "150 300" },
+
+      // Componentes de la capa de negocio
+      {
+        key: 4,
+        name: "Lógica de Negocio",
+        ports: [{ name: "API Negocio" }, { name: "Validación" }],
+        loc: "500 100",
+        color: "#FEF9C3",
+      },
+      {
+        key: 5,
+        name: "Gestor de Transacciones",
+        ports: [{ name: "Transacciones" }, { name: "Seguridad" }],
+        loc: "500 250",
+        color: "#FEF9C3",
+      },
+      {
+        key: 6,
+        name: "Servicio de Autenticación",
+        ports: [{ name: "Auth" }, { name: "Usuarios" }],
+        loc: "500 400",
+        color: "#FEF9C3",
+      },
+
+      // Componentes de la capa de datos
+      {
+        key: 7,
+        name: "Acceso a Datos",
+        ports: [{ name: "DAO" }, { name: "Consultas" }],
+        loc: "800 100",
+        color: "#FEE2E2",
+      },
+      {
+        key: 8,
+        name: "Repositorio de Entidades",
+        ports: [{ name: "Entidades" }, { name: "ORM" }],
+        loc: "800 250",
+        color: "#FEE2E2",
+      },
+      {
+        key: 9,
+        name: "Caché de Datos",
+        ports: [{ name: "Cache" }, { name: "Expiración" }],
+        loc: "800 400",
+        color: "#FEE2E2",
+      },
+
+      // Interfaces
+      { key: 10, name: "IServicioUsuario", category: "Interface", loc: "350 175", color: "#E0F2FE" },
+      { key: 11, name: "IRepositorioDatos", category: "Interface", loc: "650 175", color: "#E0F2FE" },
+      { key: 12, name: "IAutenticacion", category: "Interface", loc: "350 325", color: "#E0F2FE" },
+      { key: 13, name: "ITransaccion", category: "Interface", loc: "650 325", color: "#E0F2FE" },
+
+      // Artefactos
+      { key: 14, name: "config.xml", category: "Artifact", loc: "350 500", color: "#F5D0FE" },
+      { key: 15, name: "schema.sql", category: "Artifact", loc: "650 500", color: "#F5D0FE" },
+
+      // Nodos
+      { key: 16, name: "Servidor Web", category: "Node", loc: "200 600", color: "#D8B4FE" },
+      { key: 17, name: "Servidor de Aplicaciones", category: "Node", loc: "500 600", color: "#D8B4FE" },
+      { key: 18, name: "Servidor de Base de Datos", category: "Node", loc: "800 600", color: "#D8B4FE" },
     ]
   }
 
+  /**
+   * Enlaces de ejemplo para diagrama de componentes
+   */
   private getSampleComponentLinks(): any[] {
     return [
+      // Relaciones entre componentes
       { from: 1, to: 2, text: "usa" },
       { from: 2, to: 3, text: "usa" },
-      { from: 1, to: 4, text: "implementa", toArrow: "OpenTriangle" },
-      { from: 2, to: 4, text: "usa", dash: [5, 5] },
+      { from: 2, to: 4, text: "usa" },
+      { from: 4, to: 5, text: "usa" },
+      { from: 4, to: 6, text: "usa" },
+      { from: 4, to: 7, text: "usa" },
+      { from: 7, to: 8, text: "usa" },
+      { from: 7, to: 9, text: "usa" },
+
+      // Implementaciones de interfaces
+      { from: 2, to: 10, text: "implementa", toArrow: "OpenTriangle" },
+      { from: 4, to: 10, text: "usa", dash: [5, 5] },
+      { from: 6, to: 12, text: "implementa", toArrow: "OpenTriangle" },
+      { from: 2, to: 12, text: "usa", dash: [5, 5] },
+      { from: 5, to: 13, text: "implementa", toArrow: "OpenTriangle" },
+      { from: 4, to: 13, text: "usa", dash: [5, 5] },
+      { from: 8, to: 11, text: "implementa", toArrow: "OpenTriangle" },
+      { from: 7, to: 11, text: "usa", dash: [5, 5] },
+
+      // Dependencias de artefactos
+      { from: 6, to: 14, category: "Dependency" },
+      { from: 8, to: 15, category: "Dependency" },
+
+      // Despliegue en nodos
+      { from: 1, to: 16, text: "despliega" },
+      { from: 2, to: 16, text: "despliega" },
+      { from: 3, to: 16, text: "despliega" },
+      { from: 4, to: 17, text: "despliega" },
+      { from: 5, to: 17, text: "despliega" },
+      { from: 6, to: 17, text: "despliega" },
+      { from: 7, to: 17, text: "despliega" },
+      { from: 8, to: 18, text: "despliega" },
+      { from: 9, to: 17, text: "despliega" },
     ]
   }
 
