@@ -5,27 +5,36 @@ import { AUTH_REPOSITORY_TOKEN } from '@domain/repositories/auth/auth.repository
 
 export const authGuard: CanActivateFn = async (route, state) => {
   const authService: AuthRepository = inject(AUTH_REPOSITORY_TOKEN)
-
   const router = inject(Router);
-  let hasToken = authService.getAccessToken();
-
-
-  //!NOTE: This is a workaround for the issue where the access token is not being rehydrated
-  // when the app is first loaded. This is a temporary fix until the issue is resolved.
-  // This will attempt to rehydrate the access token if it is not found.
-
-  if (!hasToken) {
-    console.log('No token found, attempting to rehydrate');
-    await authService.rehydrateAccessToken();
+  
+  // First check if we already have a token
+  const hasToken = authService.getAccessToken();
+  
+  // Only attempt rehydration if we're not already on the sign-in page
+  // and we don't have a token
+  if (!hasToken && !state.url.includes('/auth/sign-in')) {
+    try {
+      await authService.rehydrateAccessToken();
+      const refreshedToken = authService.getAccessToken();
+      
+      if (!refreshedToken) {
+        router.navigate(['/auth/sign-in']);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Auth guard rehydration failed:', error);
+      router.navigate(['/auth/sign-in']);
+      return false;
+    }
   }
 
-  const refreshedAccessToken = authService.getAccessToken();
-  if (!refreshedAccessToken) {
-    console.log('Rehydration failed, redirecting to sign-in...');
-    router.navigate(['/auth/sign-in']);
-    return false;
+  // If we have a token, allow access
+  if (hasToken) {
+    return true;
   }
 
-  console.log('Access token found, allowing access to the route.');
-  return true;
+  // If we get here, we have no token and rehydration wasn't attempted
+  router.navigate(['/auth/sign-in']);
+  return false;
 };

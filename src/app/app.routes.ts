@@ -11,6 +11,7 @@ import { DashboardComponent } from './presentation/pages/dashboard/dashboard.com
 import { CanvasComponent } from './presentation/pages/canvas/canvas.component';
 import { authGuard } from '@infrastructure/auth/guards/auth.guard';
 import { GoogleCallbackComponent } from './presentation/components/google-callback/google-callback.component';
+import { UserProfileComponent } from './presentation/pages/user-profile/user-profile.component';
 /*
     Faltan los componentes de:
     - Dashboard
@@ -55,11 +56,15 @@ export const routes: Routes = [
   {
     path: "dashboard", component: DashboardComponent,
     title: "UMLForge - Panel de control",
-    //canActivate: [authGuard]
+    canActivate: [authGuard]
   },
   {
     path: "canvas/:type", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
-    //canActivate: [authGuard],
+    canActivate: [authGuard],
+  },
+  {
+    path: "user-profile", component: UserProfileComponent, title: "UMLForge - Perfil de usuario",
+    canActivate: [authGuard],
   }
 
 ];

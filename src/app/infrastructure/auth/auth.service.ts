@@ -1,4 +1,3 @@
-
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { AuthRepository } from "@domain/repositories/auth/auth.repository";
@@ -9,17 +8,21 @@ import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of } from
   providedIn: 'root'
 })
 export class AuthService implements AuthRepository {
-  private authUrl = environment.auth_url
+  private authUrl = environment.auth_url;
   private accessToken: string | null = null;
   private accessTokenSubject = new BehaviorSubject<string | null>(null);
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-
+  private isRefreshing = false;
 
   accessToken$ = this.accessTokenSubject.asObservable();
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(private http: HttpClient) {
     console.log('AuthService instance created');
+    const token = this.getAccessToken();
+    if (token) {
+      this.isAuthenticatedSubject.next(true);
+    }
   }
 
   async requestPasswordReset(email: string): Promise<boolean> {
@@ -52,7 +55,7 @@ export class AuthService implements AuthRepository {
   }
 
   async loginGoogle(): Promise<void> {
-    window.location.href = `${this.authUrl}/google/login`;
+    window.location.href = `${this.authUrl}/google/login?prompt=select_account`;
   }
 
   async handleGoogleCallback(): Promise<boolean> {
@@ -62,7 +65,11 @@ export class AuthService implements AuthRepository {
       const accessToken = urlParams.get('accessToken');
 
       if (accessToken) {
-        this.accessTokenSubject.next(accessToken); // Store the access token in memory
+        // Store token in both memory and localStorage
+        this.accessToken = accessToken;
+        this.accessTokenSubject.next(accessToken);
+        this.isAuthenticatedSubject.next(true);
+        localStorage.setItem('accessToken', accessToken);
         console.log('Google login successful, access token set:', accessToken);
         return true;
       }
@@ -72,45 +79,75 @@ export class AuthService implements AuthRepository {
       console.error('Google login failed:', error);
       return false;
     }
-
   }
 
   getAccessToken(): string | null {
-    console.log('Access token retrieved from memory:', this.accessToken);
-    return this.accessToken;
+    // First try to get from memory
+    if (this.accessToken) {
+      return this.accessToken;
+    }
+    
+    // If not in memory, try to get from localStorage
+    const storedToken = localStorage.getItem('accessToken');
+    if (storedToken) {
+      this.accessToken = storedToken;
+      this.accessTokenSubject.next(storedToken);
+      this.isAuthenticatedSubject.next(true);
+      return storedToken;
+    }
+
+    return null;
   }
 
   refreshAccessToken(): Observable<boolean> {
+    if (this.isRefreshing) {
+      console.log('Token refresh already in progress');
+      return of(false);
+    }
+
+    this.isRefreshing = true;
+    console.log('Starting token refresh');
+
     return this.http
       .get<{ token: string }>(`${this.authUrl}/refresh-token`, { withCredentials: true })
       .pipe(
         map((response) => {
-          // console.log(response.token)
           if (response?.token) {
             this.accessToken = response.token;
-            console.log('Access token refreshed:', this.accessToken);
             this.accessTokenSubject.next(response.token);
+            this.isAuthenticatedSubject.next(true);
+            console.log('Token refresh successful');
             return true;
           }
+          this.isAuthenticatedSubject.next(false);
           return false;
         }),
         catchError((error) => {
           console.error('Token refresh failed', error);
+          this.isAuthenticatedSubject.next(false);
           return of(false);
+        }),
+        map(result => {
+          this.isRefreshing = false;
+          return result;
         })
       );
   }
 
-  //!HACK: This function take the observable and convert it to a promise
   async rehydrateAccessToken(): Promise<void> {
-    console.log('Rehydrating access token...');
+    if (this.isRefreshing) {
+      console.log('Rehydration already in progress, skipping');
+      return;
+    }
+
+    console.log('Attempting to rehydrate access token...');
     try {
       const success = await firstValueFrom(this.refreshAccessToken());
       if (!success) {
-        console.log('Failed to rehydrate access token, logging out...');
+        console.log('Rehydration failed, logging out');
         this.logout();
       } else {
-        console.log('Access token successfully rehydrated.');
+        console.log('Access token successfully rehydrated');
       }
     } catch (error) {
       console.error('Error during rehydration:', error);
@@ -119,10 +156,11 @@ export class AuthService implements AuthRepository {
   }
 
   logout(): void {
+    this.accessToken = null;
     this.accessTokenSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-    this.accessToken = null;
+    this.isRefreshing = false;
+    localStorage.removeItem('accessToken'); // Clear token from localStorage
   }
-
 
 }
