@@ -56,11 +56,11 @@ export const routes: Routes = [
   {
     path: "dashboard", component: DashboardComponent,
     title: "UMLForge - Panel de control",
-    canActivate: [authGuard]
+    //canActivate: [authGuard]
   },
   {
     path: "canvas/:type", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
-    canActivate: [authGuard],
+    //canActivate: [authGuard],
   },
   {
     path: "user-profile", component: UserProfileComponent, title: "UMLForge - Perfil de usuario",

@@ -42,6 +42,11 @@ export class TemplatesComponent {
       title: "Diagrama de Componentes",
       image: "https://via.assets.so/img.jpg?height=100&width=100",
     },
+    {
+      type: "blank",
+      title: "Lienzo en Blanco",
+      image: "https://cdn-icons-png.flaticon.com/512/32/32339.png",
+    },
   ]
 
 }

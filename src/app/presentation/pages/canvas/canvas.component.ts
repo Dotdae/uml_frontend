@@ -44,45 +44,49 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     { type: "package", label: "Diagrama de Paquetes" },
     { type: "usecase", label: "Diagrama de Casos de Uso" },
     { type: "component", label: "Diagrama de Componentes" },
+    { type: "blank", label: "UML" },
   ]
 
   constructor(private diagramService: DiagramService, private route: ActivatedRoute) {}
 
   ngOnInit() {
-
-    // Extraer el typeo de diagrama de la URL.
-
+    // Extraer el tipo de diagrama de la URL y actualizar currentDiagramType
     this.route.paramMap.subscribe(params => {
-
       const type = params.get("type") as DiagramType;
-      if(type && this.diagramTypes.some(dt => dt.type === type)){
+      if (type && this.diagramTypes.some(dt => dt.type === type)) {
         this.currentDiagramType = type;
       }
-    })
-
+    });
   }
 
   ngAfterViewInit() {
-    // Inicializar el diagrama
-    const diagram = this.diagramService.initDiagram(
-      this.diagramDiv.nativeElement as HTMLDivElement,
-      this.currentDiagramType,
-    )
+    // Inicializar el diagrama usando el tipo extraído de la URL
+    this.route.paramMap.subscribe(params => {
+      const type = params.get("type") as DiagramType;
+      const diagramTypeToUse = (type && this.diagramTypes.some(dt => dt.type === type))
+        ? type
+        : this.currentDiagramType;
 
-    // Manejar selección
-    diagram.addDiagramListener("ChangedSelection", (e) => {
-      const node = diagram.selection.first()
-      if (node instanceof go.Node) {
-        this.selectedNode = node
-        this.selectedLink = null
-      } else if (node instanceof go.Link) {
-        this.selectedLink = node
-        this.selectedNode = null
-      } else {
-        this.selectedNode = null
-        this.selectedLink = null
-      }
-    })
+      const diagram = this.diagramService.initDiagram(
+        this.diagramDiv.nativeElement as HTMLDivElement,
+        diagramTypeToUse,
+      );
+
+      // Manejar selección
+      diagram.addDiagramListener("ChangedSelection", (e) => {
+        const node = diagram.selection.first();
+        if (node instanceof go.Node) {
+          this.selectedNode = node;
+          this.selectedLink = null;
+        } else if (node instanceof go.Link) {
+          this.selectedLink = node;
+          this.selectedNode = null;
+        } else {
+          this.selectedNode = null;
+          this.selectedLink = null;
+        }
+      });
+    });
   }
 
   // Cambiar el tipo de diagrama
@@ -95,95 +99,78 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   // Métodos para la barra de herramientas
   addClass() {
     if (this.currentDiagramType === "class") {
-      const newNode = {
-        key: this.diagramService.getNextNodeId(),
-        name: "Nueva Clase",
-        properties: ["+ atributo1:tipo"],
-        methods: ["+ metodo1():tipo"],
-        loc: "300 300",
-      }
-      this.diagramService.addNode(newNode)
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "NuevaClase",
+        properties: [],
+        methods: [],
+        loc: "200 200",
+        color: "#DCFCE7"
+      });
     }
   }
 
   addInterface() {
-    if (this.currentDiagramType === "class") {
-      const newNode = {
-        key: this.diagramService.getNextNodeId(),
-        name: "<<Interface>>",
-        properties: ["+ atributo1:tipo"],
-        methods: ["+ metodo1():tipo"],
-        loc: "300 300",
-      }
-      this.diagramService.addNode(newNode)
+    if (this.currentDiagramType === "class" || this.currentDiagramType === "component") {
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "<<Interface>> NuevaInterfaz",
+        properties: [],
+        methods: [],
+        loc: "300 200",
+        color: "white"
+      });
     }
   }
 
   addActor() {
     if (this.currentDiagramType === "usecase") {
-      const newNode = {
-        key: this.diagramService.getNextNodeId(),
-        name: "Nuevo Actor",
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "NuevoActor",
         category: "Actor",
-        loc: "150 200",
-      }
-      this.diagramService.addNode(newNode)
+        loc: "100 100"
+      });
     }
   }
 
   addUseCase() {
     if (this.currentDiagramType === "usecase") {
-      const newNode = {
-        key: this.diagramService.getNextNodeId(),
-        name: "Nuevo Caso de Uso",
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "NuevoCasoDeUso",
         category: "UseCase",
-        loc: "300 200",
-      }
-      this.diagramService.addNode(newNode)
-    }
-  }
-
-  addPackage() {
-    if (this.currentDiagramType === "package") {
-      const newNode = {
-        key: this.diagramService.getNextNodeId(),
-        name: "Nuevo Paquete",
-        loc: "300 200",
-      }
-      this.diagramService.addNode(newNode)
+        loc: "300 100"
+      });
     }
   }
 
   addComponent() {
     if (this.currentDiagramType === "component") {
-      const newNode = {
-        key: this.diagramService.getNextNodeId(),
-        name: "Nuevo Componente",
-        ports: [{ name: "Puerto 1" }],
-        loc: "300 200",
-      }
-      this.diagramService.addNode(newNode)
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "NuevoComponente",
+        ports: [],
+        loc: "200 200",
+        color: "#DCFCE7"
+      });
     }
   }
 
   addObject() {
     if (this.currentDiagramType === "sequence") {
-      const nextId = this.diagramService.getNextNodeId()
-      // Añadir objeto
-      const newNode = {
-        key: nextId,
-        name: "Nuevo Objeto",
-        loc: `${150 + nextId * 100} 50`,
-      }
-      this.diagramService.addNode(newNode)
-
-      // Añadir línea de vida
-      const newLifeline = {
-        key: `${nextId}_lifeline`,
-        category: "LifeLine",
-        loc: `${150 + nextId * 100} 70`,
-      }
-      this.diagramService.addNode(newLifeline)
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "NuevoObjeto",
+        loc: "200 100",
+        color: "#DCFCE7"
+      });
     }
   }
 
@@ -265,19 +252,35 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addMessage() {
-    const diagram = this.diagramService.getDiagram()
-    if (diagram.selection.count === 2) {
-      const nodes = diagram.selection.toArray()
-      if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-        const newLink = {
-          from: nodes[0].key,
-          to: nodes[1].key,
-          text: "mensaje()",
+    if (this.currentDiagramType === "sequence") {
+      const diagram = this.diagramService.getDiagram()
+      if (diagram.selection.count === 2) {
+        const nodes = diagram.selection.toArray()
+        if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
+          const newLink = {
+            from: nodes[0].key,
+            to: nodes[1].key,
+            text: "mensaje()",
+            category: "Message" // Especifica la categoría para que el servicio use la plantilla correcta
+          }
+          this.diagramService.addLink(newLink)
         }
-        this.diagramService.addLink(newLink)
       }
     }
   }
+
+  addPackage() {
+  if (this.currentDiagramType === "package") {
+    const key = this.diagramService.getNextNodeId();
+    this.diagramService.addNode({
+      key,
+      name: "NuevoPaquete",
+      category: "Package",
+      loc: "200 200",
+      color: "#DBEAFE"
+    });
+  }
+}
 
   deleteSelection() {
     this.diagramService.deleteSelection()

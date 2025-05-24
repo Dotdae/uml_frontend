@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as go from 'gojs';
-import { from } from 'rxjs';
 
-export type DiagramType = "class" | "sequence" | "package" | "usecase" | "component"
+export type DiagramType = "class" | "sequence" | "package" | "usecase" | "component" | "blank";
 
 
 @Injectable({
@@ -16,13 +15,11 @@ export class DiagramService {
 
   constructor() { }
 
-  // Inicializa un dragama en el tag con el id que se le pasa.
-
+  // Inicializa un diagrama en el tag con el id que se le pasa.
   initDiagram(div: HTMLDivElement, type: DiagramType = "class"): go.Diagram {
-    this.currentType = type
-    const $ = go.GraphObject.make
+    this.currentType = type;
+    const $ = go.GraphObject.make;
 
-    // Configuración del diagrama
     this.diagram = $(go.Diagram, div, {
       "undoManager.isEnabled": true,
       "grid.visible": true,
@@ -49,37 +46,46 @@ export class DiagramService {
         fill: "lightblue",
         stroke: "dodgerblue",
       }),
-    })
+    });
 
-    // Configurar plantillas según el tipo de diagrama
+    // Configuración del diagrama según el tipo
     switch (type) {
+      case "blank":
+        this.setupBlankDiagram();
+        return this.diagram;
       case "class":
-        this.setupClassDiagram()
-        break
+        this.setupClassDiagram();
+        break;
       case "sequence":
-        this.setupSequenceDiagram()
-        break
+        this.setupSequenceDiagram();
+        break;
       case "package":
-        this.setupPackageDiagram()
-        break
+        this.setupPackageDiagram();
+        break;
       case "usecase":
-        this.setupUseCaseDiagram()
-        break
+        this.setupUseCaseDiagram();
+        break;
       case "component":
-        this.setupComponentDiagram()
-        break
+        this.setupComponentDiagram();
+        break;
     }
 
-    // Cargar datos de ejemplo
-    this.loadSampleData(type)
+    // Cargar datos de ejemplo solo si el tipo no es blank
+    this.loadSampleData(type);
 
-    return this.diagram
+    return this.diagram;
   }
 
-  // Funciones para configurar las plantillas de los nodos y enlaces según el tipo de diagrama.
+  // Nueva función para configurar el diagrama en blanco
+  private setupBlankDiagram(): void {
+    const $ = go.GraphObject.make;
+    this.diagram.nodeTemplate = $(go.Node, "Auto");
+    this.diagram.linkTemplate = $(go.Link);
+    this.diagram.model = new go.GraphLinksModel([], []);
+    this.diagramModel = this.diagram.model as go.GraphLinksModel;
+  }
 
   // Obtiene el diagrama actual.
-
   getDiagram(): go.Diagram {
     return this.diagram;
   }
@@ -90,98 +96,81 @@ export class DiagramService {
   }
 
   // Cambiar el tipo de diagrama.
-
-  changeDiagramType(type: DiagramType): void{
-
-    if(this.currentType === type) return
+  changeDiagramType(type: DiagramType): void {
+    if (this.currentType === type) return;
 
     // Limpiar el diagrama actual.
-
     this.diagram.model = new go.GraphLinksModel();
 
-    // Configurar la plantilla según el tipo de diagrama.
-
-    switch(type){
-
+    // Configuración del diagrama según el tipo
+    switch (type) {
+      case "blank":
+        this.setupBlankDiagram();
+        this.currentType = type;
+        return;
       case "class":
         this.setupClassDiagram();
         break;
-
       case "sequence":
         this.setupSequenceDiagram();
         break;
-
       case "package":
         this.setupPackageDiagram();
         break;
-
       case "usecase":
         this.setupUseCaseDiagram();
         break;
-
       case "component":
         this.setupComponentDiagram();
         break;
-
     }
 
     // Cargar datos de ejemplo.
-
     this.loadSampleData(type);
-
+    this.currentType = type;
   }
 
   // Exportar el diagrama actual en formato JSON.
-
   exportDiagram(): string {
     return this.diagram.model.toJson();
   }
 
   // Importar un diagrama en formato JSON.
-
   importDiagram(json: string): void {
     this.diagram.model = go.Model.fromJson(json);
     this.diagramModel = this.diagram.model as go.GraphLinksModel;
   }
 
-  // Funciones para agregar diagramas y relaciones al diagrama actual.
-
   // Añadir nueva forma al diagrama.
-
-  addNode(nodeData: any): void{
+  addNode(nodeData: any): void {
     this.diagram.startTransaction("add node");
     this.diagram.model.addNodeData(nodeData);
     this.diagram.commitTransaction("add node");
   }
 
   // Añadir nueva relación al diagrama.
-
-  addLink(linkData: any): void{
+  addLink(linkData: any): void {
     this.diagram.startTransaction("add link");
     (this.diagram.model as go.GraphLinksModel).addLinkData(linkData);
     this.diagram.commitTransaction("add link");
   }
 
   // Eliminar los elementos seleccionados.
-
   deleteSelection(): void {
     this.diagram.commandHandler.deleteSelection();
   }
 
   // Deshacer la última acción.
-
   undo(): void {
     this.diagram.commandHandler.undo();
   }
 
   // Rehacer la última acción.
-
   redo(): void {
     this.diagram.commandHandler.redo();
   }
 
-  // Cambiar las propiedadades de un nodo.
-
+  // Cambiar las propiedades de un nodo.
   setNodeProperty(node: go.Node, property: string, value: any): void {
     this.diagram.startTransaction("change property");
     this.diagram.model.setDataProperty(node.data, property, value);
@@ -189,17 +178,12 @@ export class DiagramService {
   }
 
   // Obtener el siguiente ID para un nuevo nodo.
-
   getNextNodeId(): number {
-
     let maxId = 0;
-
     this.diagram.nodes.each((node) => {
-      if (node.data.key > maxId)  maxId = node.data.key;
+      if (node.data.key > maxId) maxId = node.data.key;
     });
-
     return maxId + 1;
-
   }
 
   // Configuración de las plantillas para los diferentes tipos de diagramas.
@@ -871,6 +855,8 @@ export class DiagramService {
     let nodeDataArray: any[] = []
     let linkDataArray: any[] = []
 
+    console.log(type)
+
     switch (type) {
       case "class":
         nodeDataArray = this.getSampleClassNodes()
@@ -892,6 +878,11 @@ export class DiagramService {
         nodeDataArray = this.getSampleComponentNodes()
         linkDataArray = this.getSampleComponentLinks()
         break
+      case "blank":
+      // No cargar ningún dato para el diagrama en blanco
+      nodeDataArray = [];
+      linkDataArray = [];
+      break;
     }
 
     this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray)
