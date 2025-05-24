@@ -360,14 +360,13 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   exportDiagramForBackend() {
     const model = this.diagramService.getDiagram().model as go.GraphLinksModel;
+    // Solo las propiedades esenciales para el backend
     const nodes = model.nodeDataArray.map((node: any) => ({
       key: node.key,
       name: node.name,
       properties: node.properties ?? [],
       methods: node.methods ?? [],
-      category: node.category ?? "",
-      loc: node.loc ?? "",
-      color: node.color ?? ""
+      category: node.category ?? ""
     }));
 
     const links = model.linkDataArray.map((link: any) => ({
@@ -384,7 +383,6 @@ export class CanvasComponent implements AfterViewInit, OnInit {
       links
     };
 
-    // Puedes enviarlo al backend o descargarlo
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
@@ -393,7 +391,6 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
 
-    // O simplemente retorna el objeto exportData para enviarlo por HTTP
     // return exportData;
   }
 
