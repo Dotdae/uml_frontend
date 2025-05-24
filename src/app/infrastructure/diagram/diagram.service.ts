@@ -189,12 +189,14 @@ export class DiagramService {
     this.currentType = type;
   }
 
-  // Exportar el diagrama actual en formato JSON.
+  // Exportar el diagrama actual en formato JSON, incluyendo el tipo
   exportDiagram(): string {
-    return this.diagram.model.toJson();
+    const json = JSON.parse(this.diagram.model.toJson());
+    json.diagramType = this.currentType;
+    return JSON.stringify(json);
   }
 
-  // Importar un diagrama en formato JSON.
+  // Importar un diagrama en formato JSON
   importDiagram(json: string): void {
     this.diagram.model = go.Model.fromJson(json);
     this.diagramModel = this.diagram.model as go.GraphLinksModel;
@@ -481,7 +483,24 @@ export class DiagramService {
       $(go.Shape, { stroke: "black", strokeWidth: 1.5 }),
       $(go.Shape, { toArrow: "OpenTriangle", stroke: "black", fill: "black" }),
       $(go.TextBlock, { segmentOffset: new go.Point(0, -10), segmentFraction: 0.5 }, new go.Binding("text", "text")),
-    )
+    );
+
+    // Plantilla para enlaces tipo "Message"
+    this.diagram.linkTemplateMap.add("Message",
+      $(
+        go.Link,
+        {
+          routing: go.Link.Orthogonal,
+          corner: 0,
+          curviness: 0,
+          adjusting: go.Link.End,
+        },
+        new go.Binding("points").makeTwoWay(),
+        $(go.Shape, { stroke: "black", strokeWidth: 1.5 }),
+        $(go.Shape, { toArrow: "OpenTriangle", stroke: "black", fill: "black" }),
+        $(go.TextBlock, { segmentOffset: new go.Point(0, -10), segmentFraction: 0.5 }, new go.Binding("text", "text")),
+      )
+    );
   }
 
   // Diagrama de paquetes.

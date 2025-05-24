@@ -47,6 +47,10 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     { type: "blank", label: "Lienzo en Blanco" },
   ]
 
+  menuArchivoOpen = false;
+  menuEditarOpen = false;
+  menuTipoOpen = false;
+
   constructor(private diagramService: DiagramService, private route: ActivatedRoute) {}
 
   ngOnInit() {
@@ -326,27 +330,32 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     // Implementar cambio de tamaño de fuente
   }
 
+  // Exportar el diagrama (sin agregar diagramType)
   exportDiagram() {
-    const json = this.diagramService.exportDiagram()
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json)
-    const downloadAnchorNode = document.createElement("a")
-    downloadAnchorNode.setAttribute("href", dataStr)
-    downloadAnchorNode.setAttribute("download", "diagrama-uml.json")
-    document.body.appendChild(downloadAnchorNode)
-    downloadAnchorNode.click()
-    downloadAnchorNode.remove()
+    const json = this.diagramService.getDiagram().model.toJson();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json);
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "uml-diagram.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
   }
 
+  // Importar el diagrama (solo carga el modelo, sin reconfigurar tipo)
   importDiagram(event: any) {
-    const file = event.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e: any) => {
-        const contents = e.target.result
-        this.diagramService.importDiagram(contents)
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        this.diagramService.importDiagram(e.target.result);
+      } catch (err) {
+        alert("Archivo inválido");
       }
-      reader.readAsText(file)
-    }
+    };
+    reader.readAsText(file);
   }
 
 }

@@ -13,41 +13,21 @@
     </button>
     <div class="border-l border-gray-300 h-6 mx-2"></div>
 
-    <!-- Menú principal -->
-    <div class="flex space-x-4">
-      <div class="relative group">
-        <button class="px-2 py-1 rounded hover:bg-gray-100">Archivo</button>
-        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-md border border-gray-200 mt-1 z-10">
-          <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" (click)="exportDiagram()">Exportar</button>
-          <label class="block w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer">
-            Importar
-            <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
-          </label>
-        </div>
-      </div>
-      <div class="relative group">
-        <button class="px-2 py-1 rounded hover:bg-gray-100">Editar</button>
-        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-md border border-gray-200 mt-1 z-10">
-          <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" (click)="deleteSelection()">Eliminar</button>
-        </div>
-      </div>
-      <div class="relative group">
-        <button class="px-2 py-1 rounded hover:bg-gray-100">Tipo de Diagrama</button>
-        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-md border border-gray-200 mt-1 z-10">
-          <button *ngFor="let diagramType of diagramTypes"
-                  class="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                  [class.font-bold]="currentDiagramType === diagramType.type"
-                  (click)="changeDiagramType(diagramType.type)">
-            {{ diagramType.label }}
-          </button>
-        </div>
-      </div>
-      <button class="px-2 py-1 rounded hover:bg-gray-100">Visualizar</button>
-      <button class="px-2 py-1 rounded hover:bg-gray-100">Insertar</button>
-      <button class="px-2 py-1 rounded hover:bg-gray-100">Ordenar</button>
-      <button class="px-2 py-1 rounded hover:bg-gray-100">Compartir</button>
-      <button class="px-2 py-1 rounded hover:bg-gray-100">Ayuda</button>
-    </div>
+    <!-- Botones directos de exportar e importar -->
+    <button class="px-2 py-1 rounded hover:bg-gray-100" (click)="exportDiagram()">Exportar</button>
+    <label class="px-2 py-1 rounded hover:bg-gray-100 cursor-pointer mb-0">
+      Importar
+      <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
+    </label>
+
+    <!-- Resto de botones del menú principal -->
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Editar</button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Tipo de Diagrama</button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Visualizar</button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Insertar</button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Ordenar</button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Compartir</button>
+    <button class="px-2 py-1 rounded hover:bg-gray-100 ml-2">Ayuda</button>
 
     <div class="ml-auto flex items-center space-x-2">
       <button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Compartir</button>
