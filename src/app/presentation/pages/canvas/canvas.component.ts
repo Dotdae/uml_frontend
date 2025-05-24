@@ -358,4 +358,43 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     reader.readAsText(file);
   }
 
+  exportDiagramForBackend() {
+    const model = this.diagramService.getDiagram().model as go.GraphLinksModel;
+    const nodes = model.nodeDataArray.map((node: any) => ({
+      key: node.key,
+      name: node.name,
+      properties: node.properties ?? [],
+      methods: node.methods ?? [],
+      category: node.category ?? "",
+      loc: node.loc ?? "",
+      color: node.color ?? ""
+    }));
+
+    const links = model.linkDataArray.map((link: any) => ({
+      from: link.from,
+      to: link.to,
+      type: link.type ?? "",
+      text: link.text ?? "",
+      category: link.category ?? ""
+    }));
+
+    const exportData = {
+      diagramType: this.currentDiagramType,
+      nodes,
+      links
+    };
+
+    // Puedes enviarlo al backend o descargarlo
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "uml-diagram-backend.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+
+    // O simplemente retorna el objeto exportData para enviarlo por HTTP
+    // return exportData;
+  }
+
 }
