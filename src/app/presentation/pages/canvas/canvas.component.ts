@@ -360,22 +360,26 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   exportDiagramForBackend() {
     const model = this.diagramService.getDiagram().model as go.GraphLinksModel;
-    // Solo las propiedades esenciales para el backend
-    const nodes = model.nodeDataArray.map((node: any) => ({
-      key: node.key,
-      name: node.name,
-      properties: node.properties ?? [],
-      methods: node.methods ?? [],
-      category: node.category ?? ""
-    }));
 
-    const links = model.linkDataArray.map((link: any) => ({
-      from: link.from,
-      to: link.to,
-      type: link.type ?? "",
-      text: link.text ?? "",
-      category: link.category ?? ""
-    }));
+    // Solo las propiedades esenciales para el backend
+    const nodes = model.nodeDataArray.map((node: any) => {
+      return {
+        name: node.name,
+        properties: Array.isArray(node.properties) ? node.properties : [],
+        methods: Array.isArray(node.methods) ? node.methods : [],
+        category: node.category ?? ""
+      };
+    });
+
+    const links = model.linkDataArray.map((link: any) => {
+      return {
+        from: link.from,
+        to: link.to,
+        type: link.type ?? "",
+        text: link.text ?? "",
+        category: link.category ?? ""
+      };
+    });
 
     const exportData = {
       diagramType: this.currentDiagramType,
@@ -390,8 +394,6 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-
-    // return exportData;
   }
 
 }
