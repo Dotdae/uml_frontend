@@ -79,8 +79,67 @@ export class DiagramService {
   // Nueva función para configurar el diagrama en blanco
   private setupBlankDiagram(): void {
     const $ = go.GraphObject.make;
-    this.diagram.nodeTemplate = $(go.Node, "Auto");
-    this.diagram.linkTemplate = $(go.Link);
+
+    // Plantilla para Clase
+    const classNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Rectangle", { fill: "#DCFCE7", stroke: "#333" }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Plantilla para Interfaz
+    const interfaceNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Rectangle", { fill: "white", stroke: "#333", strokeDashArray: [4, 2] }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Plantilla para Objeto
+    const objectNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Rectangle", { fill: "#FEF9C3", stroke: "#333" }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Plantilla para Paquete
+    const packageNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Rectangle", { fill: "#DBEAFE", stroke: "#333" }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Plantilla para Actor
+    const actorNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Circle", { fill: "#F9A8D4", stroke: "#333" }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Plantilla para Caso de Uso
+    const useCaseNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Ellipse", { fill: "#C7D2FE", stroke: "#333" }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Plantilla para Componente
+    const componentNodeTemplate = $(go.Node, "Auto",
+      $(go.Shape, "Rectangle", { fill: "#FDE68A", stroke: "#333" }),
+      $(go.TextBlock, { margin: 8 }, new go.Binding("text", "name"))
+    );
+
+    // Mapear categorías a plantillas (corregido)
+    this.diagram.nodeTemplateMap.clear();
+    this.diagram.nodeTemplateMap.add("", classNodeTemplate); // Por defecto
+    this.diagram.nodeTemplateMap.add("Interface", interfaceNodeTemplate);
+    this.diagram.nodeTemplateMap.add("Object", objectNodeTemplate);
+    this.diagram.nodeTemplateMap.add("Package", packageNodeTemplate);
+    this.diagram.nodeTemplateMap.add("Actor", actorNodeTemplate);
+    this.diagram.nodeTemplateMap.add("UseCase", useCaseNodeTemplate);
+    this.diagram.nodeTemplateMap.add("Component", componentNodeTemplate);
+
+    // Plantilla de enlace genérica
+    this.diagram.linkTemplate =
+      $(go.Link,
+        $(go.Shape),
+        $(go.Shape, { toArrow: "OpenTriangle" }),
+        $(go.TextBlock, new go.Binding("text", "text"))
+      );
+
     this.diagram.model = new go.GraphLinksModel([], []);
     this.diagramModel = this.diagram.model as go.GraphLinksModel;
   }

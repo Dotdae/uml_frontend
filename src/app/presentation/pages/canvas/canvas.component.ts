@@ -44,7 +44,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     { type: "package", label: "Diagrama de Paquetes" },
     { type: "usecase", label: "Diagrama de Casos de Uso" },
     { type: "component", label: "Diagrama de Componentes" },
-    { type: "blank", label: "UML" },
+    { type: "blank", label: "Lienzo en Blanco" },
   ]
 
   constructor(private diagramService: DiagramService, private route: ActivatedRoute) {}
@@ -98,7 +98,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   // Métodos para la barra de herramientas
   addClass() {
-    if (this.currentDiagramType === "class") {
+    if (this.currentDiagramType === "class" || this.currentDiagramType === "blank") {
       const key = this.diagramService.getNextNodeId();
       this.diagramService.addNode({
         key,
@@ -112,7 +112,11 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addInterface() {
-    if (this.currentDiagramType === "class" || this.currentDiagramType === "component") {
+    if (
+      this.currentDiagramType === "class" ||
+      this.currentDiagramType === "component" ||
+      this.currentDiagramType === "blank"
+    ) {
       const key = this.diagramService.getNextNodeId();
       this.diagramService.addNode({
         key,
@@ -126,7 +130,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addActor() {
-    if (this.currentDiagramType === "usecase") {
+    if (this.currentDiagramType === "usecase" || this.currentDiagramType === "blank") {
       const key = this.diagramService.getNextNodeId();
       this.diagramService.addNode({
         key,
@@ -138,7 +142,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addUseCase() {
-    if (this.currentDiagramType === "usecase") {
+    if (this.currentDiagramType === "usecase" || this.currentDiagramType === "blank") {
       const key = this.diagramService.getNextNodeId();
       this.diagramService.addNode({
         key,
@@ -150,7 +154,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addComponent() {
-    if (this.currentDiagramType === "component") {
+    if (this.currentDiagramType === "component" || this.currentDiagramType === "blank") {
       const key = this.diagramService.getNextNodeId();
       this.diagramService.addNode({
         key,
@@ -163,7 +167,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addObject() {
-    if (this.currentDiagramType === "sequence") {
+    if (this.currentDiagramType === "sequence" || this.currentDiagramType === "blank") {
       const key = this.diagramService.getNextNodeId();
       this.diagramService.addNode({
         key,
@@ -252,16 +256,16 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addMessage() {
-    if (this.currentDiagramType === "sequence") {
-      const diagram = this.diagramService.getDiagram()
+    if (this.currentDiagramType === "sequence" || this.currentDiagramType === "blank") {
+      const diagram = this.diagramService.getDiagram();
       if (diagram.selection.count === 2) {
-        const nodes = diagram.selection.toArray()
+        const nodes = diagram.selection.toArray();
         if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
           const newLink = {
             from: nodes[0].key,
             to: nodes[1].key,
             text: "mensaje()",
-            category: "Message" // Especifica la categoría para que el servicio use la plantilla correcta
+            category: "Message"
           }
           this.diagramService.addLink(newLink)
         }
@@ -270,7 +274,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addPackage() {
-  if (this.currentDiagramType === "package") {
+  if (this.currentDiagramType === "package" || this.currentDiagramType === "blank") {
     const key = this.diagramService.getNextNodeId();
     this.diagramService.addNode({
       key,
