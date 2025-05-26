@@ -3,11 +3,14 @@ import { HttpClient } from "@angular/common/http";
 import { AuthRepository } from "@domain/repositories/auth/auth.repository";
 import { environment } from "src/environments/environment.development";
 import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of } from "rxjs";
+import { jwtDecode } from 'jwt-decode';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService implements AuthRepository {
+  private userId: string | null = null;
   private authUrl = environment.auth_url;
   private accessToken: string | null = null;
   private accessTokenSubject = new BehaviorSubject<string | null>(null);
@@ -18,6 +21,7 @@ export class AuthService implements AuthRepository {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(private http: HttpClient) {
+    this.decodeAndStoreUserId();
     console.log('AuthService instance created');
     const token = this.getAccessToken();
     if (token) {
@@ -86,7 +90,7 @@ export class AuthService implements AuthRepository {
     if (this.accessToken) {
       return this.accessToken;
     }
-    
+
     // If not in memory, try to get from localStorage
     const storedToken = localStorage.getItem('accessToken');
     if (storedToken) {
@@ -133,6 +137,25 @@ export class AuthService implements AuthRepository {
         })
       );
   }
+
+   private decodeAndStoreUserId() {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        try {
+          const decoded: any = jwtDecode(token);
+          this.userId = decoded.id || null;
+        } catch (e) {
+          this.userId = null;
+        }
+      }
+    }
+
+    public getUserId(): string | null {
+      if (!this.userId) {
+        this.decodeAndStoreUserId();
+      }
+      return this.userId;
+    }
 
   async rehydrateAccessToken(): Promise<void> {
     if (this.isRefreshing) {

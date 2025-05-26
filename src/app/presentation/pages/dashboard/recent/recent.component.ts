@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '@infrastructure/auth/auth.service';
+
 
 interface Document {
   title: string;
@@ -19,12 +21,13 @@ export class RecentComponent implements OnInit {
   recentDocuments: Document[] = [];
 
   // Aquí va el id del usuario que se está autenticando
-  userId: string = "3d22590b-5062-4a33-b627-2798ac6adb87";
+  userId: string = "";
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private authService: AuthService) {}
 
   ngOnInit() {
     this.fetchRecentDocuments();
+    this.userId = this.authService.getUserId() ?? "";
   }
 
   fetchRecentDocuments() {

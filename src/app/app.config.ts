@@ -6,8 +6,6 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 
 // Example token.
 
-import { USER_REPOSITORY_TOKEN } from '@domain/repositories/user/user.repository.token';
-import { UserRepositoryImplementation } from '@infrastructure/user/user.repository.implementation';
 import { AuthService } from '@infrastructure/auth/auth.service';
 
 import { AUTH_REPOSITORY_TOKEN } from '@domain/repositories/auth/auth.repository.token';
@@ -23,7 +21,6 @@ export const appConfig: ApplicationConfig = {
     provideHotToastConfig(),
 
     // Clean architecture providers.
-    { provide: USER_REPOSITORY_TOKEN, useClass: UserRepositoryImplementation },
 
 
     { provide: AUTH_REPOSITORY_TOKEN, useClass: AuthService }, provideHotToastConfig(),

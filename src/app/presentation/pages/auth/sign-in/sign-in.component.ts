@@ -5,7 +5,7 @@ import { PasswordInputComponent } from 'src/app/presentation/components/password
 import { FormsModule } from '@angular/forms';
 import { HotToastService } from '@ngxpert/hot-toast';
 import { LoginGoogleUseCase } from '@application/auth/loginGoogle.usecase';
-import { AuthService } from '@infrastructure/auth/auth.service';
+import { AuthService } from '@infrastructure/auth/auth.service'; // Asegúrate de importar el servicio
 
 @Component({
   selector: 'app-sign-in',
@@ -24,11 +24,14 @@ export class SignInComponent {
     private loginUseCase: LoginUseCase,
     private loginGoogleUseCase: LoginGoogleUseCase,
     private router: Router,
+    private authService: AuthService // Inyecta el servicio aquí
   ) { }
 
   public async signIn() {
     const success = await this.loginUseCase.execute(this.email, this.password);
     if (success) {
+      // Decodifica el token y guarda el id al iniciar sesión
+      this.authService.getUserId();
       this.toast.success("Inicio sesión", { position: 'top-right' });
       this.router.navigate(['/dashboard']);
     } else {
@@ -38,7 +41,9 @@ export class SignInComponent {
   }
 
   public async loginGoogle() {
-    const success = await this.loginGoogleUseCase.execute();
-    console.log(success);
+    await this.loginGoogleUseCase.execute();
+    // Si el login con Google también guarda el token, decodifica aquí:
+    this.authService.getUserId();
+    console.log('Google login executed');
   }
 }

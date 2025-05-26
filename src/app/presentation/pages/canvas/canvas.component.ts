@@ -81,7 +81,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
     const createProyectDto = {
       name: "Nuevo Proyecto", // Esto se puede hacer dinámico
-      userID: "3d22590b-5062-4a33-b627-2798ac6adb87"              // Esto no sé de donde lo vamos a sacar XD
+      userID: this.authService.getUserId()          // Esto no sé de donde lo vamos a sacar XD
     };
 
     this.http.post('http://localhost:3000/api/proyects', createProyectDto)
