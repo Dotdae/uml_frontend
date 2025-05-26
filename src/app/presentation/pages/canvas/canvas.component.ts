@@ -6,6 +6,7 @@ import type { DiagramType } from "@infrastructure/diagram/diagram.service"
 import { DiagramService } from "@infrastructure/diagram/diagram.service"
 import { ActivatedRoute } from "@angular/router"
 import { HttpClient } from "@angular/common/http"
+import { AuthService } from '@infrastructure/auth/auth.service';
 
 @Component({
   selector: 'app-canvas',
@@ -55,7 +56,8 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   constructor(
     private diagramService: DiagramService,
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -69,6 +71,9 @@ export class CanvasComponent implements AfterViewInit, OnInit {
         this.currentDiagramType = type;
       }
     });
+
+    // const userId = this.authService.getUserId();
+    // console.log('ID del usuario:', userId);
   }
 
   // Lógica para crear el proyecto al cargar el componente
