@@ -5,6 +5,7 @@ import * as go from "gojs"
 import type { DiagramType } from "@infrastructure/diagram/diagram.service"
 import { DiagramService } from "@infrastructure/diagram/diagram.service"
 import { ActivatedRoute } from "@angular/router"
+import { HttpClient } from "@angular/common/http" // <-- Agrega esto
 
 @Component({
   selector: 'app-canvas',
@@ -51,7 +52,11 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   menuEditarOpen = false;
   menuTipoOpen = false;
 
-  constructor(private diagramService: DiagramService, private route: ActivatedRoute) {}
+  constructor(
+    private diagramService: DiagramService,
+    private route: ActivatedRoute,
+    private http: HttpClient // <-- Agrega esto
+  ) {}
 
   ngOnInit() {
     // Extraer el tipo de diagrama de la URL y actualizar currentDiagramType
@@ -278,17 +283,17 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   addPackage() {
-  if (this.currentDiagramType === "package" || this.currentDiagramType === "blank") {
-    const key = this.diagramService.getNextNodeId();
-    this.diagramService.addNode({
-      key,
-      name: "NuevoPaquete",
-      category: "Package",
-      loc: "200 200",
-      color: "#DBEAFE"
-    });
+    if (this.currentDiagramType === "package" || this.currentDiagramType === "blank") {
+      const key = this.diagramService.getNextNodeId();
+      this.diagramService.addNode({
+        key,
+        name: "NuevoPaquete",
+        category: "Package",
+        loc: "200 200",
+        color: "#DBEAFE"
+      });
+    }
   }
-}
 
   deleteSelection() {
     this.diagramService.deleteSelection()
@@ -358,28 +363,25 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     reader.readAsText(file);
   }
 
+  // Exportar y ENVIAR el diagrama al backend
   exportDiagramForBackend() {
     const model = this.diagramService.getDiagram().model as go.GraphLinksModel;
 
     // Solo las propiedades esenciales para el backend
-    const nodes = model.nodeDataArray.map((node: any) => {
-      return {
-        name: node.name,
-        properties: Array.isArray(node.properties) ? node.properties : [],
-        methods: Array.isArray(node.methods) ? node.methods : [],
-        category: node.category ?? ""
-      };
-    });
+    const nodes = model.nodeDataArray.map((node: any) => ({
+      name: node.name,
+      properties: Array.isArray(node.properties) ? node.properties : [],
+      methods: Array.isArray(node.methods) ? node.methods : [],
+      category: node.category ?? ""
+    }));
 
-    const links = model.linkDataArray.map((link: any) => {
-      return {
-        from: link.from,
-        to: link.to,
-        type: link.type ?? "",
-        text: link.text ?? "",
-        category: link.category ?? ""
-      };
-    });
+    const links = model.linkDataArray.map((link: any) => ({
+      from: link.from,
+      to: link.to,
+      type: link.type ?? "",
+      text: link.text ?? "",
+      category: link.category ?? ""
+    }));
 
     const exportData = {
       diagramType: this.currentDiagramType,
@@ -387,13 +389,18 @@ export class CanvasComponent implements AfterViewInit, OnInit {
       links
     };
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "uml-diagram-backend.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    // Enviar al backend
+    this.http.post('http://localhost:4200/api/generate-text', exportData)
+      .subscribe({
+        next: (response) => {
+          // Puedes mostrar el resultado o manejarlo como desees
+          console.log('Respuesta del backend:', response);
+          alert('Proyecto generado correctamente.');
+        },
+        error: (err) => {
+          alert('Error al enviar el diagrama al backend');
+        }
+      });
   }
 
 }
