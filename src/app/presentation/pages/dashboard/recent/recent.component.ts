@@ -23,11 +23,13 @@ export class RecentComponent implements OnInit {
   // Aquí va el id del usuario que se está autenticando
   userId: string = "";
 
-  constructor(private http: HttpClient,private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService) {
+    // Guardar el id del usuario al crear el componente
+    this.userId = this.authService.getUserId() ?? "";
+  }
 
   ngOnInit() {
     this.fetchRecentDocuments();
-    this.userId = this.authService.getUserId() ?? "";
   }
 
   fetchRecentDocuments() {
