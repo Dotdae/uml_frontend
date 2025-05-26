@@ -5,7 +5,7 @@ import * as go from "gojs"
 import type { DiagramType } from "@infrastructure/diagram/diagram.service"
 import { DiagramService } from "@infrastructure/diagram/diagram.service"
 import { ActivatedRoute } from "@angular/router"
-import { HttpClient } from "@angular/common/http" // <-- Agrega esto
+import { HttpClient } from "@angular/common/http"
 
 @Component({
   selector: 'app-canvas',
@@ -55,10 +55,13 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   constructor(
     private diagramService: DiagramService,
     private route: ActivatedRoute,
-    private http: HttpClient // <-- Agrega esto
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
+    // Llama al endpoint para crear el proyecto al cargar el componente
+    this.createProjectOnInit();
+
     // Extraer el tipo de diagrama de la URL y actualizar currentDiagramType
     this.route.paramMap.subscribe(params => {
       const type = params.get("type") as DiagramType;
@@ -66,6 +69,25 @@ export class CanvasComponent implements AfterViewInit, OnInit {
         this.currentDiagramType = type;
       }
     });
+  }
+
+  // Lógica para crear el proyecto al cargar el componente
+  createProjectOnInit() {
+
+    const createProyectDto = {
+      name: "Nuevo Proyecto", // Esto se puede hacer dinámico
+      userID: 1               // Esto no sé de donde lo vamos a sacar XD 
+    };
+
+    this.http.post('http://localhost:4200/api/', createProyectDto)
+      .subscribe({
+        next: (proyect) => {
+          console.log('Proyecto creado:', proyect);
+        },
+        error: (err) => {
+          alert('Error al crear el proyecto');
+        }
+      });
   }
 
   ngAfterViewInit() {
