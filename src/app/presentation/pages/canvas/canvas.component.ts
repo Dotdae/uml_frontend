@@ -7,6 +7,7 @@ import { DiagramService } from "@infrastructure/diagram/diagram.service"
 import { ActivatedRoute } from "@angular/router"
 import { HttpClient } from "@angular/common/http"
 import { AuthService } from '@infrastructure/auth/auth.service';
+import { Router } from "@angular/router"
 
 @Component({
   selector: 'app-canvas',
@@ -53,12 +54,46 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   menuEditarOpen = false;
   menuTipoOpen = false;
 
+  selectedDiagramType: DiagramType = 'blank';
+
+  isModalOpen = false;
+
   constructor(
     private diagramService: DiagramService,
     private route: ActivatedRoute,
     private http: HttpClient,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private router: Router,
+  ) { }
+
+  // Método para manejar el cambio de tipo de diagrama desde el menú
+  onDiagramTypeChange(type: DiagramType) {
+    this.selectedDiagramType = type;
+    this.currentDiagramType = type;
+    // Cambia el tipo de diagrama usando el servicio
+    this.diagramService.changeDiagramType(type);
+    // Actualiza la URL sin recargar la página
+    this.router.navigate(['/canvas', type], { replaceUrl: true });
+  }
+
+  // Métodos para el modal
+  openDiagramTypeModal(): void {
+    this.isModalOpen = true;
+  }
+
+  closeModal(): void {
+    this.isModalOpen = false;
+  }
+
+  selectDiagramTypeAndClose(type: DiagramType): void {
+    this.onDiagramTypeChange(type);
+    this.closeModal();
+  }
+
+  getDiagramTypeLabel(type: DiagramType): string {
+    const diagramType = this.diagramTypes.find(dt => dt.type === type);
+    return diagramType ? diagramType.label : 'Tipo de diagrama';
+  }
 
   ngOnInit() {
     // Llama al endpoint para crear el proyecto al cargar el componente
@@ -68,6 +103,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     this.route.paramMap.subscribe(params => {
       const type = params.get("type") as DiagramType;
       if (type && this.diagramTypes.some(dt => dt.type === type)) {
+        this.selectedDiagramType = type;
         this.currentDiagramType = type;
       }
     });
@@ -84,15 +120,15 @@ export class CanvasComponent implements AfterViewInit, OnInit {
       userID: this.authService.getUserId()          // Esto no sé de donde lo vamos a sacar XD
     };
 
-    this.http.post('http://localhost:3000/api/proyects', createProyectDto)
-      .subscribe({
-        next: (proyect) => {
-          console.log('Proyecto creado:', proyect);
-        },
-        error: (err) => {
-          alert('Error al crear el proyecto');
-        }
-      });
+    // this.http.post('http://localhost:3000/api/proyects', createProyectDto)
+    //   .subscribe({
+    //     next: (proyect) => {
+    //       console.log('Proyecto creado:', proyect);
+    //     },
+    //     error: (err) => {
+    //       alert('Error al crear el proyecto');
+    //     }
+    //   });
   }
 
   ngAfterViewInit() {

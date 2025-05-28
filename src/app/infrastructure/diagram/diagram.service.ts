@@ -930,6 +930,9 @@ export class DiagramService {
    * Carga datos de ejemplo según el tipo de diagrama
    */
   private loadSampleData(type: DiagramType): void {
+
+    if (this.currentType === type) return;
+    
     let nodeDataArray: any[] = []
     let linkDataArray: any[] = []
 
