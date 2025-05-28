@@ -47,7 +47,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     { type: "package", label: "Diagrama de Paquetes" },
     { type: "usecase", label: "Diagrama de Casos de Uso" },
     { type: "component", label: "Diagrama de Componentes" },
-    { type: "blank", label: "Lienzo en Blanco" },
+    // { type: "blank", label: "Lienzo en Blanco" },
   ]
 
   menuArchivoOpen = false;
@@ -466,4 +466,6 @@ export class CanvasComponent implements AfterViewInit, OnInit {
       });
   }
 
+  saveDiagram() {
+  }
 }

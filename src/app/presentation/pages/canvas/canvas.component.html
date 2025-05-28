@@ -17,6 +17,25 @@
     </button>
     <div class="border-l border-gray-300 h-6 mx-3"></div>
 
+    <!-- Nuevo input para el título -->
+    <div class="relative mr-3">
+      <input type="text" [(ngModel)]="title"
+        class="px-3 py-1 border border-gray-300 font-bold rounded focus:ring-2 focus:outline-none focus:ring-blue-300 focus:border-blue-300 transition w-48"
+        placeholder="Título del diagrama">
+      <label class="absolute -top-2 left-2 text-xs bg-white px-1 text-gray-500">Título del documento</label>
+    </div>
+
+    <button
+      class="px-3 py-1 mr-2 rounded bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold shadow hover:from-green-600 hover:to-green-800 transition ml-2"
+      (click)="saveDiagram()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 mr-1" viewBox="0 -960 960 960" width="24px"
+        fill="currentColor">
+        <path
+          d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" />
+      </svg>
+      Guardar cambios
+    </button>
+
     <!-- Botones directos de exportar e importar -->
     <button
       class="px-3 py-1 rounded bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition"
@@ -27,17 +46,28 @@
       </svg>
       Generar proyecto
     </button>
-    <label
+    <!-- <label
       class="px-3 py-1 rounded bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold shadow hover:from-green-500 hover:to-green-700 cursor-pointer mb-0 ml-4 transition">
       <svg class="inline h-5 w-5 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
       </svg>
       Importar
       <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
-    </label>
+    </label> -->
+
+    <button
+      class="px-3 py-1 ml-2 rounded bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold shadow hover:from-amber-500 hover:to-amber-700 transition flex items-center"
+      (click)="openDiagramTypeModal()" type="button">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      Tipo de diagrama
+    </button>
 
     <!-- Resto de botones del menú principal -->
-    <div class="flex space-x-2 ml-4">
+    <div class="flex space-x-2 ml-2">
       <!-- <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Editar</button>
       <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Tipo de Diagrama</button>
       <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Visualizar</button>
@@ -55,24 +85,12 @@
         <option value="component">Diagrama de componentes</option>
         <option value="blank">Lienzo en blanco</option>
       </select> -->
-
-      <button
-        class="px-3 py-1 ml-0 rounded bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold shadow hover:from-amber-500 hover:to-amber-700 transition flex items-center"
-        (click)="openDiagramTypeModal()" type="button">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-        Tipo de diagrama
-      </button>
-
     </div>
 
-    <div class="ml-auto flex items-center space-x-2">
+    <!-- <div class="ml-auto flex items-center space-x-2">
       <button
         class="px-4 py-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded shadow hover:from-purple-600 hover:to-indigo-700 transition">Compartir</button>
-    </div>
+    </div> -->
   </div>
 
   <!-- Barra de herramientas secundaria -->
@@ -88,14 +106,14 @@
       <option *ngFor="let size of fontSizes; let i = index" [value]="i">{{ size }}pt</option>
     </select>
 
-    <div class="border-l border-gray-300 h-6 mx-3"></div>
+    <!-- <div class="border-l border-gray-300 h-6 mx-3"></div>
 
     <button class="px-2 py-1 rounded hover:bg-blue-100 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zm0 2h10v8H5V6z"
           clip-rule="evenodd" />
       </svg>
-    </button>
+    </button> -->
 
     <div class="border-l border-gray-300 h-6 mx-3"></div>
 
@@ -203,8 +221,8 @@
 
   <!-- Barra de estado -->
   <div class="bg-white/90 backdrop-blur border-t border-gray-300 p-2 flex items-center shadow-inner">
-    <div class="text-sm text-gray-600 font-medium">{{ title }}</div>
-    <div class="ml-auto text-sm text-gray-600">50%</div>
+    <div class="text-sm text-gray-600 font-medium">UML Forge © 2025</div>
+    <!-- <div class="ml-auto text-sm text-gray-600">50%</div> -->
   </div>
 </div>
 
