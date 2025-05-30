@@ -468,4 +468,8 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   saveDiagram() {
   }
+
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard/home']);
+  }
 }

@@ -10,15 +10,13 @@ import { VerifyUserComponent } from './presentation/pages/auth/verify-user/verif
 import { DashboardComponent } from './presentation/pages/dashboard/dashboard.component';
 import { CanvasComponent } from './presentation/pages/canvas/canvas.component';
 import { authGuard } from '@infrastructure/auth/guards/auth.guard';
+
+import { ProjectsComponent } from './presentation/pages/dashboard/projects/projects.component';
+import { HomeComponent } from './presentation/pages/dashboard/home/home.component';
+import { ProjectDiagramsComponent } from './presentation/pages/dashboard/project-diagrams/project-diagrams.component';
+
 import { GoogleCallbackComponent } from './presentation/components/google-callback/google-callback.component';
 import { UserProfileComponent } from './presentation/pages/user-profile/user-profile.component';
-/*
-    Faltan los componentes de:
-    - Dashboard
-    - Lienzo de diagramas
-    - Configuración de cuenta del usuario
-    - Cambiar contraseña
-*/
 
 // Aquí se agregarían más rutas de las páginas faltantes de la aplicación
 
@@ -56,7 +54,18 @@ export const routes: Routes = [
   {
     path: "dashboard", component: DashboardComponent,
     title: "UMLForge - Panel de control",
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    children: [
+      {
+        path: "home", component: HomeComponent, title: "UMLForge - Inicio"
+      },
+      {
+        path: "projects", component: ProjectsComponent, title: "UMLForge - Proyectos",
+      },
+      {
+        path: "projects/:id/diagrams", component: ProjectDiagramsComponent, title: "UMLForge - Diagramas del proyecto",
+      }
+    ]
   },
   {
     path: "canvas/:type", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",

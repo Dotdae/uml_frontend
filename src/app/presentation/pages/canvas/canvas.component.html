@@ -1,6 +1,6 @@
 <div class="flex flex-col h-screen bg-gradient-to-br from-gray-100 to-blue-100">
   <!-- Barra superior -->
-  <div class="flex items-center bg-white/90 backdrop-blur border-b border-gray-300 p-2 shadow-sm">
+  <!-- <div class="flex items-center bg-white/90 backdrop-blur border-b border-gray-300 p-2 shadow-sm">
     <button class="px-2 py-1 rounded hover:bg-blue-100 transition" (click)="undo()" title="Deshacer">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd"
@@ -17,13 +17,21 @@
     </button>
     <div class="border-l border-gray-300 h-6 mx-3"></div>
 
-    <!-- Nuevo input para el título -->
     <div class="relative mr-3">
       <input type="text" [(ngModel)]="title"
         class="px-3 py-1 border border-gray-300 font-bold rounded focus:ring-2 focus:outline-none focus:ring-blue-300 focus:border-blue-300 transition w-48"
         placeholder="Título del diagrama">
       <label class="absolute -top-2 left-2 text-xs bg-white px-1 text-gray-500">Título del documento</label>
     </div>
+
+    <label
+      class="px-3 py-1 rounded bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold shadow hover:from-green-500 hover:to-green-700 cursor-pointer mb-0 ml-4 transition">
+      <svg class="inline h-5 w-5 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Importar
+      <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
+    </label>
 
     <button
       class="px-3 py-1 mr-2 rounded bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold shadow hover:from-green-600 hover:to-green-800 transition ml-2"
@@ -36,7 +44,6 @@
       Guardar cambios
     </button>
 
-    <!-- Botones directos de exportar e importar -->
     <button
       class="px-3 py-1 rounded bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition"
       (click)="exportDiagramForBackend()">
@@ -46,14 +53,6 @@
       </svg>
       Generar proyecto
     </button>
-    <!-- <label
-      class="px-3 py-1 rounded bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold shadow hover:from-green-500 hover:to-green-700 cursor-pointer mb-0 ml-4 transition">
-      <svg class="inline h-5 w-5 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-      </svg>
-      Importar
-      <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
-    </label> -->
 
     <button
       class="px-3 py-1 ml-2 rounded bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold shadow hover:from-amber-500 hover:to-amber-700 transition flex items-center"
@@ -66,42 +65,98 @@
       Tipo de diagrama
     </button>
 
-    <!-- Resto de botones del menú principal -->
+    
     <div class="flex space-x-2 ml-2">
-      <!-- <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Editar</button>
-      <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Tipo de Diagrama</button>
-      <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Visualizar</button>
-      <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Insertar</button>
-      <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Ordenar</button>
-      <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Compartir</button>
-      <button class="px-2 py-1 rounded hover:bg-blue-100 transition">Ayuda</button> -->
-      <!-- <select class="border border-gray-300 rounded px-2 py-1 mr-2 focus:ring-2 focus:ring-blue-300 transition"
-        [(ngModel)]="selectedDiagramType" (ngModelChange)="onDiagramTypeChange($event)">
-        <option value="" disabled>Tipo de diagrama</option>
-        <option value="class">Diagrama de clases</option>
-        <option value="sequence">Diagrama de secuencia</option>
-        <option value="package">Diagrama de paquetes</option>
-        <option value="usecase">Diagrama de casos de uso</option>
-        <option value="component">Diagrama de componentes</option>
-        <option value="blank">Lienzo en blanco</option>
-      </select> -->
+    </div>
+  </div> -->
+
+  <!-- Barra superior -->
+  <div class="flex items-center bg-white/90 backdrop-blur border-b border-gray-300 p-2.5 shadow-sm">
+    
+    <!-- Imagen para regresar al dashboard -->
+    <img src="/UMLForgeOnlyIcon.png" alt="UMLForgeIcon" class="h-10 w-auto cursor-pointer" 
+         title="Regresar a inicio"
+         (click)="goToDashboard()"/>
+
+    <div class="border-l border-gray-300 h-6 mx-3"></div>
+
+    <!-- Input para el título -->
+    <div class="relative mr-4">
+      <input type="text" [(ngModel)]="title"
+        class="px-3 py-1.5 border border-gray-300 font-medium text-gray-800 rounded-md focus:ring-2 focus:outline-none focus:ring-blue-300 focus:border-blue-300 transition w-48"
+        placeholder="Título del diagrama">
+      <label class="absolute -top-2 left-2 text-xs bg-white px-1 text-gray-500">Título del documento</label>
     </div>
 
-    <!-- <div class="ml-auto flex items-center space-x-2">
+    <!-- Acciones principales -->
+    <div class="flex items-center space-x-2">
+      <!-- Importar -->
+      <label
+        class="inline-flex items-center px-3 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 font-medium shadow-sm hover:bg-blue-100 hover:border-blue-200 cursor-pointer transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 mr-1.5 text-gray-500" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M480-480ZM202-65l-56-57 118-118h-90v-80h226v226h-80v-89L202-65Zm278-15v-80h240v-440H520v-200H240v400h-80v-400q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H480Z" />
+        </svg>
+        Importar
+        <input type="file" class="hidden" (change)="importDiagram($event)" accept=".json">
+      </label>
+
+      <!-- Guardar cambios -->
       <button
-        class="px-4 py-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded shadow hover:from-purple-600 hover:to-indigo-700 transition">Compartir</button>
-    </div> -->
+        class="inline-flex items-center px-3 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 font-medium shadow-sm hover:bg-blue-100 hover:border-blue-200 cursor-pointer transition"
+        (click)="saveDiagram()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 mr-1.5 text-gray-500" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="m720-120 160-160-56-56-64 64v-167h-80v167l-64-64-56 56 160 160ZM560 0v-80h320V0H560ZM240-160q-33 0-56.5-23.5T160-240v-560q0-33 23.5-56.5T240-880h280l240 240v121h-80v-81H480v-200H240v560h240v80H240Zm0-80v-560 560Z" />
+        </svg>
+        Guardar
+      </button>
+
+      <!-- Tipo de diagrama -->
+      <button
+        class="inline-flex items-center px-3 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 font-medium shadow-sm hover:bg-blue-100 hover:border-blue-200 cursor-pointer transition"
+        (click)="openDiagramTypeModal()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 mr-1.5 text-gray-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        Cambiar tipo de diagrama
+      </button>
+    </div>
   </div>
 
   <!-- Barra de herramientas secundaria -->
   <div class="flex items-center bg-white/80 backdrop-blur border-b border-gray-300 p-2 shadow-sm">
-    <select class="border border-gray-300 rounded px-2 py-1 mr-2 focus:ring-2 focus:ring-blue-300 transition">
+     <!-- Botones de navegación (Deshacer/Rehacer) -->
+    <div class="flex space-x-1 mr-2">
+      <button class="p-1.5 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition" (click)="undo()"
+        title="Deshacer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+            clip-rule="evenodd" />
+        </svg>
+      </button>
+      <button class="p-1.5 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition" (click)="redo()"
+        title="Rehacer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="border-l border-gray-300 h-6 mx-3"></div>
+
+    <select class="border border-gray-300 rounded px-2 py-1 mr-2 focus:ring-2 focus:ring-blue-300 cursor-pointer transition">
       <option>Inter</option>
       <option>Arial</option>
       <option>Helvetica</option>
     </select>
 
-    <select class="border border-gray-300 rounded px-2 py-1 mr-2 focus:ring-2 focus:ring-blue-300 transition"
+    <select class="border border-gray-300 rounded px-2 py-1 mr-2 focus:ring-2 focus:ring-blue-300 cursor-pointer transition"
       [(ngModel)]="selectedFontSize">
       <option *ngFor="let size of fontSizes; let i = index" [value]="i">{{ size }}pt</option>
     </select>
@@ -119,8 +174,8 @@
 
     <!-- Colores -->
     <div class="flex space-x-1">
-      <button *ngFor="let color of colors; let i = index"
-        [class]="'w-6 h-6 rounded border ' + color.border + ' ' + color.bg" [class.ring-2]="selectedColor === i"
+      <button *ngFor="let color of colors; let i = index" class="cursor-pointer"
+        [class]="'w-6 h-6 rounded border' + color.border + ' ' + color.bg" [class.ring-2]="selectedColor === i"
         [class.ring-blue-500]="selectedColor === i" (click)="setColor(i)">
       </button>
     </div>
