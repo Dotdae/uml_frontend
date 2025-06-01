@@ -15,7 +15,7 @@ export class GoogleCallbackComponent {
     const success = await this.authService.handleGoogleCallback();
     if (success) {
       console.log('Google login successful, redirecting to dashboard...');
-      this.router.navigate(['/dashboard']); // Redirect to a protected route
+      this.router.navigate(['/dashboard/home']); // Redirect to a protected route
     } else {
       console.error('Google login failed, redirecting to sign-in...');
       this.router.navigate(['/auth/sign-in']); // Redirect to sign-in page

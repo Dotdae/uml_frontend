@@ -64,16 +64,15 @@ export const routes: Routes = [
       },
       {
         path: "projects/:id/diagrams", component: ProjectDiagramsComponent, title: "UMLForge - Diagramas del proyecto",
+      },
+      {
+        path: "user-profile", component: UserProfileComponent, title: "UMLForge - Perfil de usuario",
       }
-    ]
+]
   },
-  {
-    path: "canvas/:type", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
+{
+  path: "canvas/:type", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
     canActivate: [authGuard],
   },
-  {
-    path: "user-profile", component: UserProfileComponent, title: "UMLForge - Perfil de usuario",
-    canActivate: [authGuard],
-  }
 
 ];

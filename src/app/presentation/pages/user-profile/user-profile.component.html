@@ -1,45 +1,263 @@
-<div class="container mx-auto p-4">
-  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    @if (loading) {
-      <div class="flex justify-center items-center h-40">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    } @else if (error) {
-      <div class="text-red-600 text-center p-4">
-        {{ error }}
-      </div>
-    } @else if (userProfile) {
-      <div class="space-y-6">
-        <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-800">User Profile</h1>
-        </div>
-
-        <div class="space-y-4">
-          <div class="flex flex-col">
-            <span class="text-sm text-gray-500">Full Name</span>
-            <span class="text-lg font-medium">{{ userProfile.fullName }}</span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="text-sm text-gray-500">Email</span>
-            <span class="text-lg">{{ userProfile.email }}</span>
-          </div>
-
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">Account Status:</span>
-            <span [class]="userProfile.isActive ? 'text-green-600' : 'text-red-600'">
-              {{ userProfile.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </div>
-
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">Email Verification:</span>
-            <span [class]="userProfile.isVerified ? 'text-green-600' : 'text-yellow-600'">
-              {{ userProfile.isVerified ? 'Verified' : 'Not Verified' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    }
+<div class="p-8 min-h-screen relative">
+  @if (loading) {
+  <div class="absolute inset-0 flex justify-center items-center bg-white bg-opacity-70 z-50">
+    <div class="flex flex-col items-center gap-3">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+      <span class="font-medium text-xl">Cargando datos</span>
+    </div>
   </div>
-</div> 
+  } @else if (error) {
+  <div class="text-red-600 text-center p-4">
+    {{ error }}
+  </div>
+  } @else if (userProfile) {
+  <!-- Encabezado -->
+  <div class="border-b-2 border-gray-300">
+    <h1 class="text-3xl font-semibold mb-3">
+      Ajustes de la cuenta
+    </h1>
+  </div>
+
+  <!-- Bienvenida -->
+  <div class="border-b-2 border-gray-300">
+    <div class="p-4">
+      <p class="text-lg font-semibold">Bienvenido a tu perfil</p>
+      <p class="text-gray-600">Actualiza tus datos de usuario dentro de este apartado</p>
+    </div>
+  </div>
+
+  <!-- Formulario: Nombre de usuario -->
+  <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
+      <div class="w-1/2">
+        <label for="username" class="block text-lg font-semibold">Nombre de usuario</label>
+        <p class="text-gray-600 mb-2">
+          Este nombre será utilizado para vincularte en distintos apartados dentro del sistema
+        </p>
+      </div>
+      <div class="w-1/2">
+        <div class="relative">
+          <!-- Ícono -->
+          <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="size-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+          </span>
+          <input type="text" id="username"
+            class="w-full pl-12 pr-4 py-2 border text-gray-600 border-gray-300 rounded-3xl shadow-sm focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+            placeholder="Nombre de usuario" [(ngModel)]="userProfile.username" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario: Nombre completo del usuario -->
+  <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
+      <div class="w-1/2">
+        <label for="fullname" class="block text-lg font-semibold">Nombre completo</label>
+        <p class="text-gray-600 mb-2">
+          Estos serán los nombres que se utilizarán para rellenar datos dentro del sistema
+        </p>
+      </div>
+      <div class="w-1/2">
+        <div class="flex items-center w-full max-w-xl">
+          <span class="px-3 py-2 font-medium text-yellow-500 bg-yellow-50 border border-gray-300 rounded-l-3xl">
+            Nombre
+          </span>
+          <input type="text" placeholder="Nombres" [(ngModel)]="names"
+            class="flex-1 px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-r-3xl placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" />
+        </div>
+
+        <!-- <div class="flex items-center w-full max-w-xl mt-8">
+          <span class="px-3 py-2 font-medium text-gray-500 bg-blue-50 border border-gray-300 rounded-l-3xl">
+            Apellidos
+          </span>
+          <input type="text" placeholder="Apellidos" [(ngModel)]="lastnames"
+            class="flex-1 px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-r-3xl placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" />
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario: Numero de telefono del usuario -->
+  <!-- <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
+      <div class="w-1/2">
+        <label for="phone" class="block text-lg font-semibold">Número de teléfono</label>
+        <p class="text-gray-600 mb-2">
+          Este será la vía para contactarte fuera de la plataforma
+        </p>
+      </div>
+      <div class="w-1/2">
+        <div class="relative">
+          
+          <div class="flex items-center w-full max-w-xl">
+            <span class="px-3 py-2 font-medium text-gray-500 bg-blue-50 border border-gray-300 rounded-l-3xl">
+              +52
+            </span>
+            <input type="tel" placeholder="Número de teléfono" [(ngModel)]="userProfile.phone"
+              class="flex-1 px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-r-3xl placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Formulario: Edad del usuario -->
+  <!-- <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
+      <div class="w-1/2">
+        <label for="birthdate" class="block text-lg font-semibold">Edad</label>
+        <p class="text-gray-600 mb-2">
+          En base a tu fecha de nacimiento se calculará tu edad para utilizarse dentro de diversos apartados
+          del sistema
+        </p>
+      </div>
+      <div class="w-1/2">
+        <div class="relative">
+          
+          <input type="date" [(ngModel)]="userProfile.birthdate"
+            class="w-full px-4 py-2 border text-gray-600 border-gray-300 rounded-3xl shadow-sm focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" />
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Formulario: Foto de perfil -->
+  <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex max-w-5xl gap-11">
+      <!-- Columna izquierda: Título y descripción -->
+      <div class="w-1/3">
+        <label class="block text-lg font-semibold">Foto de perfil</label>
+        <p class="text-gray-600 mb-2">
+          Esta será la imagen que la gente verá acerca de tí
+        </p>
+      </div>
+
+      <!-- Columna derecha: Upload interface -->
+      <div class="w-2/3">
+        <div class="flex items-center gap-6">
+          <!-- Preview circle -->
+          <img [src]="userProfile.avatar || '/easteregg.png'" alt="Profile picture"
+            class="w-24 h-24 rounded-full border-2 border-dashed border-gray-400 object-cover" />
+
+          <!-- Upload area -->
+          <div class="border-2 border-dashed border-gray-400 rounded-lg p-4 bg-white cursor-pointer"
+            [class.border-teal-500]="isDragging" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)" (click)="fileInput.click()">
+
+            <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
+
+            <div class="items-center flex flex-col justify-center gap-3">
+              <!-- Upload icon -->
+              <div class="p-3 bg-yellow-50 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-500" viewBox="0 -960 960 960"
+                  fill="currentColor">
+                  <path
+                    d="M260-160q-91 0-155.5-63T40-377q0-78 47-139t123-78q25-92 100-149t170-57q117 0 198.5 81.5T760-520q69 8 114.5 59.5T920-340q0 75-52.5 127.5T740-160H520q-33 0-56.5-23.5T440-240v-206l-64 62-56-56 160-160 160 160-56 56-64-62v206h220q42 0 71-29t29-71q0-42-29-71t-71-29h-60v-80q0-83-58.5-141.5T480-720q-83 0-141.5 58.5T280-520h-20q-58 0-99 41t-41 99q0 58 41 99t99 41h100v80H260Zm220-280Z" />
+                </svg>
+              </div>
+
+              <!-- Text content -->
+              <div class="space-y-2 text-center">
+                <p class="text-yellow-500 font-medium">
+                  Da clic aquí para subir tú foto o arrastra la imágen.
+                </p>
+
+                <p class="text-sm text-gray-400">
+                  Formatos válidos: SVG, JPG, PNG (10mb cada uno)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario: Correo del usuario -->
+  <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
+      <div class="w-1/2">
+        <label for="email" class="block text-lg font-semibold">Correo electrónico</label>
+        <p class="text-gray-600 mb-2">
+          Este es el correo electrónico que verificaste como tuyo
+        </p>
+      </div>
+      <div class="w-1/2">
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <!-- Ícono -->
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+            </span>
+            <span
+              class="inline-flex items-center pl-12 pr-4 py-2 border text-gray-600 border-gray-300 rounded-3xl shadow-sm bg-white min-w-[200px]">
+              {{ userProfile.email }}
+            </span>
+          </div>
+
+          <!-- Indicador de verificación al lado del input -->
+          <!-- @if (!userProfile.isVerified) {
+          <div class="flex items-center bg-yellow-100 px-3 py-2 rounded-3xl">
+            <span class="text-yellow-600 whitespace-nowrap">No verificado</span>
+            <button class="text-blue-600 hover:underline ml-2 whitespace-nowrap">Verificar</button>
+          </div>
+          } -->
+          @if (userProfile.isVerified) {
+          <div class="flex items-center bg-green-100 px-3 py-2 rounded-3xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 mr-1" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="text-green-600 whitespace-nowrap">Verificado</span>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario: Contraseña del usuario -->
+  <div class="border-b-2 border-gray-300">
+    <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
+      <div class="w-1/2">
+        <label class="block text-lg font-semibold">Contraseña</label>
+        <p class="text-gray-600 mb-2">
+          Aquí podrás cambiar tu contraseña para ingresar a tu cuenta
+        </p>
+      </div>
+      <div class="w-1/2">
+        <div class="flex items-center">
+          <div class="mr-4">
+            <div class="text-gray-500 text-xl tracking-widest">............</div>
+            <div class="text-gray-500 mt-1">
+              Última modificación: {{ userProfile.lastPasswordChange || 'No disponible' }}
+            </div>
+          </div>
+          <!-- Enlace que redirige -->
+          <a routerLink="/change-password" class="text-gray-500 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de guardar cambios -->
+  <div class="flex gap-2 justify-end pt-6">
+    <!-- <secondary-button text="Cancelar" (onClick)="onCancel()" /> -->
+    <primary-button text="Guardar cambios" (onClick)="onSave()" />
+  </div>
+  }
+</div>

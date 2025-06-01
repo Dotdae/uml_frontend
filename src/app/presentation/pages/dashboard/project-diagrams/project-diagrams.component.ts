@@ -14,7 +14,11 @@ interface Diagram {
 @Component({
   selector: 'app-project-diagrams',
   standalone: true,
-  imports: [CommonModule, RouterLink, OptionsMenuComponent],
+  imports: [
+    CommonModule,
+    //  RouterLink,
+    OptionsMenuComponent
+  ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
 })
