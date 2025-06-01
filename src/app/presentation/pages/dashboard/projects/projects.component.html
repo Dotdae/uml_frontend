@@ -1,30 +1,76 @@
 <div class="p-6 max-w-7xl mx-auto">
     <!-- Encabezado -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">Mis proyectos</h1>
+    <div class="mb-5">
+        <h1 class="text-3xl font-bold text-gray-800">Mis proyectos</h1>
+
+        <div class="justify-end flex mt-5">
+            <button
+                class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-400 cursor-pointer transition">
+                <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 15h-2v-4H7v-2h4V7h2v4h4v2h-4z" />
+                </svg> -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-white" viewBox="0 -960 960 960"
+                    fill="currentColor">
+                    <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                </svg>
+                Crear nuevo proyecto
+            </button>
+
+        </div>
     </div>
 
     <!-- Lista de proyectos -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Solo mostramos los proyectos de la página actual -->
         @for (project of displayedProjects; track $index) {
-        <div class="bg-white rounded-lg shadow p-5 border border-gray-200 flex flex-col min-h-[265px] hover:bg-yellow-50 transition">
-            <h2 class="text-lg font-semibold text-gray-800">{{ project.name }}</h2>
+        <div
+            class="bg-white rounded-lg shadow p-5 border border-gray-200 flex flex-col min-h-[265px] hover:bg-yellow-50 transition group">
+            <!-- Contenedor del título y botón de opciones -->
+            <div class="flex justify-between items-center relative">
+                <h2 class="text-lg font-semibold text-gray-800">{{ project.name }}</h2>
 
+                <!-- <button
+                    class="p-1.5 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Más opciones">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path
+                            d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                </button> -->
+                <!-- Botón de opciones que aparece en hover -->
+                <div class="relative">
+                    <button #optionsButton title="Más opciones"
+                        class="p-1.5 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Más opciones" (click)="toggleOptionsMenu($event, project, optionsButton)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                    </button>
+                    @if (project.showOptions) {
+                    <app-options-menu position="right" [triggerRect]="optionsButton.getBoundingClientRect()"
+                        (optionSelected)="handleOptionSelected($event, project)">
+                    </app-options-menu>
+                    }
+                </div>
+            </div>
+
+            <!-- Resto del contenido -->
             <div class="p-2 flex-grow">
                 <p class="text-gray-600 text-justify">Este proyecto actualmente contiene diagramas pertenecientes a los
                     siguientes tipos:</p>
                 <div class="flex flex-wrap items-center mt-3">
                     @for (diagram of project.diagrams; track diagram) {
-                    <span [class]="getDiagramTagClass(diagram)" class="text-xs font-medium rounded-full px-2.5 py-1 mr-2 mb-2">{{
+                    <span [class]="getDiagramTagClass(diagram)"
+                        class="text-xs font-medium rounded-full px-2.5 py-1 mr-2 mb-2">{{
                         diagram }}</span>
                     }
                 </div>
             </div>
 
             <div class="flex justify-center">
-                <button
-                    class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-400 transition">
+                <button [routerLink]="['/dashboard/projects', project.id, 'diagrams']"
+                    class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-400 cursor-pointer transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 -960 960 960"
                         fill="currentColor">
                         <path

@@ -1,16 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink, Router } from '@angular/router';
+import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 
 interface Project {
   id: number;
   name: string;
   diagrams: string[];
-  // otros campos que necesites
+  showOptions?: boolean;
 }
 
 @Component({
   selector: 'app-projects',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, OptionsMenuComponent],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css',
   standalone: true
@@ -27,6 +29,8 @@ export class ProjectsComponent implements OnInit {
   projectsPerPage: number = 6;
   totalPages: number = 0;
 
+  constructor(private router: Router) {}
+
   ngOnInit() {
     // Datos de ejemplo - Reemplaza esto con datos reales de tu API
     this.allProjects = this.getMockProjects();
@@ -36,6 +40,48 @@ export class ProjectsComponent implements OnInit {
 
     // Mostrar la primera página
     this.updateDisplayedProjects();
+  }
+
+  toggleOptionsMenu(event: Event, project: Project, buttonElement: HTMLElement): void {
+    event.stopPropagation();
+
+    // Cerrar todos los demás menús abiertos
+    this.displayedProjects.forEach(p => {
+      if (p.id !== project.id) {
+        p.showOptions = false;
+      }
+    });
+
+    // Alternar el estado del menú actual
+    project.showOptions = !project.showOptions;
+  }
+
+  handleOptionSelected(action: MenuAction, project: Project): void {
+    project.showOptions = false;
+
+    switch (action) {
+      case 'open':
+        this.router.navigate(['/dashboard/projects', project.id, 'diagrams']);
+        break;
+      case 'rename':
+        console.log('Renombrar proyecto:', project.id);
+        break;
+      case 'duplicate':
+        console.log('Duplicar proyecto:', project.id);
+        break;
+      case 'trash':
+        console.log('Mover a papelera proyecto:', project.id);
+        break;
+      case 'details':
+        console.log('Mostrar detalles del proyecto:', project.id);
+        break;
+    }
+  }
+
+  closeAllMenus(): void {
+    this.displayedProjects.forEach(project => {
+      project.showOptions = false;
+    });
   }
 
   // Método para ir a una página específica

@@ -33,7 +33,7 @@ export class SignInComponent {
       // Decodifica el token y guarda el id al iniciar sesión
       this.authService.getUserId();
       this.toast.success("Inicio sesión", { position: 'top-right' });
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/dashboard/home']);
     } else {
       console.log(success)
       this.toast.error("Credenciales Incorrectas", { position: 'top-right' });
