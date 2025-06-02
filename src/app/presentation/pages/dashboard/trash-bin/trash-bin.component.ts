@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
+import { PaginatorComponent } from 'src/app/presentation/components/paginator/paginator.component';
 
 interface Diagram {
   id: number;
@@ -16,7 +17,8 @@ interface Diagram {
   imports: [
     CommonModule,
     //  RouterLink,
-    OptionsMenuComponent
+    OptionsMenuComponent,
+    PaginatorComponent
   ],
   templateUrl: './trash-bin.component.html',
   styleUrl: './trash-bin.component.css'
@@ -34,6 +36,8 @@ export class TrashBinComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 7;
   totalPages: number = 0;
+
+  accentColor: 'yellow' | 'blue' | 'green' = 'yellow';
 
   // Variable para controlar el orden
   isAscendingOrder: boolean = false;
@@ -141,34 +145,6 @@ export class TrashBinComponent implements OnInit {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
-  }
-
-  // Método para obtener los números de página para el paginador
-  getPageNumbers(): number[] {
-    // Solo mostrar 5 números de página como máximo
-    const pageNumbers: number[] = [];
-
-    // Si hay 5 o menos páginas, mostrar todas
-    if (this.totalPages <= 5) {
-      for (let i = 1; i <= this.totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Si hay más de 5 páginas, mostrar la actual y algunas alrededor
-      let startPage = Math.max(1, this.currentPage - 2);
-      let endPage = Math.min(this.totalPages, startPage + 4);
-
-      // Ajustar si estamos cerca del final
-      if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-    }
-
-    return pageNumbers;
   }
 
   toggleOptionsMenu(event: Event, diagram: Diagram, buttonElement: HTMLElement): void {

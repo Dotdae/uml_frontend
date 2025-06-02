@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
+import { PaginatorComponent } from '../../../components/paginator/paginator.component';
 
 interface Diagram {
   id: number;
@@ -17,7 +18,8 @@ interface Diagram {
   imports: [
     CommonModule,
     //  RouterLink,
-    OptionsMenuComponent
+    OptionsMenuComponent,
+    PaginatorComponent
   ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
@@ -35,6 +37,8 @@ export class ProjectDiagramsComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 7;
   totalPages: number = 0;
+
+  accentColor: 'yellow' | 'blue' | 'green' = 'yellow';
 
   // Variable para controlar el orden
   isAscendingOrder: boolean = false;
@@ -147,29 +151,6 @@ export class ProjectDiagramsComponent implements OnInit {
     this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
   }
 
-  // Método para obtener los números de página para el paginador
-  getPageNumbers(): number[] {
-    const pageNumbers: number[] = [];
-
-    if (this.totalPages <= 5) {
-      for (let i = 1; i <= this.totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      let startPage = Math.max(1, this.currentPage - 2);
-      let endPage = Math.min(this.totalPages, startPage + 4);
-
-      if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-    }
-
-    return pageNumbers;
-  }
 
   toggleOptionsMenu(event: Event, diagram: Diagram, buttonElement: HTMLElement): void {
     event.stopPropagation();

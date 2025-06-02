@@ -92,38 +92,12 @@
 
     <!-- Paginador (solo se muestra si hay más de 6 proyectos) -->
     @if (totalPages > 1) {
-    <div class="flex justify-center mt-8 space-x-2">
-        <!-- Botón anterior -->
-        <button [disabled]="currentPage === 1" [class.opacity-50]="currentPage === 1"
-            [class.cursor-not-allowed]="currentPage === 1" (click)="goToPage(currentPage - 1)"
-            class="px-3 py-1 border border-gray-300 rounded-md flex items-center bg-white hover:bg-gray-50 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            <span class="ml-1">Anterior</span>
-        </button>
-
-        <!-- Números de página -->
-        @for (page of getPageNumbers(); track page) {
-        <button [class.bg-yellow-500]="page === currentPage" [class.text-white]="page === currentPage"
-            [class.border-yellow-500]="page === currentPage" [class.hover:bg-yellow-400]="page === currentPage"
-            [class.bg-white]="page !== currentPage" [class.hover:bg-gray-50]="page !== currentPage"
-            (click)="goToPage(page)" class="px-3 py-1 border border-gray-300 rounded-md font-medium transition">
-            {{ page }}
-        </button>
-        }
-
-        <!-- Botón siguiente -->
-        <button [disabled]="currentPage === totalPages" [class.opacity-50]="currentPage === totalPages"
-            [class.cursor-not-allowed]="currentPage === totalPages" (click)="goToPage(currentPage + 1)"
-            class="px-3 py-1 border border-gray-300 rounded-md flex items-center bg-white hover:bg-gray-50 transition">
-            <span class="mr-1">Siguiente</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
-    </div>
+    <app-paginator
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [accentColor]="accentColor"
+        (pageChanged)="goToPage($event)"
+        class="mt-8 flex justify-center space-x-2">
+    </app-paginator>
     }
 </div>
