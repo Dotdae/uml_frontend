@@ -3,20 +3,16 @@
     <div class="mb-5">
         <h1 class="text-3xl font-semibold text-gray-800">Mis proyectos</h1>
 
-        <div class="justify-end flex mt-5">
+        <!-- <div class="justify-end flex mt-5">
             <button
                 class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-400 cursor-pointer transition">
-                <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 15h-2v-4H7v-2h4V7h2v4h4v2h-4z" />
-                </svg> -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-white" viewBox="0 -960 960 960"
                     fill="currentColor">
                     <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
                 </svg>
                 Crear nuevo proyecto
             </button>
-
-        </div>
+        </div> -->
     </div>
 
     <!-- Lista de proyectos -->
@@ -27,7 +23,11 @@
             class="bg-white rounded-lg shadow p-5 border border-gray-200 flex flex-col min-h-[265px] hover:bg-yellow-50 transition group">
             <!-- Contenedor del título y botón de opciones -->
             <div class="flex justify-between items-center relative">
-                <h2 class="text-lg font-semibold text-gray-800">{{ project.name }}</h2>
+                <div class="flex items-center space-x-3"> 
+                    <img src="UMLForgeOnlyIcon.png" alt="UMLForge" class="w-10 h-10 mb-2">
+                    <h2 class="text-lg font-semibold text-gray-800">{{ project.name }}</h2>
+                </div>
+                
 
                 <!-- <button
                     class="p-1.5 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"

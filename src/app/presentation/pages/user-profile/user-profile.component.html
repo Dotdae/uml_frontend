@@ -3,7 +3,7 @@
   <div class="absolute inset-0 flex justify-center items-center bg-white bg-opacity-70 z-50">
     <div class="flex flex-col items-center gap-3">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
-      <span class="font-medium text-xl">Cargando datos</span>
+      <span class="font-medium text-2xl text-gray-800">Cargando datos</span>
     </div>
   </div>
   } @else if (error) {
@@ -32,7 +32,7 @@
       <div class="w-1/2">
         <label for="username" class="block text-lg font-semibold">Nombre de usuario</label>
         <p class="text-gray-600 mb-2">
-          Este nombre será utilizado para vincularte en distintos apartados dentro del sistema
+          Será utilizado para vincularte en distintos apartados dentro del sistema
         </p>
       </div>
       <div class="w-1/2">
@@ -59,7 +59,7 @@
       <div class="w-1/2">
         <label for="fullname" class="block text-lg font-semibold">Nombre completo</label>
         <p class="text-gray-600 mb-2">
-          Estos serán los nombres que se utilizarán para rellenar datos dentro del sistema
+          Será el nombre que se utilizarán para rellenar datos dentro del sistema
         </p>
       </div>
       <div class="w-1/2">
@@ -146,7 +146,7 @@
 
           <!-- Upload area -->
           <div class="border-2 border-dashed border-gray-400 rounded-lg p-4 bg-white cursor-pointer"
-            [class.border-teal-500]="isDragging" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+            [class.border-yellow-500]="isDragging" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
             (drop)="onDrop($event)" (click)="fileInput.click()">
 
             <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
@@ -184,7 +184,7 @@
       <div class="w-1/2">
         <label for="email" class="block text-lg font-semibold">Correo electrónico</label>
         <p class="text-gray-600 mb-2">
-          Este es el correo electrónico que verificaste como tuyo
+          Es el correo electrónico que verificaste como tuyo
         </p>
       </div>
       <div class="w-1/2">
@@ -199,7 +199,7 @@
               </svg>
             </span>
             <span
-              class="inline-flex items-center pl-12 pr-4 py-2 border text-gray-600 border-gray-300 rounded-3xl shadow-sm bg-white min-w-[200px]">
+              class="inline-flex items-center pl-12 pr-4 py-2 border text-gray-400 border-gray-300 rounded-3xl shadow-sm bg-white min-w-[200px]">
               {{ userProfile.email }}
             </span>
           </div>

@@ -12,17 +12,16 @@ interface Diagram {
 }
 
 @Component({
-  selector: 'app-project-diagrams',
-  standalone: true,
+  selector: 'app-trash-bin',
   imports: [
     CommonModule,
     //  RouterLink,
     OptionsMenuComponent
   ],
-  templateUrl: './project-diagrams.component.html',
-  styleUrl: './project-diagrams.component.css'
+  templateUrl: './trash-bin.component.html',
+  styleUrl: './trash-bin.component.css'
 })
-export class ProjectDiagramsComponent implements OnInit {
+export class TrashBinComponent implements OnInit {
   projectId: number | null = null;
 
   // Todos los diagramas
@@ -60,22 +59,19 @@ export class ProjectDiagramsComponent implements OnInit {
     // Por ahora, usaremos datos de ejemplo
     this.allDiagrams = [
       { id: 1, title: 'Diagrama de Clases - Sistema de Usuarios', type: 'clase', modified: '30/5/2025 1:32' },
-      { id: 2, title: 'Diagrama de Secuencia - Login prueba', type: 'secuencia', modified: '28/5/2025 0:16' },
+      { id: 2, title: 'Diagrama de Secuencia - Login', type: 'secuencia', modified: '28/5/2025 0:16' },
       { id: 3, title: 'Diagrama de Componentes - Arquitectura', type: 'componentes', modified: '27/5/2025 15:22' },
       { id: 4, title: 'Diagrama de Paquetes - Estructura del proyecto', type: 'paquetes', modified: '25/5/2025 9:45' },
       { id: 5, title: 'Diagrama de Casos de Uso - Funcionalidades', type: 'casos_de_uso', modified: '24/5/2025 11:08' },
-      { id: 6, title: 'Diagrama de Secuencia - Login de Usuario', type: 'secuencia', modified: '30/5/2025 1:32' },
-      { id: 7, title: 'Diagrama de Secuencia - Registro de Usuario', type: 'secuencia', modified: '28/5/2025 0:16' },
-      { id: 8, title: 'Diagrama de Secuencia - Recuperar Contraseña', type: 'secuencia', modified: '27/5/2025 15:22' },
-      { id: 9, title: 'Diagrama de Secuencia - Crear Proyecto', type: 'secuencia', modified: '25/5/2025 9:45' },
-      { id: 10, title: 'Diagrama de Secuencia - Editar Proyecto', type: 'secuencia', modified: '24/5/2025 11:08' },
-      { id: 11, title: 'Diagrama de Secuencia - Eliminar Proyecto', type: 'secuencia', modified: '23/5/2025 14:22' },
-      { id: 12, title: 'Diagrama de Secuencia - Compartir Proyecto', type: 'secuencia', modified: '22/5/2025 16:45' },
-      { id: 13, title: 'Diagrama de Secuencia - Exportar Diagrama', type: 'secuencia', modified: '21/5/2025 10:33' },
-      { id: 14, title: 'Diagrama de Secuencia - Importar Diagrama', type: 'secuencia', modified: '20/5/2025 13:15' },
-      { id: 15, title: 'Diagrama de Secuencia - Generar Código', type: 'secuencia', modified: '19/5/2025 11:42' },
-      { id: 16, title: 'Diagrama de Secuencia - Validar Diagrama', type: 'secuencia', modified: '18/5/2025 09:27' },
-      { id: 17, title: 'Diagrama de Secuencia - Guardar Cambios', type: 'secuencia', modified: '17/5/2025 15:55' }
+      { id: 6, title: 'Proyecto 777', type: 'project', modified: '01/6/2025 11:08' },
+      { id: 8, title: 'Diagrama de Componentes - Arquitectura', type: 'componentes', modified: '27/5/2025 15:22' },
+      { id: 9, title: 'Diagrama de Paquetes - Estructura del proyecto', type: 'paquetes', modified: '25/5/2025 9:45' },
+      { id: 10, title: 'Diagrama de Casos de Uso - Funcionalidades', type: 'casos_de_uso', modified: '24/5/2025 11:08' },
+      { id: 11, title: 'Proyecto 777', type: 'project', modified: '01/6/2025 11:08' },
+      { id: 12, title: 'Diagrama de Clases - Sistema Financiero', type: 'clase', modified: '22/5/2025 14:32' },
+      { id: 13, title: 'Diagrama de Secuencia - Logout', type: 'secuencia', modified: '21/5/2025 10:19' },
+      { id: 14, title: 'Diagrama de Componentes - Módulos', type: 'componentes', modified: '20/5/2025 16:42' },
+      { id: 15, title: 'Diagrama de Paquetes - Dependencias', type: 'paquetes', modified: '19/5/2025 13:27' },
     ];
 
     // Ordenar por fecha más reciente al inicio
@@ -149,16 +145,20 @@ export class ProjectDiagramsComponent implements OnInit {
 
   // Método para obtener los números de página para el paginador
   getPageNumbers(): number[] {
+    // Solo mostrar 5 números de página como máximo
     const pageNumbers: number[] = [];
 
+    // Si hay 5 o menos páginas, mostrar todas
     if (this.totalPages <= 5) {
       for (let i = 1; i <= this.totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
+      // Si hay más de 5 páginas, mostrar la actual y algunas alrededor
       let startPage = Math.max(1, this.currentPage - 2);
       let endPage = Math.min(this.totalPages, startPage + 4);
 
+      // Ajustar si estamos cerca del final
       if (endPage - startPage < 4) {
         startPage = Math.max(1, endPage - 4);
       }
@@ -191,20 +191,13 @@ export class ProjectDiagramsComponent implements OnInit {
 
     // Manejar la acción seleccionada
     switch (action) {
-      case 'open':
-        this.openDiagram(diagram.type, diagram.id);
+      case 'restore':
+        console.log('Restaurar diagrama:', diagram.id);
+        // Implementar lógica para restaurar
         break;
-      case 'rename':
-        console.log('Renombrar diagrama:', diagram.id);
-        // Implementar lógica para renombrar
-        break;
-      case 'duplicate':
-        console.log('Duplicar diagrama:', diagram.id);
-        // Implementar lógica para duplicar
-        break;
-      case 'trash':
-        console.log('Mover a papelera diagrama:', diagram.id);
-        // Implementar lógica para mover a la papelera
+      case 'delete':
+        console.log('Eliminar permanentemente diagrama:', diagram.id);
+        // Implementar lógica para eliminar permanentemente
         break;
       case 'details':
         console.log('Mostrar detalles del diagrama:', diagram.id);
@@ -223,8 +216,14 @@ export class ProjectDiagramsComponent implements OnInit {
     });
   }
 
-  createDiagram(): void {
-    console.log('Crear nuevo diagrama para el proyecto', this.projectId);
+  emptyTrash(): void {
+    console.log('Vaciando papelera', this.projectId);
+
+    // Después de vaciar, reiniciar la paginación
+    this.allDiagrams = [];
+    this.totalPages = 0;
+    this.currentPage = 1;
+    this.updateDisplayedDiagrams();
   }
 
   // Método para cerrar todos los menús cuando se hace clic fuera

@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, Output, EventEmitter, ViewChild, AfterVie
 import { CommonModule } from '@angular/common';
 
 // Definimos las acciones posibles como un tipo para tener un mejor tipado
-export type MenuAction = 'open' | 'rename' | 'duplicate' | 'trash' | 'details' | 'close';
+export type MenuAction = 'open' | 'rename' | 'duplicate' | 'trash' | 'details' | 'close' | 'restore' | 'delete';
 
 @Component({
   selector: 'app-options-menu',
@@ -14,6 +14,7 @@ export type MenuAction = 'open' | 'rename' | 'duplicate' | 'trash' | 'details' |
 export class OptionsMenuComponent {
   @Input() position: 'left' | 'right' = 'right';
   @Input() triggerRect?: DOMRect;
+  @Input() trashBinOptions: boolean = false;
   @Output() optionSelected = new EventEmitter<MenuAction>();
   @ViewChild('menuContent') menuContent!: ElementRef;
 

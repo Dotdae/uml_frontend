@@ -14,6 +14,7 @@ import { authGuard } from '@infrastructure/auth/guards/auth.guard';
 import { ProjectsComponent } from './presentation/pages/dashboard/projects/projects.component';
 import { HomeComponent } from './presentation/pages/dashboard/home/home.component';
 import { ProjectDiagramsComponent } from './presentation/pages/dashboard/project-diagrams/project-diagrams.component';
+import { TrashBinComponent } from './presentation/pages/dashboard/trash-bin/trash-bin.component';
 
 import { GoogleCallbackComponent } from './presentation/components/google-callback/google-callback.component';
 import { UserProfileComponent } from './presentation/pages/user-profile/user-profile.component';
@@ -64,6 +65,9 @@ export const routes: Routes = [
       },
       {
         path: "projects/:id/diagrams", component: ProjectDiagramsComponent, title: "UMLForge - Diagramas del proyecto",
+      },
+      {
+        path: "trash-bin", component: TrashBinComponent, title: "UMLForge - Papelera de reciclaje",
       },
       {
         path: "user-profile", component: UserProfileComponent, title: "UMLForge - Perfil de usuario",
