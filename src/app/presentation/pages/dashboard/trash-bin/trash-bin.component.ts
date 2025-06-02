@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from 'src/app/presentation/components/paginator/paginator.component';
+import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
 
 interface Diagram {
   id: number;
@@ -18,7 +19,8 @@ interface Diagram {
     CommonModule,
     //  RouterLink,
     OptionsMenuComponent,
-    PaginatorComponent
+    PaginatorComponent,
+    SearchBarComponent
   ],
   templateUrl: './trash-bin.component.html',
   styleUrl: './trash-bin.component.css'
@@ -41,6 +43,12 @@ export class TrashBinComponent implements OnInit {
 
   // Variable para controlar el orden
   isAscendingOrder: boolean = false;
+
+  // Añadir estas propiedades para la búsqueda
+  showSearch = false;
+  searchQuery = '';
+  filteredDiagrams: Diagram[] = [];
+  isSearchActive = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -141,10 +149,22 @@ export class TrashBinComponent implements OnInit {
   }
 
   // Método para actualizar los diagramas mostrados
+  // updateDisplayedDiagrams(): void {
+  //   const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  //   const endIndex = startIndex + this.itemsPerPage;
+  //   this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
+  // }
   updateDisplayedDiagrams(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
+    
+    if (this.isSearchActive && this.filteredDiagrams.length > 0) {
+      this.diagrams = this.filteredDiagrams.slice(startIndex, endIndex);
+      this.totalPages = Math.ceil(this.filteredDiagrams.length / this.itemsPerPage);
+    } else {
+      this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
+      this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
+    }
   }
 
   toggleOptionsMenu(event: Event, diagram: Diagram, buttonElement: HTMLElement): void {
@@ -159,6 +179,21 @@ export class TrashBinComponent implements OnInit {
 
     // Alternar el estado del menú actual
     diagram.showOptions = !diagram.showOptions;
+  }
+
+  // Método para mostrar/ocultar la barra de búsqueda
+  toggleSearchBar(event: Event, buttonElement: HTMLElement): void {
+    event.stopPropagation();
+    this.showSearch = !this.showSearch;
+
+    // Si cerramos la búsqueda visualmente pero hay una búsqueda activa,
+    // mantenemos el estado de búsqueda
+
+    // Si cerramos la búsqueda, limpiar filtros
+    // if (!this.showSearch) {
+    //   this.searchQuery = '';
+    //   this.updateDisplayedDiagrams();
+    // }
   }
 
   handleOptionSelected(action: MenuAction, diagram: Diagram): void {
@@ -181,6 +216,46 @@ export class TrashBinComponent implements OnInit {
         break;
     }
   }
+
+  // Método para manejar la búsqueda
+  handleSearch(query: string): void {
+    this.searchQuery = query;
+
+    if (query.trim()) {
+      // Activar el estado de búsqueda
+      this.isSearchActive = true;
+
+      // Filtrar todos los diagramas
+      const lowerQuery = query.toLowerCase();
+      this.filteredDiagrams = this.allDiagrams.filter(diagram =>
+        diagram.title.toLowerCase().includes(lowerQuery)
+      );
+
+      // Actualizar paginación para resultados filtrados
+      this.totalPages = Math.ceil(this.filteredDiagrams.length / this.itemsPerPage);
+      this.currentPage = 1;
+
+      // Mostrar resultados filtrados
+      const startIndex = 0;
+      const endIndex = this.itemsPerPage;
+      this.diagrams = this.filteredDiagrams.slice(startIndex, endIndex);
+    } else {
+      // Desactivar el estado de búsqueda
+      this.isSearchActive = false;
+      this.searchQuery = '';
+      this.filteredDiagrams = [];
+      
+      // Restablecer la paginación
+      this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
+      this.currentPage = 1;
+      
+      // Mostrar todos los diagramas
+      this.updateDisplayedDiagrams();
+      // Si no hay consulta, mostrar todos los diagramas
+      // this.updateDisplayedDiagrams();
+    }
+  }
+
 
   openDiagram(type: string, id: number): void {
     this.router.navigate(['/canvas'], {
@@ -207,5 +282,12 @@ export class TrashBinComponent implements OnInit {
     this.diagrams.forEach(diagram => {
       diagram.showOptions = false;
     });
+    this.showSearch = false;
+  }
+
+  // Método para cerrar la búsqueda
+  closeSearch(): void {
+    this.showSearch = false;
+    // No limpiamos la búsqueda aquí, solo cerramos el componente visualmente
   }
 }

@@ -1,0 +1,40 @@
+:host {
+  position: fixed;
+  display: block;
+  z-index: 60;
+}
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: transparent;
+  z-index: 49;
+}
+
+.search-content {
+  position: fixed;
+  z-index: 50;
+  width: 320px; /* Ajusta según necesidades */
+  padding: 8px;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border: 1px solid rgb(229 231 235);
+}
+
+/* Animación de entrada */
+.search-content {
+  animation: slideDown 0.2s ease-out forwards;
+  transform-origin: top center;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

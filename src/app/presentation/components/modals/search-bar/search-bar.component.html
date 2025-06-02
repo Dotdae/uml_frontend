@@ -1,0 +1,36 @@
+<div class="search-container">
+    <div class="search-overlay" (click)="onClose()"></div>
+    <div #searchContent class="search-content">
+        <div class="relative">
+            <!-- Lupa al inicio del input -->
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 -960 960 960"
+                    fill="currentColor">
+                    <path
+                        d="M796-121 533-384q-30 26-69.959 40.5T378-329q-108.162 0-183.081-75Q120-479 120-585t75-181q75-75 181.5-75t181 75Q632-691 632-584.85 632-542 618-502q-14 40-42 75l264 262-44 44ZM377-389q81.25 0 138.125-57.5T572-585q0-81-56.875-138.5T377-781q-82.083 0-139.542 57.5Q180-666 180-585t57.458 138.5Q294.917-389 377-389Z" />
+                </svg>
+            </div>
+
+            <!-- Input de búsqueda -->
+            <input #searchInput 
+                   type="text" 
+                   [(ngModel)]="searchText" 
+                   (keyup)="onKeyup($event)"
+                   [placeholder]="placeholder"
+                   class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" />
+
+            <!-- Botón de limpiar búsqueda -->
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button *ngIf="searchText" 
+                        (click)="clearSearch()"
+                        class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
