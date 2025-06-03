@@ -150,4 +150,9 @@
     </app-rename>
     }
 
+    @if (showDetailsModal && selectedItemDetails) {
+    <app-details [item]="selectedItemDetails" (close)="closeDetailsModal()">
+    </app-details>
+    }
+
 </div>

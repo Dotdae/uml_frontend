@@ -4,6 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from '../../../components/paginator/paginator.component';
 import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
+import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/modals/details/details.component';
 
 interface Project {
   id: number;
@@ -19,7 +20,8 @@ interface Project {
     RouterLink, 
     OptionsMenuComponent, 
     PaginatorComponent,
-    RenameComponent
+    RenameComponent,
+    DetailsComponent
   ],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css',
@@ -41,6 +43,10 @@ export class ProjectsComponent implements OnInit {
   // Variables para control del modal de renombrar
   showRenameModal = false;
   projectToRename: Project | null = null; // Ajusta el tipo según tu interfaz de proyectos
+
+  // Variables para el modal de detalles
+  showDetailsModal = false;
+  selectedItemDetails: ItemDetails | null = null;
 
   constructor(private router: Router) { }
 
@@ -91,8 +97,32 @@ export class ProjectsComponent implements OnInit {
         break;
       case 'details':
         console.log('Mostrar detalles del proyecto:', project.id);
+        // Crear el objeto de detalles para el proyecto
+        this.selectedItemDetails = {
+          id: project.id,
+          name: project.name,
+          type: 'project',
+          location: 'En mis proyectos',
+          created: this.getRandomDate(), // En producción, usarías la fecha real del proyecto
+          diagramType: undefined
+        };
+        
+        this.showDetailsModal = true;
         break;
     }
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedItemDetails = null;
+  }
+  
+  // Método auxiliar para generar fechas aleatorias para demostración (reemplaza esto con datos reales)
+  getRandomDate(): string {
+    const start = new Date(2024, 0, 1);
+    const end = new Date();
+    const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    return randomDate.toISOString();
   }
 
   closeRenameModal(): void {

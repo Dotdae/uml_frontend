@@ -5,6 +5,7 @@ import { OptionsMenuComponent, MenuAction } from '../../../components/modals/opt
 import { PaginatorComponent } from '../../../components/paginator/paginator.component';
 import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
 import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
+import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/modals/details/details.component';
 
 interface Diagram {
   id: number;
@@ -23,7 +24,8 @@ interface Diagram {
     OptionsMenuComponent,
     PaginatorComponent,
     SearchBarComponent,
-    RenameComponent
+    RenameComponent,
+    DetailsComponent
   ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
@@ -56,6 +58,11 @@ export class ProjectDiagramsComponent implements OnInit {
   // Variables para control del modal de renombrar
   showRenameModal = false;
   diagramToRename: Diagram | null = null;
+
+  // Variables para el modal de detalles
+  showDetailsModal = false;
+  selectedItemDetails: ItemDetails | null = null;
+  projectName: string = 'Proyecto actual'; // Esto deberías obtenerlo de tu API
 
   constructor(
     private route: ActivatedRoute,
@@ -158,12 +165,6 @@ export class ProjectDiagramsComponent implements OnInit {
     }
   }
 
-  // Método para actualizar los diagramas mostrados
-  // updateDisplayedDiagrams(): void {
-  //   const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-  //   const endIndex = startIndex + this.itemsPerPage;
-  //   this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
-  // }
   updateDisplayedDiagrams(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
@@ -226,7 +227,18 @@ export class ProjectDiagramsComponent implements OnInit {
         break;
       case 'details':
         console.log('Mostrar detalles del diagrama:', diagram.id);
-        // Implementar lógica para mostrar detalles
+        // Crear el objeto de detalles para el diagrama
+        this.selectedItemDetails = {
+          id: diagram.id,
+          name: diagram.title,
+          type: 'diagram',
+          location: `En ${this.projectName}`,
+          created: this.getRandomDate(), // En producción, usarías la fecha real
+          modified: diagram.modified ? this.convertToISODate(diagram.modified) : undefined,
+          diagramType: this.capitalizeFirstLetter(diagram.type.replace('_', ' '))
+        };
+
+        this.showDetailsModal = true;
         break;
     }
   }
@@ -284,23 +296,46 @@ export class ProjectDiagramsComponent implements OnInit {
     console.log('Crear nuevo diagrama para el proyecto', this.projectId);
   }
 
-  handleRename(data: {id: number | null, newName: string}): void {
+  handleRename(data: { id: number | null, newName: string }): void {
     if (data.id !== null && this.diagramToRename) {
       // Aquí implementarías la lógica para cambiar el nombre en el backend
       console.log(`Renombrando diagrama ${data.id} a "${data.newName}"`);
-      
+
       // Actualizar en el array local
       const diagramIndex = this.allDiagrams.findIndex(d => d.id === data.id);
       if (diagramIndex >= 0) {
         this.allDiagrams[diagramIndex].title = data.newName;
-        
+
         // Actualizar la vista si es necesario
         this.updateDisplayedDiagrams();
       }
-      
+
       // Cerrar el modal
       this.closeRenameModal();
     }
+  }
+
+  // Método auxiliar para convertir fechas de formato "dd/m/yyyy h:mm" a ISO
+  convertToISODate(dateStr: string): string {
+    return this.convertDateFormat(dateStr);
+  }
+  
+  // Método auxiliar para generar fechas aleatorias para demostración (reemplazar con datos reales)
+  getRandomDate(): string {
+    const start = new Date(2024, 0, 1);
+    const end = new Date();
+    const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    return randomDate.toISOString();
+  }
+  
+  // Método para capitalizar la primera letra
+  capitalizeFirstLetter(string: string): string {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedItemDetails = null;
   }
 
   // Añadir métodos para manejar el renombrado

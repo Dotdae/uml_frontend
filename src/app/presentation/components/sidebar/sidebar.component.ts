@@ -5,6 +5,7 @@ import { AuthService } from '../../../infrastructure/auth/auth.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment.development';
 import { ProjectCreationComponent } from '../modals/project-creation/project-creation.component';
+import { OnDevelopmentComponent } from '../modals/on-development/on-development.component';
 
 
 interface UserProfile {
@@ -17,7 +18,14 @@ interface UserProfile {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, ProjectCreationComponent],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    RouterLink, 
+    RouterLinkActive, 
+    ProjectCreationComponent,
+    OnDevelopmentComponent
+  ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
@@ -25,6 +33,8 @@ interface UserProfile {
 export class SidebarComponent implements OnInit {
   userProfile: UserProfile | null = null;
   showProjectModal: boolean = false;
+  showDevelopmentModal: boolean = false;
+  developmentFeatureName: string = '';
 
   constructor(
     private authService: AuthService,
@@ -66,5 +76,14 @@ export class SidebarComponent implements OnInit {
     
     // Cerrar el modal después de crear el proyecto
     this.showProjectModal = false;
+  }
+
+  openDevelopmentModal(featureName: string): void {
+    this.developmentFeatureName = featureName;
+    this.showDevelopmentModal = true;
+  }
+
+  closeDevelopmentModal(): void {
+    this.showDevelopmentModal = false;
   }
 }
