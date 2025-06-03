@@ -7,6 +7,7 @@ import { SearchBarComponent } from 'src/app/presentation/components/modals/searc
 import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
 import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/modals/details/details.component';
 import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
+import { DiagramCreationComponent, DiagramCreationData } from 'src/app/presentation/components/modals/diagram-creation/diagram-creation.component';
 
 interface Diagram {
   id: number;
@@ -27,7 +28,8 @@ interface Diagram {
     SearchBarComponent,
     RenameComponent,
     DetailsComponent,
-    ConfirmationComponent
+    ConfirmationComponent,
+    DiagramCreationComponent
   ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
@@ -72,6 +74,8 @@ export class ProjectDiagramsComponent implements OnInit {
     accentColor: 'yellow'
   };
   currentAction: { type: string; itemId?: number } = { type: '' };
+
+  showDiagramCreationModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -301,23 +305,54 @@ export class ProjectDiagramsComponent implements OnInit {
     }
   }
 
+  // Método para iniciar la generación de código
+  generateCode(): void {
+    console.log('Iniciar generación de código para el proyecto', this.projectId);
+
+    // Configurar y mostrar el modal de confirmación
+    this.confirmationConfig = {
+      type: 'generateCode',
+      itemName: this.projectName,
+      confirmButtonText: 'Generar código',
+      accentColor: 'blue'
+    };
+    this.currentAction = { type: 'generateCode' };
+    this.showConfirmationModal = true;
+  }
+
+  // Método para iniciar el proceso de generación de código
+  private startCodeGeneration(): void {
+    // Aquí implementarías la lógica para llamar al backend
+    console.log('Iniciando generación de código para el proyecto:', this.projectId);
+
+    // Ejemplo: Mostrar alguna notificación o indicador de progreso
+    // this.showNotification('La generación de código ha comenzado. Te notificaremos cuando esté listo.');
+  }
+
   // Método para manejar la confirmación
   handleConfirmation(): void {
     switch (this.currentAction.type) {
       case 'trash':
         console.log('Confirmado: Mover a papelera diagrama:', this.currentAction.itemId);
         // Implementar la lógica para mover a la papelera
-        
+
         // Eliminar del array local
         if (this.currentAction.itemId) {
           this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
           this.updateDisplayedDiagrams();
         }
         break;
-      
+
+      case 'generateCode':
+        console.log('Confirmado: Generar código para el proyecto', this.projectId);
+        // Implementar la lógica para generar código
+        // Por ejemplo, mostrar un indicador de carga y llamar a un servicio
+        this.startCodeGeneration();
+        break;
+
       // Agregar otros casos según sea necesario
     }
-    
+
     // Cerrar el modal
     this.closeConfirmationModal();
   }
@@ -334,6 +369,46 @@ export class ProjectDiagramsComponent implements OnInit {
 
   createDiagram(): void {
     console.log('Crear nuevo diagrama para el proyecto', this.projectId);
+    this.showDiagramCreationModal = true;
+  }
+
+  closeDiagramCreationModal(): void {
+    this.showDiagramCreationModal = false;
+  }
+
+  handleCreateDiagram(data: DiagramCreationData): void {
+    console.log('Creando nuevo diagrama:', data);
+
+    // Aquí implementarías la lógica para crear el diagrama en el backend
+    // Por ahora, simulamos la creación añadiendo un nuevo diagrama al array
+    const newId = this.allDiagrams.length > 0
+      ? Math.max(...this.allDiagrams.map(d => d.id)) + 1
+      : 1;
+
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+
+    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+
+    const newDiagram: Diagram = {
+      id: newId,
+      title: data.name,
+      type: data.type,
+      modified: formattedDate
+    };
+
+    this.allDiagrams.unshift(newDiagram); // Añadir al principio
+    this.updateDisplayedDiagrams();
+
+    // Cerrar el modal
+    this.closeDiagramCreationModal();
+
+    // Opcional: abrir el nuevo diagrama directamente
+    // this.openDiagram(data.type, newId);
   }
 
   handleRename(data: { id: number | null, newName: string }): void {
@@ -359,7 +434,7 @@ export class ProjectDiagramsComponent implements OnInit {
   convertToISODate(dateStr: string): string {
     return this.convertDateFormat(dateStr);
   }
-  
+
   // Método auxiliar para generar fechas aleatorias para demostración (reemplazar con datos reales)
   getRandomDate(): string {
     const start = new Date(2024, 0, 1);
@@ -367,7 +442,7 @@ export class ProjectDiagramsComponent implements OnInit {
     const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     return randomDate.toISOString();
   }
-  
+
   // Método para capitalizar la primera letra
   capitalizeFirstLetter(string: string): string {
     return string.charAt(0).toUpperCase() + string.slice(1);

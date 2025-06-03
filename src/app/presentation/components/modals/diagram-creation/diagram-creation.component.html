@@ -1,0 +1,174 @@
+<div class="fixed inset-0 flex items-center justify-center z-50 modal-container">
+    <!-- Fondo con efecto blur -->
+    <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm modal-overlay"></div>
+
+    <div class="bg-white w-[36rem] rounded-xl shadow-lg relative z-10 modal-content">
+        <!-- Botón de cerrar -->
+        <button (click)="closeModal()"
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div class="p-6">
+            <!-- Encabezado según el paso actual -->
+            <h1 class="font-semibold text-3xl text-gray-800">
+                @if (currentStep === 1) {
+                Nuevo diagrama
+                } @else {
+                Elige el tipo de diagrama
+                }
+            </h1>
+
+            <!-- Indicador de pasos -->
+            <div class="flex items-center mt-4">
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500 text-white font-semibold">1</div>
+                    <span class="ml-2 text-sm font-medium" [class.text-yellow-700]="currentStep === 1" [class.text-gray-600]="currentStep !== 1">Nombre</span>
+                </div>
+                <div class="flex-1 h-0.5 mx-4" [class.bg-yellow-300]="currentStep === 2" [class.bg-gray-300]="currentStep !== 2"></div>
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full font-semibold" 
+                         [class.bg-yellow-500]="currentStep === 2" 
+                         [class.bg-gray-300]="currentStep !== 2"
+                         [class.text-white]="currentStep === 2"
+                         [class.text-gray-600]="currentStep !== 2">2</div>
+                    <span class="ml-2 text-sm font-medium" [class.text-yellow-700]="currentStep === 2" [class.text-gray-600]="currentStep !== 2">Tipo</span>
+                </div>
+            </div>
+
+            <!-- Paso 1: Nombre del diagrama -->
+            @if (currentStep === 1) {
+            <div class="mt-6">
+                <!-- Ilustración de diagrama -->
+                <div class="mt-4 flex justify-center">
+                    <div class="p-4 rounded-full bg-yellow-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-yellow-500" viewBox="0 -960 960 960"
+                            fill="currentColor">
+                            <path
+                                d="M200-200h56l345-345-56-56-345 345v56Zm572-403L602-773l56-56q23-23 56.5-23t56.5 23l56 56q23 23 24 55.5T829-660l-57 57Zm-58 59L290-120H120v-170l424-424 170 170Zm-141-29-28-28 56 56-28-28Z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Formulario para el nombre del diagrama -->
+                <div class="mt-6">
+                    <label for="diagramName" class="block text-lg font-semibold text-gray-700">
+                        Nombre del diagrama:
+                    </label>
+                    <input type="text" id="diagramName" [(ngModel)]="diagramName" (input)="onDiagramNameInput()"
+                        placeholder="Ingresa un nombre para tu diagrama"
+                        class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" />
+                    @if (errorMessage) {
+                    <p class="mt-2 text-red-600 text-sm">{{ errorMessage }}</p>
+                    }
+                </div>
+
+                <!-- Información adicional -->
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <p class="ml-3 text-sm text-blue-700">
+                            En el siguiente paso podrás elegir el tipo de diagrama UML que deseas crear.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            }
+
+            <!-- Paso 2: Selección del tipo de diagrama -->
+            @if (currentStep === 2) {
+            <div class="mt-6">
+                <p class="text-gray-600 mb-4">Selecciona el tipo de diagrama que deseas crear:</p>
+                
+                <div class="grid grid-cols-1 gap-3 mt-2 max-h-[360px] overflow-y-auto pr-2">
+                    @for (type of diagramTypes; track type.type) {
+                    <button
+                        class="flex items-start px-4 py-3 border rounded-lg transition-all hover:bg-blue-50 hover:border-blue-300 text-left"
+                        [class.bg-yellow-100]="selectedType === type.type"
+                        [class.border-yellow-500]="selectedType === type.type"
+                        [class.border-gray-200]="selectedType !== type.type"
+                        (click)="selectType(type.type)">
+                        <div class="p-2 rounded-full mr-3" 
+                             [class.bg-yellow-100]="selectedType === type.type" 
+                             [class.bg-gray-100]="selectedType !== type.type">
+                            <svg xmlns="http://www.w3.org/2000/svg" 
+                                 [class]="selectedType === type.type ? 'h-6 w-6 text-yellow-600' : 'h-6 w-6 text-gray-600'" 
+                                 viewBox="0 -960 960 960" 
+                                 fill="currentColor">
+                                <path [attr.d]="type.icon" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium">{{ type.label }}</div>
+                            <div class="text-sm text-gray-600 mt-1">{{ type.description }}</div>
+                        </div>
+                        @if (selectedType === type.type) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 mt-1" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        }
+                    </button>
+                    }
+                </div>
+                
+                <!-- Información adicional -->
+                @if (selectedType) {
+                <div class="mt-4 p-4 bg-yellow-50 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <p class="ml-3 text-sm text-yellow-700">
+                            Has seleccionado: <strong>{{ getDiagramTypeName(selectedType) }}</strong>. Al hacer clic en "Crear diagrama" se abrirá el editor.
+                        </p>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Botones de navegación -->
+            <div class="flex justify-end space-x-3 mt-8">
+                @if (currentStep === 1) {
+                <button (click)="closeModal()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                    Cancelar
+                </button>
+                <button (click)="nextStep()" [disabled]="!isValidName()"
+                    [class.opacity-50]="!isValidName()" [class.cursor-not-allowed]="!isValidName()"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition">
+                    Siguiente
+                </button>
+                } @else {
+                <button (click)="previousStep()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                    Anterior
+                </button>
+                <button (click)="createDiagram()" [disabled]="!selectedType"
+                    [class.opacity-50]="!selectedType" [class.cursor-not-allowed]="!selectedType"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition">
+                    Crear diagrama
+                </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
