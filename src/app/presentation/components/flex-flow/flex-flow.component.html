@@ -1,0 +1,255 @@
+<div class="w-full h-full relative overflow-hidden bg-gray-50">
+  <!-- Diagram Type Selector -->
+  <div class="absolute top-4 left-4 flex space-x-2 z-10">
+    <select [(ngModel)]="currentType" (change)="loadDiagram(currentType)"
+            class="bg-white border border-gray-300 rounded px-3 py-2 text-sm">
+      <option *ngFor="let type of diagramTypes" [value]="type">
+        {{type | titlecase}} Diagram
+      </option>
+    </select>
+  </div>
+
+  <!-- Zoom Controls -->
+  <div class="absolute top-4 right-4 justify-center items-center flex flex-col space-y-2 z-10">
+    <div class="bg-white/90 backdrop-blur border border-gray-300
+    rounded-lg shadow-lg flex flex-col">
+      <!-- Zoom In -->
+      <button (click)="zoomIn()"
+              [disabled]="zoomLevel >= maxZoom"
+              class="p-2 transition-colors disabled:opacity-50 hover:bg-gray-100 hover:cursor-pointer
+              disabled:cursor-not-allowed rounded-t-lg"
+              title="Zoom In">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+        </svg>
+      </button>
+
+      <!-- Zoom Out -->
+      <button (click)="zoomOut()"
+              [disabled]="zoomLevel <= minZoom"
+              class="p-2 hover:bg-gray-100 transition-colors disabled:opacity-50 hover:cursor-pointer disabled:cursor-not-allowed border-t border-gray-200"
+              title="Zoom Out">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+        </svg>
+      </button>
+
+      <!-- Fit to Screen -->
+      <button (click)="onFlowLoaded()"
+              class="p-2 hover:bg-gray-100 hover:cursor-pointer transition-colors border-t border-gray-200 rounded-b-lg"
+              title="Fit to Screen">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+      </button>
+
+      <!-- Reset Zoom -->
+      <button (click)="resetZoom()"
+              class="p-2 hover:bg-gray-100 hover:cursor-pointer transition-colors border-t border-gray-200 rounded-b-lg"
+              title="Reset Zoom (100%)">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Zoom Level Display -->
+    <div class="bg-white/90 backdrop-blur border border-gray-300 rounded-lg shadow-lg px-3 py-1 text-sm text-gray-600 text-center">
+      {{ getZoomPercentage() }}%
+    </div>
+  </div>
+
+  <f-flow fDraggable (fCreateConnection)="addConnection($event)"
+          [fMinSize]="100"
+          [fMaxSize]="200"
+          (fLoaded)="onFlowLoaded()">
+    <f-line-alignment [fAlignThreshold]="20"></f-line-alignment>
+    <f-background>
+      <!-- <f-circle-pattern [color]="'#e7e7e7'" [radius]="12"></f-circle-pattern> -->
+      <f-rect-pattern [color]="'#e7e7e7'" [radius]="12"></f-rect-pattern>
+    </f-background>
+    <f-canvas [fZoom]="zoomLevel" #fCanvas>
+      <!-- Nodes -->
+      <div *ngFor="let node of nodes; trackBy: trackByNodeId"
+           fNode
+           [fNodePosition]="node.position"
+           fDragHandle
+           (click)="selectNode(node.id)"
+           class="border-2 rounded cursor-move select-none relative transition-all"
+           [style.background-color]="getNodeBackgroundColor(node)"
+           [style.border-color]="selectedNodeId === node.id ? '#3b82f6' : getNodeBorderColor(node)">
+
+        <!-- Connection Points -->
+        <div fNodeInput
+             [fInputId]="'input-' + node.id"
+             fInputConnectableSide="left"
+             class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-blue-500 border-2 border-white rounded-full cursor-pointer hover:bg-blue-600 transition-colors z-10"></div>
+        <div fNodeOutput
+             [fOutputId]="'output-' + node.id"
+             fOutputConnectableSide="right"
+             class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-green-500 border-2 border-white rounded-full cursor-pointer hover:bg-green-600 transition-colors z-10"></div>
+
+        <!-- Node Header -->
+        <div class="flex justify-between items-center bg-gray-100 border-b border-gray-300 px-4 gap-2 py-2">
+          <div class="flex-1">
+            <!-- Interface stereotype -->
+            <div *ngIf="node.data.isInterface" class="text-[11px] text-gray-600 font-mono italic text-center mb-1">
+              &lt;&lt;interface&gt;&gt;
+            </div>
+            <div *ngIf="!node.data.isInterface" class="text-[11px] text-gray-600 font-mono italic text-center mb-1">
+              &lt;&lt;class&gt;&gt;
+            </div>
+            <!-- Node label -->
+            <input
+              type="text"
+              [(ngModel)]="node.data.label"
+              (blur)="updateNodeLabel(node.id, $event)"
+              (keyup.enter)="updateNodeLabel(node.id, $event)"
+              class="font-mono italic text-gray-700 py-1 text-md hover:cursor-pointer hover:bg-gray-200 transition-colors font-bold border-none outline-none focus:bg-gray-200 focus:text-black focus:border focus:border-blue-300 focus:rounded px-1 w-full text-center"
+              placeholder="Enter name...">
+          </div>
+          <button (click)="deleteNode(node.id)"
+                  class="text-red-600 bg-gray-200 hover:bg-gray-300 transition-colors
+                  hover:text-red-800 text-sm font-bold cursor-pointer h-6 w-6 rounded">
+            x
+          </button>
+        </div>
+
+        <!-- Node Content -->
+        <div class="px-4 py-2">
+          <!-- Class Diagram Content -->
+          <ng-container *ngIf="currentType === 'class'">
+            <!-- Properties -->
+            <div class="mb-2">
+              <div class="flex justify-between items-center mb-1">
+                <div class="text-[13px] font-semibold text-gray-600 px-1">Properties</div>
+
+                <button (click)="addProperty(node.id)"
+                  class="text-blue-700 bg-gray-200 hover:bg-gray-300 transition-colors
+                  hover:text-blue-800 text-md font-bold cursor-pointer h-6 w-6 rounded">
+                  +
+                </button>
+              </div>
+              <div *ngFor="let prop of node.data.properties; let i = index"
+                   class="flex items-center group mb-1 gap-2">
+                <input
+                  type="text"
+                  [ngModel]="node.data.properties![i]"
+                  (ngModelChange)="updatePropertyValue(node.id, i, $event)"
+                  (blur)="updateNodeProperty(node.id, i, $event)"
+                  (keyup.enter)="updateNodeProperty(node.id, i, $event)"
+                  class="font-mono text-[13px] bg-transparent border-none outline-none py-1
+                  hover:bg-gray-100 focus:bg-gray-100 focus:border focus:border-blue-300 focus:rounded px-1 flex-1"
+                  placeholder="- property: type">
+
+                <button (click)="removeProperty(node.id, i)"
+                        class="text-red-600 bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity
+                  hover:text-red-800 text-sm font-bold cursor-pointer h-6 w-6 rounded">
+                  x
+                </button>
+              </div>
+              <div *ngIf="!node.data.properties?.length" class="text-xs text-gray-400 italic">
+                No properties
+              </div>
+            </div>
+              <hr class="border-gray-600  my-2 border-1">
+
+            <!-- Methods -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <div class="text-[13px] font-semibold text-gray-600">Methods</div>
+                <button (click)="addMethod(node.id)"
+                        class="text-blue-700 bg-gray-200 hover:bg-gray-300 transition-colors
+                        hover:text-blue-800 text-md font-bold cursor-pointer h-6 w-6 rounded">
+                  +
+                </button>
+              </div>
+              <div *ngFor="let method of node.data.methods; let i = index"
+                   class="flex items-center group mb-1 gap-2">
+                <input
+                  type="text"
+                  [ngModel]="node.data.methods![i]"
+                  (ngModelChange)="updateMethodValue(node.id, i, $event)"
+                  (blur)="updateNodeMethod(node.id, i, $event)"
+                  (keyup.enter)="updateNodeMethod(node.id, i, $event)"
+                  class="font-mono text-[13px] bg-transparent border-none outline-none py-1
+                  hover:bg-gray-100 focus:bg-gray-100 focus:border focus:border-blue-300 focus:rounded px-1 flex-1"
+                  placeholder="+ method()">
+                <button (click)="removeMethod(node.id, i)"
+
+                  class="text-red-600 bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity
+                  hover:text-red-800 text-sm font-bold cursor-pointer h-6 w-6 rounded">
+                  x
+                </button>
+              </div>
+              <div *ngIf="!node.data.methods?.length" class="text-xs text-gray-400 italic">
+                No methods
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Sequence Diagram Content -->
+          <ng-container *ngIf="currentType === 'sequence'">
+            <div *ngIf="node.data.lifeline" class="h-64 border-l-2 border-dashed border-gray-300"></div>
+          </ng-container>
+
+          <!-- Package Diagram Content -->
+          <ng-container *ngIf="currentType === 'package'">
+            <div class="text-xs text-gray-600">{{ node.data.package }}</div>
+          </ng-container>
+
+          <!-- Use Case Diagram Content -->
+          <ng-container *ngIf="currentType === 'usecase'">
+            <div *ngIf="node.data.actor" class="text-center">
+              <div class="w-8 h-8 border-2 border-gray-300 rounded-full mx-auto mb-1"></div>
+              <div class="text-xs">{{ node.data.label }}</div>
+            </div>
+            <div *ngIf="node.data.usecase" class="text-center">
+              <div class="w-24 h-12 border-2 border-gray-300 rounded-full mx-auto mb-1"></div>
+              <div class="text-xs">{{ node.data.label }}</div>
+            </div>
+          </ng-container>
+
+          <!-- Component Diagram Content -->
+          <ng-container *ngIf="currentType === 'component'">
+            <div class="text-center">
+              <div class="w-24 h-12 border-2 border-gray-300 mx-auto mb-1"></div>
+              <div class="text-xs">{{ node.data.label }}</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Connections -->
+      <f-snap-connection [fSnapThreshold]="50"></f-snap-connection>
+      <f-connection-for-create></f-connection-for-create>
+
+
+      <f-connection *ngFor="let connection of connections; trackBy: trackByConnectionId"
+                   [fReassignDisabled]="false"
+                   [fBehavior]="eConnectionBehaviour.FIXED"
+                   [fDraggingDisabled]="false"
+                   fType="bezier"
+                   [fOutputId]="'output-' + connection.source"
+                   [fInputId]="'input-' + connection.target">
+        <!-- Start Marker -->
+        <svg viewBox="0 0 10 10" fMarker [type]="eMarkerType.START" [height]="10" [width]="10" [refX]="5" [refY]="5">
+          <circle cx="5" cy="5" r="2" stroke="none" fill="var(--connection-gradient-1)"></circle>
+        </svg>
+        <!-- End Marker -->
+        <svg viewBox="0 0 700 700" fMarker [type]="eMarkerType.END" [height]="5" [width]="5" [refX]="4" [refY]="2.5">
+          <path fill="var(--connection-gradient-2)" d="M0,0L700,350L0,700L150,350z"/>
+        </svg>
+        <!-- Connection Label -->
+        <div *ngIf="connection.label" class="absolute transform -translate-x-1/2 -translate-y-1/2 text-xs bg-white px-1 rounded shadow">
+          {{ connection.label }}
+        </div>
+      </f-connection>
+    </f-canvas>
+
+    <!-- Minimap positioned inside f-flow but outside f-canvas -->
+    <f-minimap
+      class="absolute bottom-4 right-4 w-48 h-36 bg-white/90 rounded-lg shadow-lg border border-gray-200 z-50">
+    </f-minimap>
+  </f-flow>
+</div>

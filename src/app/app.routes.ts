@@ -10,6 +10,7 @@ import { VerifyUserComponent } from './presentation/pages/auth/verify-user/verif
 import { DashboardComponent } from './presentation/pages/dashboard/dashboard.component';
 import { CanvasComponent } from './presentation/pages/canvas/canvas.component';
 import { authGuard } from '@infrastructure/auth/guards/auth.guard';
+import { FlexFlowComponent } from './presentation/components/flex-flow/flex-flow.component';
 
 import { ProjectsComponent } from './presentation/pages/dashboard/projects/projects.component';
 import { HomeComponent } from './presentation/pages/dashboard/home/home.component';
@@ -26,6 +27,11 @@ export const routes: Routes = [
   // Página de inicio
   {
     path: "", component: HomePageComponent, title: "UMLForge - De ideas a código"
+  },
+
+  // Test route for FlexFlow component
+  {
+    path: "flex-flow", component: FlexFlowComponent, title: "Flex Flow Demo"
   },
 
   // Control de inicio de sesión, registro y verificación de correo del usuario
