@@ -4,6 +4,7 @@ import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment.development';
+import { ProjectCreationComponent } from '../modals/project-creation/project-creation.component';
 
 
 interface UserProfile {
@@ -16,18 +17,19 @@ interface UserProfile {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, ProjectCreationComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
 
-export class SidebarComponent implements OnInit{
-   userProfile: UserProfile | null = null;
+export class SidebarComponent implements OnInit {
+  userProfile: UserProfile | null = null;
+  showProjectModal: boolean = false;
 
   constructor(
     private authService: AuthService,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadUserProfile();
@@ -48,5 +50,21 @@ export class SidebarComponent implements OnInit{
           console.error('Error loading profile:', error);
         }
       });
+  }
+
+  openProjectModal(): void {
+    this.showProjectModal = true;
+  }
+
+  closeProjectModal(): void {
+    this.showProjectModal = false;
+  }
+
+  handleCreateProject(projectName: string): void {
+    console.log('Creando proyecto:', projectName);
+    // Aquí iría la lógica para crear el proyecto en el backend
+    
+    // Cerrar el modal después de crear el proyecto
+    this.showProjectModal = false;
   }
 }
