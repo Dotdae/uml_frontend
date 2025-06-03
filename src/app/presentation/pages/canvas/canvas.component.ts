@@ -42,6 +42,11 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   // Tipo de diagrama actual
   currentDiagramType: DiagramType = "class"
 
+  // Añadir propiedades para los parámetros del diagrama
+  projectId: number | null = null;
+  diagramId: number | null = null;
+  diagramTitle: string | null = null;
+
   // Lista de tipos de diagramas disponibles
   diagramTypes: { type: DiagramType; label: string }[] = [
     { type: "class", label: "Diagrama de Clases" },
@@ -83,10 +88,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     // Load the new diagram type in the FlexFlow component with a small delay to ensure ViewChild is ready
     setTimeout(() => {
       if (this.flexFlowComponent) {
-        // FlexFlowService doesn't support 'blank' type, so default to 'class'
-        const flexFlowType = type === 'blank' ? 'class' : type;
-        console.log('Calling loadDiagram with type:', flexFlowType);
-        this.flexFlowComponent.loadDiagram(flexFlowType as 'class' | 'sequence' | 'package' | 'usecase' | 'component');
+        this.loadDiagramWithType(type);
         console.log('loadDiagram called successfully');
       } else {
         console.log('FlexFlowComponent is still not available after timeout');
@@ -120,12 +122,41 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     // Llama al endpoint para crear el proyecto al cargar el componente
     this.createProjectOnInit();
 
-    // Extraer el tipo de diagrama de la URL y actualizar currentDiagramType
+    // Leer parámetros de consulta (query parameters) en lugar de parámetros de ruta
+    this.route.queryParams.subscribe(params => {
+      // Obtener los parámetros del diagrama
+      this.projectId = params['projectId'] ? +params['projectId'] : null;
+      this.diagramId = params['diagramId'] ? +params['diagramId'] : null;
+      this.diagramTitle = params['title'] as string;
+
+      // Si tenemos un título del diagrama, usarlo como título del documento
+      if (this.diagramTitle) {
+        this.title = this.diagramTitle;
+      }
+
+      const type = params['type'] as DiagramType;
+      if (type && this.diagramTypes.some(dt => dt.type === type)) {
+        this.selectedDiagramType = type;
+        this.currentDiagramType = type;
+
+        // Cargar el diagrama con el tipo correcto si tenemos FlexFlowComponent disponible
+        // Si no está disponible aún, se cargará en ngAfterViewInit
+        if (this.flexFlowComponent) {
+          this.loadDiagramWithType(type);
+        }
+      }
+    });
+
+    // También mantener la lectura de parámetros de ruta para compatibilidad
     this.route.paramMap.subscribe(params => {
       const type = params.get("type") as DiagramType;
       if (type && this.diagramTypes.some(dt => dt.type === type)) {
         this.selectedDiagramType = type;
         this.currentDiagramType = type;
+
+        if (this.flexFlowComponent) {
+          this.loadDiagramWithType(type);
+        }
       }
     });
 
@@ -154,10 +185,24 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   ngAfterViewInit() {
     console.log("ngAfterViewInit");
+
+    // Si tenemos un tipo de diagrama y FlexFlowComponent está disponible, cargar el diagrama
+    if (this.currentDiagramType && this.flexFlowComponent) {
+      this.loadDiagramWithType(this.currentDiagramType);
+    }
+  }
+
+  // Nuevo método para cargar el diagrama con el tipo especificado
+  private loadDiagramWithType(type: DiagramType): void {
+    if (this.flexFlowComponent) {
+      const flexFlowType = type === 'blank' ? 'class' : type;
+      console.log('Loading diagram with type:', flexFlowType);
+      this.flexFlowComponent.loadDiagram(flexFlowType as 'class' | 'sequence' | 'package' | 'usecase' | 'component');
+    }
   }
 
   goToDashboard() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/dashboard/home']);
   }
 
   toggleSidebar() {

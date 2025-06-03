@@ -358,11 +358,26 @@ export class ProjectDiagramsComponent implements OnInit {
   }
 
   openDiagram(type: string, id: number): void {
+    // Mapear los tipos de diagrama del proyecto a los tipos esperados por el canvas
+    const diagramTypeMap: { [key: string]: string } = {
+      'clase': 'class',
+      'secuencia': 'sequence',
+      'paquetes': 'package',
+      'casos_de_uso': 'usecase',
+      'componentes': 'component'
+    };
+
+    const mappedType = diagramTypeMap[type] || type;
+
+    // Encontrar el diagrama para obtener su título
+    const diagram = this.allDiagrams.find(d => d.id === id);
+
     this.router.navigate(['/canvas'], {
       queryParams: {
         projectId: this.projectId,
         diagramId: id,
-        type: type
+        type: mappedType,
+        title: diagram ? diagram.title : 'Diagrama'
       }
     });
   }

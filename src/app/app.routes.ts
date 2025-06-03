@@ -84,5 +84,9 @@ export const routes: Routes = [
   path: "canvas/:type", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
     canActivate: [authGuard],
   },
+{
+  path: "canvas", component: CanvasComponent, title: "UMLForge - Lienzo de diagramas",
+    canActivate: [authGuard],
+  },
 
 ];
