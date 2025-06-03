@@ -139,13 +139,15 @@
 
     <!-- Paginador (solo se muestra si hay más de 8 elementos) -->
     @if (totalPages > 1) {
-    <app-paginator
-        [currentPage]="currentPage"
-        [totalPages]="totalPages"
-        [accentColor]="accentColor"
-        (pageChanged)="goToPage($event)"
-        class="mt-8 flex justify-center space-x-2">
+    <app-paginator [currentPage]="currentPage" [totalPages]="totalPages" [accentColor]="accentColor"
+        (pageChanged)="goToPage($event)" class="mt-8 flex justify-center space-x-2">
     </app-paginator>
+    }
+
+    @if (showRenameModal && diagramToRename) {
+    <app-rename [itemName]="diagramToRename.title" [documentType]="'Diagrama'" [itemId]="diagramToRename.id"
+        (close)="closeRenameModal()" (rename)="handleRename($event)">
+    </app-rename>
     }
 
 </div>

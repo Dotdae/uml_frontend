@@ -23,11 +23,11 @@
             class="bg-white rounded-lg shadow p-5 border border-gray-200 flex flex-col min-h-[265px] hover:bg-yellow-50 transition group">
             <!-- Contenedor del título y botón de opciones -->
             <div class="flex justify-between items-center relative">
-                <div class="flex items-center space-x-3"> 
+                <div class="flex items-center space-x-3">
                     <img src="UMLForgeOnlyIcon.png" alt="UMLForge" class="w-10 h-10 mb-2">
                     <h2 class="text-lg font-semibold text-gray-800">{{ project.name }}</h2>
                 </div>
-                
+
 
                 <!-- <button
                     class="p-1.5 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -92,12 +92,14 @@
 
     <!-- Paginador (solo se muestra si hay más de 6 proyectos) -->
     @if (totalPages > 1) {
-    <app-paginator
-        [currentPage]="currentPage"
-        [totalPages]="totalPages"
-        [accentColor]="accentColor"
-        (pageChanged)="goToPage($event)"
-        class="mt-8 flex justify-center space-x-2">
+    <app-paginator [currentPage]="currentPage" [totalPages]="totalPages" [accentColor]="accentColor"
+        (pageChanged)="goToPage($event)" class="mt-8 flex justify-center space-x-2">
     </app-paginator>
+    }
+
+    @if (showRenameModal && projectToRename) {
+    <app-rename [itemName]="projectToRename.name" [documentType]="'Proyecto'" [itemId]="projectToRename.id"
+        (close)="closeRenameModal()" (rename)="handleRename($event)">
+    </app-rename>
     }
 </div>

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from '../../../components/paginator/paginator.component';
 import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
+import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
 
 interface Diagram {
   id: number;
@@ -21,7 +22,8 @@ interface Diagram {
     //  RouterLink,
     OptionsMenuComponent,
     PaginatorComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    RenameComponent
   ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
@@ -50,6 +52,10 @@ export class ProjectDiagramsComponent implements OnInit {
   searchQuery = '';
   filteredDiagrams: Diagram[] = [];
   isSearchActive = false;
+
+  // Variables para control del modal de renombrar
+  showRenameModal = false;
+  diagramToRename: Diagram | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -189,7 +195,7 @@ export class ProjectDiagramsComponent implements OnInit {
   toggleSearchBar(event: Event, buttonElement: HTMLElement): void {
     event.stopPropagation();
     this.showSearch = !this.showSearch;
-    
+
     // Si cerramos la búsqueda visualmente pero hay una búsqueda activa,
     // mantenemos el estado de búsqueda
   }
@@ -206,6 +212,9 @@ export class ProjectDiagramsComponent implements OnInit {
       case 'rename':
         console.log('Renombrar diagrama:', diagram.id);
         // Implementar lógica para renombrar
+        // Mostrar modal de renombrar
+        this.diagramToRename = diagram;
+        this.showRenameModal = true;
         break;
       case 'duplicate':
         console.log('Duplicar diagrama:', diagram.id);
@@ -249,18 +258,17 @@ export class ProjectDiagramsComponent implements OnInit {
       this.isSearchActive = false;
       this.searchQuery = '';
       this.filteredDiagrams = [];
-      
+
       // Restablecer la paginación
       this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
       this.currentPage = 1;
-      
+
       // Mostrar todos los diagramas
       this.updateDisplayedDiagrams();
       // Si no hay consulta, mostrar todos los diagramas
       // this.updateDisplayedDiagrams();
     }
   }
-
 
   openDiagram(type: string, id: number): void {
     this.router.navigate(['/canvas'], {
@@ -274,6 +282,31 @@ export class ProjectDiagramsComponent implements OnInit {
 
   createDiagram(): void {
     console.log('Crear nuevo diagrama para el proyecto', this.projectId);
+  }
+
+  handleRename(data: {id: number | null, newName: string}): void {
+    if (data.id !== null && this.diagramToRename) {
+      // Aquí implementarías la lógica para cambiar el nombre en el backend
+      console.log(`Renombrando diagrama ${data.id} a "${data.newName}"`);
+      
+      // Actualizar en el array local
+      const diagramIndex = this.allDiagrams.findIndex(d => d.id === data.id);
+      if (diagramIndex >= 0) {
+        this.allDiagrams[diagramIndex].title = data.newName;
+        
+        // Actualizar la vista si es necesario
+        this.updateDisplayedDiagrams();
+      }
+      
+      // Cerrar el modal
+      this.closeRenameModal();
+    }
+  }
+
+  // Añadir métodos para manejar el renombrado
+  closeRenameModal(): void {
+    this.showRenameModal = false;
+    this.diagramToRename = null;
   }
 
   // Método para cerrar todos los menús cuando se hace clic fuera

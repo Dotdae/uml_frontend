@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from '../../../components/paginator/paginator.component';
+import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
 
 interface Project {
   id: number;
@@ -13,7 +14,13 @@ interface Project {
 
 @Component({
   selector: 'app-projects',
-  imports: [CommonModule, RouterLink, OptionsMenuComponent, PaginatorComponent],
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    OptionsMenuComponent, 
+    PaginatorComponent,
+    RenameComponent
+  ],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css',
   standalone: true
@@ -30,6 +37,10 @@ export class ProjectsComponent implements OnInit {
   projectsPerPage: number = 6;
   totalPages: number = 0;
   accentColor: 'yellow' | 'blue' | 'green' = 'yellow';
+  
+  // Variables para control del modal de renombrar
+  showRenameModal = false;
+  projectToRename: Project | null = null; // Ajusta el tipo según tu interfaz de proyectos
 
   constructor(private router: Router) { }
 
@@ -67,6 +78,10 @@ export class ProjectsComponent implements OnInit {
         break;
       case 'rename':
         console.log('Renombrar proyecto:', project.id);
+
+        this.projectToRename = project;
+        this.showRenameModal = true;
+
         break;
       case 'duplicate':
         console.log('Duplicar proyecto:', project.id);
@@ -78,6 +93,11 @@ export class ProjectsComponent implements OnInit {
         console.log('Mostrar detalles del proyecto:', project.id);
         break;
     }
+  }
+
+  closeRenameModal(): void {
+    this.showRenameModal = false;
+    this.projectToRename = null;
   }
 
   closeAllMenus(): void {
@@ -137,6 +157,25 @@ export class ProjectsComponent implements OnInit {
         return 'bg-pink-100 text-pink-800 border border-pink-200';
       default:
         return 'bg-gray-100 text-gray-800 border border-gray-200';
+    }
+  }
+
+  handleRename(data: {id: number | null, newName: string}): void {
+    if (data.id !== null && this.projectToRename) {
+      // Aquí implementarías la lógica para cambiar el nombre en el backend
+      console.log(`Renombrando proyecto ${data.id} a "${data.newName}"`);
+      
+      // Actualizar en el array local (ajusta según tu estructura de datos)
+      const projectIndex = this.allProjects.findIndex(p => p.id === data.id);
+      if (projectIndex >= 0) {
+        this.allProjects[projectIndex].name = data.newName;
+        
+        // Actualizar la vista si es necesario
+        this.updateDisplayedProjects();
+      }
+      
+      // Cerrar el modal
+      this.closeRenameModal();
     }
   }
 }

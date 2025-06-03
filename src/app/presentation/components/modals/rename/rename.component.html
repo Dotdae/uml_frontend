@@ -1,1 +1,80 @@
-<p>rename works!</p>
+<div class="fixed inset-0 flex items-center justify-center z-50 modal-container">
+    <!-- Fondo con efecto blur -->
+    <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm modal-overlay"></div>
+
+    <div class="bg-white w-[30rem] rounded-xl shadow-lg relative z-10 modal-content">
+        <!-- Botón de cerrar -->
+        <button (click)="closeModal()"
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div class="p-6">
+            <h1 class="font-semibold text-3xl text-gray-800">
+                Renombrar {{ documentType }}
+            </h1>
+
+            <!-- Ilustración de edición -->
+            <div class="mt-4 flex justify-center">
+                <div class="p-4 rounded-full bg-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-blue-500" viewBox="0 -960 960 960"
+                        fill="currentColor">
+                        <path
+                            d="M200-200h56l345-345-56-56-345 345v56Zm572-403L602-773l56-56q23-23 56.5-23t56.5 23l56 56q23 23 24 55.5T829-660l-57 57Zm-58 59L290-120H120v-170l424-424 170 170Zm-141-29-28-28 56 56-28-28Z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Formulario para el nombre -->
+            <div class="mt-6">
+                <label for="newName" class="block text-lg font-semibold text-gray-700">
+                    Nuevo nombre:
+                </label>
+                <input type="text" id="newName" [(ngModel)]="newName"
+                    placeholder="Ingresa un nuevo nombre..."
+                    (input)="onInputChange()"
+                    class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                @if (errorMessage) {
+                <p class="mt-2 text-red-600 text-sm">{{ errorMessage }}</p>
+                }
+                @if (newName.trim() === originalName.trim()) {
+                <p class="mt-2 text-amber-600 text-sm">El nombre no ha cambiado.</p>
+                }
+            </div>
+
+            <!-- Información adicional -->
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 -960 960 960"
+                            fill="currentColor">
+                            <path
+                                d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                        </svg>
+                    </div>
+                    <p class="ml-3 text-justify text-gray-600">
+                        El nuevo nombre se aplicará inmediatamente a este {{ documentType.toLowerCase() }}.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex justify-end space-x-3 mt-8">
+                <button (click)="closeModal()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                    Cancelar
+                </button>
+                <button (click)="renameItem()" 
+                    [disabled]="!isValidName() || !hasChanged()"
+                    [class.opacity-50]="!isValidName() || !hasChanged()" 
+                    [class.cursor-not-allowed]="!isValidName() || !hasChanged()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition">
+                    Renombrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

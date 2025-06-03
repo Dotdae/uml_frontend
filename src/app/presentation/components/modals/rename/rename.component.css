@@ -1,0 +1,39 @@
+.modal-container {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.modal-overlay {
+  animation: blurIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes blurIn {
+  from {
+    backdrop-filter: blur(0);
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  to {
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+.modal-content {
+  animation: scaleIn 0.35s ease-out;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
