@@ -125,4 +125,10 @@
         (pageChanged)="goToPage($event)" class="mt-8 flex justify-center space-x-2">
     </app-paginator>
     }
+
+    @if (showConfirmationModal) {
+    <app-confirmation [config]="confirmationConfig" (confirm)="handleConfirmation()"
+        (cancel)="closeConfirmationModal()">
+    </app-confirmation>
+    }
 </div>

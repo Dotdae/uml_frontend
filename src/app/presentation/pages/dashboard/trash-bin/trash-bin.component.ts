@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from 'src/app/presentation/components/paginator/paginator.component';
 import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
+import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
 
 interface Diagram {
   id: number;
@@ -20,7 +21,8 @@ interface Diagram {
     //  RouterLink,
     OptionsMenuComponent,
     PaginatorComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    ConfirmationComponent
   ],
   templateUrl: './trash-bin.component.html',
   styleUrl: './trash-bin.component.css'
@@ -49,6 +51,13 @@ export class TrashBinComponent implements OnInit {
   searchQuery = '';
   filteredDiagrams: Diagram[] = [];
   isSearchActive = false;
+
+  showConfirmationModal = false;
+  confirmationConfig: ConfirmationConfig = {
+    type: 'generic',
+    accentColor: 'red'
+  };
+  currentAction: { type: string; itemId?: number } = { type: '' };
 
   constructor(
     private route: ActivatedRoute,
@@ -148,16 +157,10 @@ export class TrashBinComponent implements OnInit {
     }
   }
 
-  // Método para actualizar los diagramas mostrados
-  // updateDisplayedDiagrams(): void {
-  //   const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-  //   const endIndex = startIndex + this.itemsPerPage;
-  //   this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
-  // }
   updateDisplayedDiagrams(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    
+
     if (this.isSearchActive && this.filteredDiagrams.length > 0) {
       this.diagrams = this.filteredDiagrams.slice(startIndex, endIndex);
       this.totalPages = Math.ceil(this.filteredDiagrams.length / this.itemsPerPage);
@@ -188,13 +191,9 @@ export class TrashBinComponent implements OnInit {
 
     // Si cerramos la búsqueda visualmente pero hay una búsqueda activa,
     // mantenemos el estado de búsqueda
-
-    // Si cerramos la búsqueda, limpiar filtros
-    // if (!this.showSearch) {
-    //   this.searchQuery = '';
-    //   this.updateDisplayedDiagrams();
-    // }
   }
+
+
 
   handleOptionSelected(action: MenuAction, diagram: Diagram): void {
     // Cerrar el menú
@@ -204,11 +203,29 @@ export class TrashBinComponent implements OnInit {
     switch (action) {
       case 'restore':
         console.log('Restaurar diagrama:', diagram.id);
-        // Implementar lógica para restaurar
+        // Configurar y mostrar el modal de confirmación
+        this.confirmationConfig = {
+          type: 'restore',
+          itemName: diagram.title,
+          itemType: diagram.type === 'project' ? 'Proyecto' : 'Diagrama',
+          confirmButtonText: 'Restaurar',
+          accentColor: 'green'
+        };
+        this.currentAction = { type: 'restore', itemId: diagram.id };
+        this.showConfirmationModal = true;
         break;
       case 'delete':
         console.log('Eliminar permanentemente diagrama:', diagram.id);
-        // Implementar lógica para eliminar permanentemente
+        // Configurar y mostrar el modal de confirmación
+        this.confirmationConfig = {
+          type: 'delete',
+          itemName: diagram.title,
+          itemType: diagram.type === 'project' ? 'Proyecto' : 'Diagrama',
+          confirmButtonText: 'Eliminar',
+          accentColor: 'red'
+        };
+        this.currentAction = { type: 'delete', itemId: diagram.id };
+        this.showConfirmationModal = true;
         break;
       case 'details':
         console.log('Mostrar detalles del diagrama:', diagram.id);
@@ -244,16 +261,52 @@ export class TrashBinComponent implements OnInit {
       this.isSearchActive = false;
       this.searchQuery = '';
       this.filteredDiagrams = [];
-      
+
       // Restablecer la paginación
       this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
       this.currentPage = 1;
-      
+
       // Mostrar todos los diagramas
       this.updateDisplayedDiagrams();
       // Si no hay consulta, mostrar todos los diagramas
       // this.updateDisplayedDiagrams();
     }
+  }
+
+  // Método para manejar la confirmación
+  handleConfirmation(): void {
+    switch (this.currentAction.type) {
+      case 'emptyTrash':
+        console.log('Confirmado: Vaciar papelera');
+        // Implementar la lógica para vaciar la papelera
+        this.allDiagrams = [];
+        this.filteredDiagrams = [];
+        this.totalPages = 0;
+        this.currentPage = 1;
+        this.updateDisplayedDiagrams();
+        break;
+        
+      case 'restore':
+        console.log('Confirmado: Restaurar elemento', this.currentAction.itemId);
+        // Implementar la lógica para restaurar
+        if (this.currentAction.itemId) {
+          this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
+          this.updateDisplayedDiagrams();
+        }
+        break;
+        
+      case 'delete':
+        console.log('Confirmado: Eliminar permanentemente', this.currentAction.itemId);
+        // Implementar la lógica para eliminar
+        if (this.currentAction.itemId) {
+          this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
+          this.updateDisplayedDiagrams();
+        }
+        break;
+    }
+    
+    // Cerrar el modal
+    this.closeConfirmationModal();
   }
 
 
@@ -270,11 +323,21 @@ export class TrashBinComponent implements OnInit {
   emptyTrash(): void {
     console.log('Vaciando papelera', this.projectId);
 
+    // Mostrar confirmación antes de vaciar
+    this.confirmationConfig = {
+      type: 'emptyTrash',
+      itemCount: this.allDiagrams.length,
+      confirmButtonText: 'Vaciar',
+      accentColor: 'red'
+    };
+    this.currentAction = { type: 'emptyTrash' };
+    this.showConfirmationModal = true;
+
     // Después de vaciar, reiniciar la paginación
-    this.allDiagrams = [];
-    this.totalPages = 0;
-    this.currentPage = 1;
-    this.updateDisplayedDiagrams();
+    // this.allDiagrams = [];
+    // this.totalPages = 0;
+    // this.currentPage = 1;
+    // this.updateDisplayedDiagrams();
   }
 
   // Método para cerrar todos los menús cuando se hace clic fuera
@@ -289,5 +352,10 @@ export class TrashBinComponent implements OnInit {
   closeSearch(): void {
     this.showSearch = false;
     // No limpiamos la búsqueda aquí, solo cerramos el componente visualmente
+  }
+
+  closeConfirmationModal(): void {
+    this.showConfirmationModal = false;
+    this.currentAction = { type: '' };
   }
 }

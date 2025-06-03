@@ -155,4 +155,10 @@
     </app-details>
     }
 
+    @if (showConfirmationModal) {
+    <app-confirmation [config]="confirmationConfig" (confirm)="handleConfirmation()"
+        (cancel)="closeConfirmationModal()">
+    </app-confirmation>
+    }
+
 </div>

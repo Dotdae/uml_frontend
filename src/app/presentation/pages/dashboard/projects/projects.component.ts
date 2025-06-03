@@ -5,6 +5,7 @@ import { OptionsMenuComponent, MenuAction } from '../../../components/modals/opt
 import { PaginatorComponent } from '../../../components/paginator/paginator.component';
 import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
 import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/modals/details/details.component';
+import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
 
 interface Project {
   id: number;
@@ -16,12 +17,13 @@ interface Project {
 @Component({
   selector: 'app-projects',
   imports: [
-    CommonModule, 
-    RouterLink, 
-    OptionsMenuComponent, 
+    CommonModule,
+    RouterLink,
+    OptionsMenuComponent,
     PaginatorComponent,
     RenameComponent,
-    DetailsComponent
+    DetailsComponent,
+    ConfirmationComponent
   ],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css',
@@ -39,7 +41,7 @@ export class ProjectsComponent implements OnInit {
   projectsPerPage: number = 6;
   totalPages: number = 0;
   accentColor: 'yellow' | 'blue' | 'green' = 'yellow';
-  
+
   // Variables para control del modal de renombrar
   showRenameModal = false;
   projectToRename: Project | null = null; // Ajusta el tipo según tu interfaz de proyectos
@@ -47,6 +49,13 @@ export class ProjectsComponent implements OnInit {
   // Variables para el modal de detalles
   showDetailsModal = false;
   selectedItemDetails: ItemDetails | null = null;
+
+  showConfirmationModal = false;
+  confirmationConfig: ConfirmationConfig = {
+    type: 'generic',
+    accentColor: 'yellow'
+  };
+  currentAction: { type: string; itemId?: number } = { type: '' };
 
   constructor(private router: Router) { }
 
@@ -91,9 +100,20 @@ export class ProjectsComponent implements OnInit {
         break;
       case 'duplicate':
         console.log('Duplicar proyecto:', project.id);
+
         break;
       case 'trash':
         console.log('Mover a papelera proyecto:', project.id);
+        // Configurar y mostrar el modal de confirmación
+        this.confirmationConfig = {
+          type: 'trash',
+          itemName: project.name,
+          itemType: 'Proyecto',
+          confirmButtonText: 'Mover a papelera',
+          accentColor: 'red'
+        };
+        this.currentAction = { type: 'trash', itemId: project.id };
+        this.showConfirmationModal = true;
         break;
       case 'details':
         console.log('Mostrar detalles del proyecto:', project.id);
@@ -106,17 +126,19 @@ export class ProjectsComponent implements OnInit {
           created: this.getRandomDate(), // En producción, usarías la fecha real del proyecto
           diagramType: undefined
         };
-        
+
         this.showDetailsModal = true;
         break;
     }
   }
 
+
+
   closeDetailsModal(): void {
     this.showDetailsModal = false;
     this.selectedItemDetails = null;
   }
-  
+
   // Método auxiliar para generar fechas aleatorias para demostración (reemplaza esto con datos reales)
   getRandomDate(): string {
     const start = new Date(2024, 0, 1);
@@ -134,6 +156,11 @@ export class ProjectsComponent implements OnInit {
     this.displayedProjects.forEach(project => {
       project.showOptions = false;
     });
+  }
+
+  closeConfirmationModal(): void {
+    this.showConfirmationModal = false;
+    this.currentAction = { type: '' };
   }
 
   // Método para ir a una página específica
@@ -190,22 +217,43 @@ export class ProjectsComponent implements OnInit {
     }
   }
 
-  handleRename(data: {id: number | null, newName: string}): void {
+  handleRename(data: { id: number | null, newName: string }): void {
     if (data.id !== null && this.projectToRename) {
       // Aquí implementarías la lógica para cambiar el nombre en el backend
       console.log(`Renombrando proyecto ${data.id} a "${data.newName}"`);
-      
+
       // Actualizar en el array local (ajusta según tu estructura de datos)
       const projectIndex = this.allProjects.findIndex(p => p.id === data.id);
       if (projectIndex >= 0) {
         this.allProjects[projectIndex].name = data.newName;
-        
+
         // Actualizar la vista si es necesario
         this.updateDisplayedProjects();
       }
-      
+
       // Cerrar el modal
       this.closeRenameModal();
     }
+  }
+
+  // Método para manejar la confirmación
+  handleConfirmation(): void {
+    switch (this.currentAction.type) {
+      case 'trash':
+        console.log('Confirmado: Mover a papelera proyecto:', this.currentAction.itemId);
+        // Implementar la lógica para mover a la papelera
+
+        // Eliminar del array local
+        if (this.currentAction.itemId) {
+          this.allProjects = this.allProjects.filter(p => p.id !== this.currentAction.itemId);
+          this.updateDisplayedProjects();
+        }
+        break;
+
+      // Agregar otros casos según sea necesario
+    }
+
+    // Cerrar el modal
+    this.closeConfirmationModal();
   }
 }

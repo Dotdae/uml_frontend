@@ -1,1 +1,69 @@
-<p>confirmation works!</p>
+<div class="fixed inset-0 flex items-center justify-center z-50 modal-container">
+    <!-- Fondo con efecto blur -->
+    <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm modal-overlay"></div>
+
+    <div class="bg-white w-[28rem] rounded-xl shadow-lg relative z-10 modal-content">
+        <!-- Botón de cerrar -->
+        <button (click)="onCancel()"
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <!-- <div [class]="'p-3 rounded-full mr-4 ' + (config.type === 'delete' || config.type === 'emptyTrash' ? 'bg-red-100' : config.type === 'trash' ? 'bg-amber-100' : config.type === 'restore' ? 'bg-green-100' : 'bg-blue-100')">
+                    <svg xmlns="http://www.w3.org/2000/svg" [class]="'h-8 w-8 ' + getIconColor()" viewBox="0 -960 960 960"
+                        fill="currentColor">
+                        <path [attr.d]="getIcon()" />
+                    </svg>
+                </div> -->
+                <h1 class="font-semibold text-2xl text-gray-800">
+                    {{ getTitle() }}
+                </h1>
+            </div>
+
+            <div class="mt-4 text-gray-600">
+                <p class="text-lg">{{ getMessage() }}</p>
+                
+                @if (config.type === 'emptyTrash' || config.type === 'trash' || config.type === 'delete') {
+                    <div class="mt-4 p-4 bg-red-50 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="ml-3 text-sm text-red-700">
+                                @if (config.type === 'emptyTrash') {
+                                    Esta acción eliminará permanentemente todos los elementos de la papelera y no se pueden recuperar.
+                                } @else if (config.type === 'delete') {
+                                    Esta acción eliminará permanentemente el elemento y no se podrá recuperar.
+                                } @else {
+                                    Los elementos movidos a la papelera se mantendrán ahí hasta que los restaures o los elimines permanentemente.
+                                }
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex justify-end space-x-3 mt-6">
+                <button (click)="onCancel()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                    {{ config.cancelButtonText || 'Cancelar' }}
+                </button>
+                <button (click)="onConfirm()"
+                    [class]="'px-4 py-2 text-white rounded-lg transition ' + getButtonColor()">
+                    {{ config.confirmButtonText || 'Confirmar' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

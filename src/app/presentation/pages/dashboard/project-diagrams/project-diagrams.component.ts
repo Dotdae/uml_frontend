@@ -6,6 +6,7 @@ import { PaginatorComponent } from '../../../components/paginator/paginator.comp
 import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
 import { RenameComponent } from 'src/app/presentation/components/modals/rename/rename.component';
 import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/modals/details/details.component';
+import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
 
 interface Diagram {
   id: number;
@@ -25,7 +26,8 @@ interface Diagram {
     PaginatorComponent,
     SearchBarComponent,
     RenameComponent,
-    DetailsComponent
+    DetailsComponent,
+    ConfirmationComponent
   ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
@@ -63,6 +65,13 @@ export class ProjectDiagramsComponent implements OnInit {
   showDetailsModal = false;
   selectedItemDetails: ItemDetails | null = null;
   projectName: string = 'Proyecto actual'; // Esto deberías obtenerlo de tu API
+
+  showConfirmationModal = false;
+  confirmationConfig: ConfirmationConfig = {
+    type: 'generic',
+    accentColor: 'yellow'
+  };
+  currentAction: { type: string; itemId?: number } = { type: '' };
 
   constructor(
     private route: ActivatedRoute,
@@ -223,7 +232,17 @@ export class ProjectDiagramsComponent implements OnInit {
         break;
       case 'trash':
         console.log('Mover a papelera diagrama:', diagram.id);
-        // Implementar lógica para mover a la papelera
+        // Configurar y mostrar el modal de confirmación
+        this.confirmationConfig = {
+          type: 'trash',
+          itemName: diagram.title,
+          itemType: 'Diagrama',
+          confirmButtonText: 'Mover a papelera',
+          accentColor: 'red'
+        };
+        this.currentAction = { type: 'trash', itemId: diagram.id };
+        this.showConfirmationModal = true;
+
         break;
       case 'details':
         console.log('Mostrar detalles del diagrama:', diagram.id);
@@ -280,6 +299,27 @@ export class ProjectDiagramsComponent implements OnInit {
       // Si no hay consulta, mostrar todos los diagramas
       // this.updateDisplayedDiagrams();
     }
+  }
+
+  // Método para manejar la confirmación
+  handleConfirmation(): void {
+    switch (this.currentAction.type) {
+      case 'trash':
+        console.log('Confirmado: Mover a papelera diagrama:', this.currentAction.itemId);
+        // Implementar la lógica para mover a la papelera
+        
+        // Eliminar del array local
+        if (this.currentAction.itemId) {
+          this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
+          this.updateDisplayedDiagrams();
+        }
+        break;
+      
+      // Agregar otros casos según sea necesario
+    }
+    
+    // Cerrar el modal
+    this.closeConfirmationModal();
   }
 
   openDiagram(type: string, id: number): void {
@@ -342,6 +382,11 @@ export class ProjectDiagramsComponent implements OnInit {
   closeRenameModal(): void {
     this.showRenameModal = false;
     this.diagramToRename = null;
+  }
+
+  closeConfirmationModal(): void {
+    this.showConfirmationModal = false;
+    this.currentAction = { type: '' };
   }
 
   // Método para cerrar todos los menús cuando se hace clic fuera
