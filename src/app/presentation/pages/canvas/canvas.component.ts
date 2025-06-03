@@ -1,6 +1,7 @@
 import { Component, ViewChild, type ElementRef, type AfterViewInit, type OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import * as go from "gojs"
 import type { DiagramType } from "@infrastructure/diagram/diagram.service"
 import { DiagramService } from "@infrastructure/diagram/diagram.service"
@@ -8,16 +9,17 @@ import { ActivatedRoute } from "@angular/router"
 import { HttpClient } from "@angular/common/http"
 import { AuthService } from '@infrastructure/auth/auth.service';
 import { Router } from "@angular/router"
+import { FlexFlowComponent } from "../../components/flex-flow/flex-flow.component"
 
 @Component({
   selector: 'app-canvas',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FlexFlowComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './canvas.component.html',
   styleUrl: './canvas.component.css'
 })
 export class CanvasComponent implements AfterViewInit, OnInit {
-
-  @ViewChild("diagramDiv") diagramDiv!: ElementRef
+  @ViewChild(FlexFlowComponent) flexFlowComponent!: FlexFlowComponent;
 
   title = "Clase UML"
   selectedNode: any = null
@@ -54,9 +56,13 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   menuEditarOpen = false;
   menuTipoOpen = false;
 
-  selectedDiagramType: DiagramType = 'blank';
+  selectedDiagramType: DiagramType = 'class';
 
   isModalOpen = false;
+
+  isSidebarOpen = true;
+
+  selectedNodeId: string | null = null;
 
   constructor(
     private diagramService: DiagramService,
@@ -68,10 +74,25 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   // Método para manejar el cambio de tipo de diagrama desde el menú
   onDiagramTypeChange(type: DiagramType) {
+    console.log('onDiagramTypeChange called with type:', type);
+    console.log('flexFlowComponent available:', !!this.flexFlowComponent);
+
     this.selectedDiagramType = type;
     this.currentDiagramType = type;
-    // Cambia el tipo de diagrama usando el servicio
-    this.diagramService.changeDiagramType(type);
+
+    // Load the new diagram type in the FlexFlow component with a small delay to ensure ViewChild is ready
+    setTimeout(() => {
+      if (this.flexFlowComponent) {
+        // FlexFlowService doesn't support 'blank' type, so default to 'class'
+        const flexFlowType = type === 'blank' ? 'class' : type;
+        console.log('Calling loadDiagram with type:', flexFlowType);
+        this.flexFlowComponent.loadDiagram(flexFlowType as 'class' | 'sequence' | 'package' | 'usecase' | 'component');
+        console.log('loadDiagram called successfully');
+      } else {
+        console.log('FlexFlowComponent is still not available after timeout');
+      }
+    }, 100);
+
     // Actualiza la URL sin recargar la página
     this.router.navigate(['/canvas', type], { replaceUrl: true });
   }
@@ -132,344 +153,116 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   }
 
   ngAfterViewInit() {
-    // Inicializar el diagrama usando el tipo extraído de la URL
-    this.route.paramMap.subscribe(params => {
-      const type = params.get("type") as DiagramType;
-      const diagramTypeToUse = (type && this.diagramTypes.some(dt => dt.type === type))
-        ? type
-        : this.currentDiagramType;
-
-      const diagram = this.diagramService.initDiagram(
-        this.diagramDiv.nativeElement as HTMLDivElement,
-        diagramTypeToUse,
-      );
-
-      // Manejar selección
-      diagram.addDiagramListener("ChangedSelection", (e) => {
-        const node = diagram.selection.first();
-        if (node instanceof go.Node) {
-          this.selectedNode = node;
-          this.selectedLink = null;
-        } else if (node instanceof go.Link) {
-          this.selectedLink = node;
-          this.selectedNode = null;
-        } else {
-          this.selectedNode = null;
-          this.selectedLink = null;
-        }
-      });
-    });
+    console.log("ngAfterViewInit");
   }
 
-  // Cambiar el tipo de diagrama
-  changeDiagramType(type: DiagramType): void {
-    this.currentDiagramType = type
-    this.diagramService.changeDiagramType(type)
-    this.title = this.diagramTypes.find((dt) => dt.type === type)?.label || "Diagrama UML"
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
   }
 
-  // Métodos para la barra de herramientas
-  addClass() {
-    if (this.currentDiagramType === "class" || this.currentDiagramType === "blank") {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "NuevaClase",
-        properties: [],
-        methods: [],
-        loc: "200 200",
-        color: "#DCFCE7"
-      });
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  addNode() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addNode();
     }
   }
 
-  addInterface() {
-    if (
-      this.currentDiagramType === "class" ||
-      this.currentDiagramType === "component" ||
-      this.currentDiagramType === "blank"
-    ) {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "<<Interface>> NuevaInterfaz",
-        properties: [],
-        methods: [],
-        loc: "300 200",
-        color: "white"
-      });
+  addPackageNode() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addPackageNode();
     }
   }
 
-  addActor() {
-    if (this.currentDiagramType === "usecase" || this.currentDiagramType === "blank") {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "NuevoActor",
-        category: "Actor",
-        loc: "100 100"
-      });
+  addInterfaceNode() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addInterfaceNode();
     }
   }
 
-  addUseCase() {
-    if (this.currentDiagramType === "usecase" || this.currentDiagramType === "blank") {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "NuevoCasoDeUso",
-        category: "UseCase",
-        loc: "300 100"
-      });
+  addActorNode() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addActorNode();
     }
   }
 
-  addComponent() {
-    if (this.currentDiagramType === "component" || this.currentDiagramType === "blank") {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "NuevoComponente",
-        ports: [],
-        loc: "200 200",
-        color: "#DCFCE7"
-      });
+  addUseCaseNode() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addUseCaseNode();
     }
   }
 
-  addObject() {
-    if (this.currentDiagramType === "sequence" || this.currentDiagramType === "blank") {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "NuevoObjeto",
-        loc: "200 100",
-        color: "#DCFCE7"
-      });
+  addComponentNode() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addComponentNode();
     }
   }
 
-  addInheritance() {
-    const diagram = this.diagramService.getDiagram()
-    if (diagram.selection.count === 2) {
-      const nodes = diagram.selection.toArray()
-      if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-        const newLink = {
-          from: nodes[0].key,
-          to: nodes[1].key,
-          toArrow: "OpenTriangle",
-          dash: [10, 5],
-        }
-        this.diagramService.addLink(newLink)
-      }
+  exportDiagram() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.exportDiagram();
     }
   }
 
-  addAssociation() {
-    const diagram = this.diagramService.getDiagram()
-    if (diagram.selection.count === 2) {
-      const nodes = diagram.selection.toArray()
-      if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-        const newLink = {
-          from: nodes[0].key,
-          to: nodes[1].key,
-        }
-        this.diagramService.addLink(newLink)
-      }
-    }
+  selectNode(nodeId: string) {
+    this.selectedNodeId = nodeId;
   }
 
-  addAggregation() {
-    const diagram = this.diagramService.getDiagram()
-    if (diagram.selection.count === 2) {
-      const nodes = diagram.selection.toArray()
-      if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-        const newLink = {
-          from: nodes[0].key,
-          to: nodes[1].key,
-          fromArrow: "Diamond",
-          fromText: "0..n",
-        }
-        this.diagramService.addLink(newLink)
-      }
+  changeNodeColor(colorIndex: number) {
+    if (this.selectedNodeId && this.flexFlowComponent) {
+      this.selectedColor = colorIndex;
+      this.flexFlowComponent.changeNodeColor(this.selectedNodeId, this.colors[colorIndex]);
     }
-  }
-
-  addComposition() {
-    const diagram = this.diagramService.getDiagram()
-    if (diagram.selection.count === 2) {
-      const nodes = diagram.selection.toArray()
-      if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-        const newLink = {
-          from: nodes[0].key,
-          to: nodes[1].key,
-          fromArrow: "Diamond",
-          fromText: "1",
-        }
-        this.diagramService.addLink(newLink)
-      }
-    }
-  }
-
-  addDependency() {
-    const diagram = this.diagramService.getDiagram()
-    if (diagram.selection.count === 2) {
-      const nodes = diagram.selection.toArray()
-      if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-        const newLink = {
-          from: nodes[0].key,
-          to: nodes[1].key,
-          dash: [5, 5],
-        }
-        this.diagramService.addLink(newLink)
-      }
-    }
-  }
-
-  addMessage() {
-    if (this.currentDiagramType === "sequence" || this.currentDiagramType === "blank") {
-      const diagram = this.diagramService.getDiagram();
-      if (diagram.selection.count === 2) {
-        const nodes = diagram.selection.toArray();
-        if (nodes[0] instanceof go.Node && nodes[1] instanceof go.Node) {
-          const newLink = {
-            from: nodes[0].key,
-            to: nodes[1].key,
-            text: "mensaje()",
-            category: "Message"
-          }
-          this.diagramService.addLink(newLink)
-        }
-      }
-    }
-  }
-
-  addPackage() {
-    if (this.currentDiagramType === "package" || this.currentDiagramType === "blank") {
-      const key = this.diagramService.getNextNodeId();
-      this.diagramService.addNode({
-        key,
-        name: "NuevoPaquete",
-        category: "Package",
-        loc: "200 200",
-        color: "#DBEAFE"
-      });
-    }
-  }
-
-  deleteSelection() {
-    this.diagramService.deleteSelection()
   }
 
   undo() {
-    this.diagramService.undo()
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.undo();
+    }
   }
 
   redo() {
-    this.diagramService.redo()
-  }
-
-  setColor(index: number) {
-    this.selectedColor = index
-    if (this.selectedNode) {
-      const color = this.getColorFromIndex(index)
-      this.diagramService.setNodeProperty(this.selectedNode, "color", color)
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.redo();
     }
   }
 
-  getColorFromIndex(index: number): string {
-    switch (index) {
-      case 0:
-        return "white"
-      case 1:
-        return "#FEF9C3" // yellow-100
-      case 2:
-        return "#DCFCE7" // green-100
-      case 3:
-        return "#FEE2E2" // red-100
-      default:
-        return "white"
+  canUndo(): boolean {
+    return this.flexFlowComponent ? this.flexFlowComponent.canUndo() : false;
+  }
+
+  canRedo(): boolean {
+    return this.flexFlowComponent ? this.flexFlowComponent.canRedo() : false;
+  }
+
+  zoomIn() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.zoomIn();
     }
   }
 
-  setFontSize(index: number) {
-    this.selectedFontSize = index
-    // Implementar cambio de tamaño de fuente
+  zoomOut() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.zoomOut();
+    }
   }
 
-  // Exportar el diagrama (sin agregar diagramType)
-  exportDiagram() {
-    const json = this.diagramService.getDiagram().model.toJson();
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json);
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "uml-diagram.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+  resetZoom() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.resetZoom();
+    }
   }
 
-  // Importar el diagrama (solo carga el modelo, sin reconfigurar tipo)
-  importDiagram(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      try {
-        this.diagramService.importDiagram(e.target.result);
-      } catch (err) {
-        alert("Archivo inválido");
-      }
-    };
-    reader.readAsText(file);
+  fitToScreen() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.fitToScreen();
+    }
   }
 
-  // Exportar y ENVIAR el diagrama al backend
-  exportDiagramForBackend() {
-    const model = this.diagramService.getDiagram().model as go.GraphLinksModel;
-
-    // Solo las propiedades esenciales para el backend
-    const nodes = model.nodeDataArray.map((node: any) => ({
-      name: node.name,
-      properties: Array.isArray(node.properties) ? node.properties : [],
-      methods: Array.isArray(node.methods) ? node.methods : [],
-      category: node.category ?? ""
-    }));
-
-    const links = model.linkDataArray.map((link: any) => ({
-      from: link.from,
-      to: link.to,
-      type: link.type ?? "",
-      text: link.text ?? "",
-      category: link.category ?? ""
-    }));
-
-    const exportData = {
-      diagramType: this.currentDiagramType,
-      nodes,
-      links
-    };
-
-    // Enviar al backend
-    this.http.post('http://localhost:4200/api/generate-text', exportData)
-      .subscribe({
-        next: (response) => {
-          // Puedes mostrar el resultado o manejarlo como desees
-          console.log('Respuesta del backend:', response);
-          alert('Proyecto generado correctamente.');
-        },
-        error: (err) => {
-          alert('Error al enviar el diagrama al backend');
-        }
-      });
-  }
-
-  saveDiagram() {
-  }
-
-  goToDashboard(): void {
-    this.router.navigate(['/dashboard/home']);
+  getZoomPercentage(): number {
+    return this.flexFlowComponent ? this.flexFlowComponent.getZoomPercentage() : 100;
   }
 }
+

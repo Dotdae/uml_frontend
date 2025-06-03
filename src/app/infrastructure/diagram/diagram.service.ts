@@ -932,7 +932,7 @@ export class DiagramService {
   private loadSampleData(type: DiagramType): void {
 
     if (this.currentType === type) return;
-    
+
     let nodeDataArray: any[] = []
     let linkDataArray: any[] = []
 
