@@ -30,7 +30,7 @@ export class OptionsMenuComponent {
       // Calcular espacio disponible
       const spaceBelow = viewport.height - bottom;
       const spaceAbove = top;
-      
+
       // Posicionamiento horizontal
       if (this.position === 'right') {
         const rightPosition = right;
@@ -50,7 +50,11 @@ export class OptionsMenuComponent {
     }
   }
 
-  selectOption(action: MenuAction): void {
+  selectOption(action: MenuAction, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.optionSelected.emit(action);
   }
 

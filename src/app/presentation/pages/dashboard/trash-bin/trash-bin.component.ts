@@ -10,6 +10,7 @@ import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/
 import { TrashBinService } from '../../../../core/services/trash-bin.service';
 import { AuthService } from '../../../../infrastructure/auth/auth.service';
 import { TrashBin } from '../../../../core/models/project.model';
+import { getDiagramTypeName } from '../../../../core/models/diagram.model';
 
 interface TrashItem {
   id: number;
@@ -134,7 +135,7 @@ export class TrashBinComponent implements OnInit, OnDestroy {
         originalId = item.project.id;
       } else if (item.diagramId && item.diagram) {
         title = item.diagram.name;
-        type = this.getDiagramTypeString(item.diagram.type);
+        type = getDiagramTypeName(item.diagram.type);
         originalId = item.diagram.id;
       }
 

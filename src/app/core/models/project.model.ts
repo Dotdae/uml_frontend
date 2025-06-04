@@ -16,7 +16,7 @@ export interface Status {
 export interface Diagram {
   id: number;
   name: string;
-  type: string;
+  type: number; // 1=CLASS, 2=SEQUENCE, 3=PACKAGE, 4=COMPONENTS, 5=USECASE
   projectId: number;
   createdAt: string;
   updatedAt: string;

@@ -1,11 +1,11 @@
 <div class="menu-container">
-    <div class="menu-overlay" (click)="selectOption('close')"></div>
-    <div #menuContent class="menu-content">
+    <div class="menu-overlay" (click)="selectOption('close', $event)"></div>
+    <div #menuContent class="menu-content" (click)="$event.stopPropagation()">
         <div class="py-1">
             <!-- Opciones normales cuando NO estamos en la papelera -->
             @if (!trashBinOptions) {
             <!-- Abrir -->
-            <button (click)="selectOption('open')"
+            <button (click)="selectOption('open', $event)"
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 -960 960 960"
                     fill="currentColor">
@@ -16,7 +16,7 @@
             </button>
 
             <!-- Renombrar -->
-            <button (click)="selectOption('rename')"
+            <button (click)="selectOption('rename', $event)"
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 -960 960 960"
                     fill="currentColor">
@@ -27,7 +27,7 @@
             </button>
 
             <!-- Mover a la papelera -->
-            <button (click)="selectOption('trash')"
+            <button (click)="selectOption('trash', $event)"
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 -960 960 960"
                     fill="currentColor">
@@ -40,7 +40,7 @@
             <div class="border-t-2 border-gray-200 my-1"></div>
 
             <!-- Mostrar detalles -->
-            <button (click)="selectOption('details')"
+            <button (click)="selectOption('details', $event)"
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 -960 960 960"
                     fill="currentColor">
@@ -54,7 +54,7 @@
             <!-- Opciones especiales para la papelera -->
             @if (trashBinOptions) {
             <!-- Restaurar -->
-            <button (click)="selectOption('restore')"
+            <button (click)="selectOption('restore', $event)"
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 -960 960 960"
                     fill="currentColor">
@@ -65,7 +65,7 @@
             </button>
 
             <!-- Eliminar permanentemente -->
-            <button (click)="selectOption('delete')"
+            <button (click)="selectOption('delete', $event)"
                 class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100 hover:text-red-900 flex items-center cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-700 hover:text-red-900" viewBox="0 -960 960 960"
                     fill="currentColor">
@@ -74,19 +74,6 @@
                 </svg>
                 Eliminar
             </button>
-
-            <!-- <div class="border-t-2 border-gray-200 my-1"></div> -->
-
-            <!-- Mostrar detalles -->
-            <!-- <button (click)="selectOption('details')"
-                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 -960 960 960"
-                    fill="currentColor">
-                    <path
-                        d="m298-262-56-56 121-122H80v-80h283L242-642l56-56 218 218-218 218Zm222-18v-80h360v80H520Zm0-320v-80h360v80H520Zm120 160v-80h240v80H640Z" />
-                </svg>
-                Mostrar detalles
-            </button> -->
             }
         </div>
     </div>

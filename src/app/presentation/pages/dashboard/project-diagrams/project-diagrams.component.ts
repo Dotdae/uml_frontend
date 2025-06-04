@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from '../../../components/paginator/paginator.component';
 import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
@@ -9,13 +10,10 @@ import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/m
 import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
 import { DiagramCreationComponent, DiagramCreationData } from 'src/app/presentation/components/modals/diagram-creation/diagram-creation.component';
 
-interface Diagram {
-  id: number;
-  title: string;
-  type: string;
-  modified: string;
-  showOptions?: boolean;
-}
+// Import the service and models
+import { DiagramService } from 'src/app/core/services/diagram.service';
+import { Diagram, CreateDiagramDto, DiagramSearchFilters, getDiagramTypeName } from 'src/app/core/models/diagram.model';
+import { ProjectsService } from 'src/app/core/services/projects.service';
 
 @Component({
   selector: 'app-project-diagrams',
@@ -34,8 +32,11 @@ interface Diagram {
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
 })
-export class ProjectDiagramsComponent implements OnInit {
+export class ProjectDiagramsComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
   projectId: number | null = null;
+  projectName: string = '';
 
   // Todos los diagramas
   allDiagrams: Diagram[] = [];
@@ -43,15 +44,26 @@ export class ProjectDiagramsComponent implements OnInit {
   // Diagramas a mostrar en la página actual
   diagrams: Diagram[] = [];
 
+  // Loading states
+  isLoading: boolean = false;
+  isCreating: boolean = false;
+  isDeleting: boolean = false;
+  isRenaming: boolean = false;
+
+  // Error handling
+  errorMessage: string = '';
+
   // Configuración del paginador
   currentPage: number = 1;
   itemsPerPage: number = 7;
   totalPages: number = 0;
+  totalItems: number = 0;
 
   accentColor: 'yellow' | 'blue' | 'green' = 'yellow';
 
   // Variable para controlar el orden
   isAscendingOrder: boolean = false;
+  sortBy: 'name' | 'createdAt' | 'updatedAt' = 'updatedAt';
 
   // Añadir estas propiedades para la búsqueda
   showSearch = false;
@@ -66,7 +78,6 @@ export class ProjectDiagramsComponent implements OnInit {
   // Variables para el modal de detalles
   showDetailsModal = false;
   selectedItemDetails: ItemDetails | null = null;
-  projectName: string = 'Proyecto actual'; // Esto deberías obtenerlo de tu API
 
   showConfirmationModal = false;
   confirmationConfig: ConfirmationConfig = {
@@ -79,95 +90,85 @@ export class ProjectDiagramsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private diagramService: DiagramService,
+    private projectsService: ProjectsService
   ) { }
 
   ngOnInit() {
     // Recuperar el ID del proyecto de los parámetros de la URL
-    this.route.params.subscribe(params => {
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.projectId = +params['id']; // El '+' convierte el string a número
 
+      if (this.projectId) {
       // Establecer la ordenación descendente (más reciente primero) por defecto
       this.isAscendingOrder = false;
+        this.sortBy = 'updatedAt';
+
+        this.loadProject(this.projectId);
       this.loadProjectDiagrams(this.projectId);
+      }
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadProject(projectId: number) {
+    this.projectsService.getProject(projectId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (project) => {
+          this.projectName = project.projectName;
+        },
+        error: (error) => {
+          console.error('Error loading project:', error);
+          this.errorMessage = 'Error loading project information';
+        }
+      });
   }
 
   loadProjectDiagrams(projectId: number) {
-    // Aquí normalmente harías una llamada a un servicio para obtener los diagramas
-    // Por ahora, usaremos datos de ejemplo
-    this.allDiagrams = [
-      { id: 1, title: 'Diagrama de Clases - Sistema de Usuarios', type: 'clase', modified: '30/5/2025 1:32' },
-      { id: 2, title: 'Diagrama de Secuencia - Login prueba', type: 'secuencia', modified: '28/5/2025 0:16' },
-      { id: 3, title: 'Diagrama de Componentes - Arquitectura', type: 'componentes', modified: '27/5/2025 15:22' },
-      { id: 4, title: 'Diagrama de Paquetes - Estructura del proyecto', type: 'paquetes', modified: '25/5/2025 9:45' },
-      { id: 5, title: 'Diagrama de Casos de Uso - Funcionalidades', type: 'casos_de_uso', modified: '24/5/2025 11:08' },
-      { id: 6, title: 'Diagrama de Secuencia - Login de Usuario', type: 'secuencia', modified: '30/5/2025 1:32' },
-      { id: 7, title: 'Diagrama de Secuencia - Registro de Usuario', type: 'secuencia', modified: '28/5/2025 0:16' },
-      { id: 8, title: 'Diagrama de Secuencia - Recuperar Contraseña', type: 'secuencia', modified: '27/5/2025 15:22' },
-      { id: 9, title: 'Diagrama de Secuencia - Crear Proyecto', type: 'secuencia', modified: '25/5/2025 9:45' },
-      { id: 10, title: 'Diagrama de Secuencia - Editar Proyecto', type: 'secuencia', modified: '24/5/2025 11:08' },
-      { id: 11, title: 'Diagrama de Secuencia - Eliminar Proyecto', type: 'secuencia', modified: '23/5/2025 14:22' },
-      { id: 12, title: 'Diagrama de Secuencia - Compartir Proyecto', type: 'secuencia', modified: '22/5/2025 16:45' },
-      { id: 13, title: 'Diagrama de Secuencia - Exportar Diagrama', type: 'secuencia', modified: '21/5/2025 10:33' },
-      { id: 14, title: 'Diagrama de Secuencia - Importar Diagrama', type: 'secuencia', modified: '20/5/2025 13:15' },
-      { id: 15, title: 'Diagrama de Secuencia - Generar Código', type: 'secuencia', modified: '19/5/2025 11:42' },
-      { id: 16, title: 'Diagrama de Secuencia - Validar Diagrama', type: 'secuencia', modified: '18/5/2025 09:27' },
-      { id: 17, title: 'Diagrama de Secuencia - Guardar Cambios', type: 'secuencia', modified: '17/5/2025 15:55' }
-    ];
+    this.isLoading = true;
+    this.errorMessage = '';
 
-    // Ordenar por fecha más reciente al inicio
-    this.sortDiagrams();
+    const filters: DiagramSearchFilters = {
+      sortBy: this.sortBy,
+      sortOrder: this.isAscendingOrder ? 'asc' : 'desc'
+    };
 
-    // Calcular el total de páginas
-    this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
-
-    // Mostrar la primera página
-    this.updateDisplayedDiagrams();
-  }
-
-  // Nuevo método para ordenar diagramas
-  sortDiagrams(): void {
-    this.allDiagrams.sort((a, b) => {
-      const dateA = new Date(this.convertDateFormat(a.modified));
-      const dateB = new Date(this.convertDateFormat(b.modified));
-
-      return this.isAscendingOrder
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime();
-    });
-
-    // Actualizar la vista si ya hay diagramas mostrados
-    if (this.diagrams.length > 0) {
-      this.updateDisplayedDiagrams();
+    if (this.isSearchActive && this.searchQuery) {
+      filters.query = this.searchQuery;
     }
-  }
 
-  // Método mejorado para convertir el formato de fecha
-  private convertDateFormat(dateStr: string): string {
-    try {
-      // Convertir de "dd/m/yyyy h:mm" a formato que Date pueda interpretar
-      const [date, time] = dateStr.split(' ');
-      const [day, month, year] = date.split('/');
-
-      // Manejar el formato de hora (que puede ser h:mm o hh:mm)
-      let formattedTime = time;
-      if (time.includes(':')) {
-        const [hours, minutes] = time.split(':');
-        formattedTime = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
-      }
-
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${formattedTime}`;
-    } catch (error) {
-      console.error('Error parsing date:', dateStr, error);
-      return '1970-01-01T00:00:00'; // Fecha por defecto en caso de error
-    }
+    this.diagramService.getDiagramsByProject(projectId, filters)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (diagrams) => {
+          this.allDiagrams = diagrams;
+          this.totalItems = diagrams.length;
+          this.updateDisplayedDiagrams();
+        },
+        error: (error) => {
+          console.error('Error loading diagrams:', error);
+          this.errorMessage = 'Error loading diagrams. Please try again.';
+          this.allDiagrams = [];
+          this.updateDisplayedDiagrams();
+        }
+      });
   }
 
   // Método para manejar el clic en el botón de ordenar
   toggleSortOrder(): void {
     this.isAscendingOrder = !this.isAscendingOrder;
-    this.sortDiagrams();
+    if (this.projectId) {
+      this.loadProjectDiagrams(this.projectId);
+    }
   }
 
   // Método para ir a una página específica
@@ -182,13 +183,8 @@ export class ProjectDiagramsComponent implements OnInit {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
 
-    if (this.isSearchActive && this.filteredDiagrams.length > 0) {
-      this.diagrams = this.filteredDiagrams.slice(startIndex, endIndex);
-      this.totalPages = Math.ceil(this.filteredDiagrams.length / this.itemsPerPage);
-    } else {
       this.diagrams = this.allDiagrams.slice(startIndex, endIndex);
       this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
-    }
   }
 
   toggleOptionsMenu(event: Event, diagram: Diagram, buttonElement: HTMLElement): void {
@@ -209,9 +205,6 @@ export class ProjectDiagramsComponent implements OnInit {
   toggleSearchBar(event: Event, buttonElement: HTMLElement): void {
     event.stopPropagation();
     this.showSearch = !this.showSearch;
-
-    // Si cerramos la búsqueda visualmente pero hay una búsqueda activa,
-    // mantenemos el estado de búsqueda
   }
 
   handleOptionSelected(action: MenuAction, diagram: Diagram): void {
@@ -224,44 +217,37 @@ export class ProjectDiagramsComponent implements OnInit {
         this.openDiagram(diagram.type, diagram.id);
         break;
       case 'rename':
-        console.log('Renombrar diagrama:', diagram.id);
-        // Implementar lógica para renombrar
-        // Mostrar modal de renombrar
         this.diagramToRename = diagram;
         this.showRenameModal = true;
         break;
       case 'duplicate':
-        console.log('Duplicar diagrama:', diagram.id);
-        // Implementar lógica para duplicar
+        this.duplicateDiagram(diagram);
         break;
       case 'trash':
-        console.log('Mover a papelera diagrama:', diagram.id);
-        // Configurar y mostrar el modal de confirmación
         this.confirmationConfig = {
           type: 'trash',
-          itemName: diagram.title,
+          itemName: diagram.name,
           itemType: 'Diagrama',
           confirmButtonText: 'Mover a papelera',
           accentColor: 'red'
         };
         this.currentAction = { type: 'trash', itemId: diagram.id };
         this.showConfirmationModal = true;
-
         break;
       case 'details':
-        console.log('Mostrar detalles del diagrama:', diagram.id);
-        // Crear el objeto de detalles para el diagrama
         this.selectedItemDetails = {
           id: diagram.id,
-          name: diagram.title,
+          name: diagram.name,
           type: 'diagram',
           location: `En ${this.projectName}`,
-          created: this.getRandomDate(), // En producción, usarías la fecha real
-          modified: diagram.modified ? this.convertToISODate(diagram.modified) : undefined,
-          diagramType: this.capitalizeFirstLetter(diagram.type.replace('_', ' '))
+          created: diagram.createdAt,
+          modified: diagram.updatedAt,
+          diagramType: getDiagramTypeName(diagram.type)
         };
-
         this.showDetailsModal = true;
+        break;
+      case 'close':
+        // Just close the menu - already handled above
         break;
     }
   }
@@ -269,39 +255,11 @@ export class ProjectDiagramsComponent implements OnInit {
   // Método para manejar la búsqueda
   handleSearch(query: string): void {
     this.searchQuery = query;
-
-    if (query.trim()) {
-      // Activar el estado de búsqueda
-      this.isSearchActive = true;
-
-      // Filtrar todos los diagramas
-      const lowerQuery = query.toLowerCase();
-      this.filteredDiagrams = this.allDiagrams.filter(diagram =>
-        diagram.title.toLowerCase().includes(lowerQuery)
-      );
-
-      // Actualizar paginación para resultados filtrados
-      this.totalPages = Math.ceil(this.filteredDiagrams.length / this.itemsPerPage);
+    this.isSearchActive = !!query.trim();
       this.currentPage = 1;
 
-      // Mostrar resultados filtrados
-      const startIndex = 0;
-      const endIndex = this.itemsPerPage;
-      this.diagrams = this.filteredDiagrams.slice(startIndex, endIndex);
-    } else {
-      // Desactivar el estado de búsqueda
-      this.isSearchActive = false;
-      this.searchQuery = '';
-      this.filteredDiagrams = [];
-
-      // Restablecer la paginación
-      this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
-      this.currentPage = 1;
-
-      // Mostrar todos los diagramas
-      this.updateDisplayedDiagrams();
-      // Si no hay consulta, mostrar todos los diagramas
-      // this.updateDisplayedDiagrams();
+    if (this.projectId) {
+      this.loadProjectDiagrams(this.projectId);
     }
   }
 
@@ -324,143 +282,172 @@ export class ProjectDiagramsComponent implements OnInit {
   private startCodeGeneration(): void {
     // Aquí implementarías la lógica para llamar al backend
     console.log('Iniciando generación de código para el proyecto:', this.projectId);
-
-    // Ejemplo: Mostrar alguna notificación o indicador de progreso
-    // this.showNotification('La generación de código ha comenzado. Te notificaremos cuando esté listo.');
   }
 
   // Método para manejar la confirmación
   handleConfirmation(): void {
     switch (this.currentAction.type) {
       case 'trash':
-        console.log('Confirmado: Mover a papelera diagrama:', this.currentAction.itemId);
-        // Implementar la lógica para mover a la papelera
-
-        // Eliminar del array local
         if (this.currentAction.itemId) {
-          this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
-          this.updateDisplayedDiagrams();
+          this.moveDiagramToTrash(this.currentAction.itemId);
         }
         break;
 
       case 'generateCode':
-        console.log('Confirmado: Generar código para el proyecto', this.projectId);
-        // Implementar la lógica para generar código
-        // Por ejemplo, mostrar un indicador de carga y llamar a un servicio
         this.startCodeGeneration();
         break;
-
-      // Agregar otros casos según sea necesario
     }
 
-    // Cerrar el modal
     this.closeConfirmationModal();
   }
 
-  openDiagram(type: string, id: number): void {
-    // Mapear los tipos de diagrama del proyecto a los tipos esperados por el canvas
-    const diagramTypeMap: { [key: string]: string } = {
-      'clase': 'class',
-      'secuencia': 'sequence',
-      'paquetes': 'package',
-      'casos_de_uso': 'usecase',
-      'componentes': 'component'
+  // CRUD Operations
+
+  /**
+   * Create a new diagram
+   */
+  createDiagram(): void {
+    this.showDiagramCreationModal = true;
+  }
+
+  handleCreateDiagram(data: DiagramCreationData): void {
+    if (!this.projectId) {
+      this.errorMessage = 'Project ID is required';
+      return;
+    }
+
+    this.isCreating = true;
+    const createDto: CreateDiagramDto = {
+      name: data.name,
+      type: data.type,
+      idProject: this.projectId,
+      infoJson: {}
     };
 
-    const mappedType = diagramTypeMap[type] || type;
+    this.diagramService.createDiagram(createDto)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isCreating = false)
+      )
+      .subscribe({
+        next: (diagram) => {
+          console.log('Diagram created successfully:', diagram);
+          this.closeDiagramCreationModal();
+          this.loadProjectDiagrams(this.projectId!);
 
-    // Encontrar el diagrama para obtener su título
+          // Optionally open the new diagram
+          // this.openDiagram(diagram.type, diagram.id);
+        },
+        error: (error) => {
+          console.error('Error creating diagram:', error);
+          this.errorMessage = 'Error creating diagram. Please try again.';
+        }
+      });
+  }
+
+  /**
+   * Rename a diagram
+   */
+  handleRename(data: { id: number | null, newName: string }): void {
+    if (!data.id) {
+      this.errorMessage = 'Diagram ID is required';
+      return;
+    }
+
+    this.isRenaming = true;
+    this.diagramService.renameDiagram(data.id, data.newName)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isRenaming = false)
+      )
+      .subscribe({
+        next: (diagram) => {
+          console.log('Diagram renamed successfully:', diagram);
+          this.closeRenameModal();
+
+          // Update local array
+          const index = this.allDiagrams.findIndex(d => d.id === data.id);
+          if (index >= 0) {
+            this.allDiagrams[index] = diagram;
+            this.updateDisplayedDiagrams();
+          }
+        },
+        error: (error) => {
+          console.error('Error renaming diagram:', error);
+          this.errorMessage = 'Error renaming diagram. Please try again.';
+        }
+      });
+  }
+
+  /**
+   * Duplicate a diagram
+   */
+  duplicateDiagram(diagram: Diagram): void {
+    const newName = `${diagram.name} (copy)`;
+
+    this.diagramService.duplicateDiagram(diagram.id, newName)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (duplicatedDiagram) => {
+          console.log('Diagram duplicated successfully:', duplicatedDiagram);
+          this.loadProjectDiagrams(this.projectId!);
+        },
+        error: (error) => {
+          console.error('Error duplicating diagram:', error);
+          this.errorMessage = 'Error duplicating diagram. Please try again.';
+        }
+      });
+  }
+
+  /**
+   * Move diagram to trash
+   */
+  moveDiagramToTrash(diagramId: number): void {
+    this.isDeleting = true;
+
+    // In a real app, you'd get the current user
+    const deletedBy = 'current-user-uuid';
+
+    this.diagramService.moveDiagramToTrash(diagramId, deletedBy)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isDeleting = false)
+      )
+      .subscribe({
+        next: () => {
+          console.log('Diagram moved to trash successfully');
+
+          // Remove from local array
+          this.allDiagrams = this.allDiagrams.filter(d => d.id !== diagramId);
+          this.updateDisplayedDiagrams();
+        },
+        error: (error) => {
+          console.error('Error moving diagram to trash:', error);
+          this.errorMessage = 'Error moving diagram to trash. Please try again.';
+        }
+      });
+  }
+
+  /**
+   * Open diagram in canvas
+   */
+  openDiagram(type: number, id: number): void {
     const diagram = this.allDiagrams.find(d => d.id === id);
 
     this.router.navigate(['/canvas'], {
       queryParams: {
         projectId: this.projectId,
         diagramId: id,
-        type: mappedType,
-        title: diagram ? diagram.title : 'Diagrama'
+        type: type,
+        title: diagram ? diagram.name : 'Diagrama'
       }
     });
   }
 
-  createDiagram(): void {
-    console.log('Crear nuevo diagrama para el proyecto', this.projectId);
-    this.showDiagramCreationModal = true;
-  }
+  // Modal management methods
 
   closeDiagramCreationModal(): void {
     this.showDiagramCreationModal = false;
-  }
-
-  handleCreateDiagram(data: DiagramCreationData): void {
-    console.log('Creando nuevo diagrama:', data);
-
-    // Aquí implementarías la lógica para crear el diagrama en el backend
-    // Por ahora, simulamos la creación añadiendo un nuevo diagrama al array
-    const newId = this.allDiagrams.length > 0
-      ? Math.max(...this.allDiagrams.map(d => d.id)) + 1
-      : 1;
-
-    const now = new Date();
-    const day = now.getDate();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
-
-    const newDiagram: Diagram = {
-      id: newId,
-      title: data.name,
-      type: data.type,
-      modified: formattedDate
-    };
-
-    this.allDiagrams.unshift(newDiagram); // Añadir al principio
-    this.updateDisplayedDiagrams();
-
-    // Cerrar el modal
-    this.closeDiagramCreationModal();
-
-    // Opcional: abrir el nuevo diagrama directamente
-    // this.openDiagram(data.type, newId);
-  }
-
-  handleRename(data: { id: number | null, newName: string }): void {
-    if (data.id !== null && this.diagramToRename) {
-      // Aquí implementarías la lógica para cambiar el nombre en el backend
-      console.log(`Renombrando diagrama ${data.id} a "${data.newName}"`);
-
-      // Actualizar en el array local
-      const diagramIndex = this.allDiagrams.findIndex(d => d.id === data.id);
-      if (diagramIndex >= 0) {
-        this.allDiagrams[diagramIndex].title = data.newName;
-
-        // Actualizar la vista si es necesario
-        this.updateDisplayedDiagrams();
-      }
-
-      // Cerrar el modal
-      this.closeRenameModal();
-    }
-  }
-
-  // Método auxiliar para convertir fechas de formato "dd/m/yyyy h:mm" a ISO
-  convertToISODate(dateStr: string): string {
-    return this.convertDateFormat(dateStr);
-  }
-
-  // Método auxiliar para generar fechas aleatorias para demostración (reemplazar con datos reales)
-  getRandomDate(): string {
-    const start = new Date(2024, 0, 1);
-    const end = new Date();
-    const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-    return randomDate.toISOString();
-  }
-
-  // Método para capitalizar la primera letra
-  capitalizeFirstLetter(string: string): string {
-    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   closeDetailsModal(): void {
@@ -468,7 +455,6 @@ export class ProjectDiagramsComponent implements OnInit {
     this.selectedItemDetails = null;
   }
 
-  // Añadir métodos para manejar el renombrado
   closeRenameModal(): void {
     this.showRenameModal = false;
     this.diagramToRename = null;
@@ -479,7 +465,6 @@ export class ProjectDiagramsComponent implements OnInit {
     this.currentAction = { type: '' };
   }
 
-  // Método para cerrar todos los menús cuando se hace clic fuera
   closeAllMenus(): void {
     this.diagrams.forEach(diagram => {
       diagram.showOptions = false;
@@ -487,9 +472,12 @@ export class ProjectDiagramsComponent implements OnInit {
     this.showSearch = false;
   }
 
-  // Método para cerrar la búsqueda
   closeSearch(): void {
     this.showSearch = false;
-    // No limpiamos la búsqueda aquí, solo cerramos el componente visualmente
+  }
+
+  // Clear error message
+  clearError(): void {
+    this.errorMessage = '';
   }
 }

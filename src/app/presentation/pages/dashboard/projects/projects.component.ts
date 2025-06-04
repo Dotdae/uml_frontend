@@ -14,6 +14,7 @@ import { StatusService } from '../../../../core/services/status.service';
 import { ProjectEventsService, ProjectEvent } from '../../../../core/services/project-events.service';
 import { AuthService } from '../../../../infrastructure/auth/auth.service';
 import { Project, UpdateProjectDto, Status } from '../../../../core/models/project.model';
+import { getDiagramTypeName } from '../../../../core/models/diagram.model';
 
 @Component({
   selector: 'app-projects',
@@ -216,7 +217,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           // Filter projects to only show active ones (statusId 1)
           this.allProjects = projects.filter(project => project.statusId === 1);
           this.totalPages = Math.ceil(this.allProjects.length / this.projectsPerPage);
-          this.updateDisplayedProjects();
+    this.updateDisplayedProjects();
           console.log('Active user projects loaded:', this.allProjects);
         },
         error: (error) => {
@@ -409,16 +410,18 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   // Método para obtener una clase CSS según el tipo de diagrama
   getDiagramTagClass(diagramType: string): string {
     switch (diagramType.toLowerCase()) {
-      case 'clase':
+      case 'class diagram':
         return 'bg-blue-100 text-blue-800 border border-blue-200';
-      case 'secuencia':
+      case 'sequence diagram':
         return 'bg-green-100 text-green-800 border border-green-200';
-      case 'componentes':
+      case 'component diagram':
         return 'bg-purple-100 text-purple-800 border border-purple-200';
-      case 'paquetes':
+      case 'package diagram':
         return 'bg-amber-100 text-amber-800 border border-amber-200';
-      case 'casos de uso':
+      case 'use case diagram':
         return 'bg-pink-100 text-pink-800 border border-pink-200';
+      case 'sin diagramas':
+        return 'bg-gray-100 text-gray-800 border border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border border-gray-200';
     }
@@ -479,9 +482,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       return ['Sin diagramas'];
     }
 
-    // Get unique diagram types
+    // Get unique diagram types (numbers) and convert to type names (strings)
     const uniqueTypes = [...new Set(project.diagrams.map(diagram => diagram.type))];
-    return uniqueTypes;
+    return uniqueTypes.map(type => getDiagramTypeName(type));
   }
 
   /**

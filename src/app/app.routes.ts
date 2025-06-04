@@ -14,11 +14,11 @@ import { FlexFlowComponent } from './presentation/components/flex-flow/flex-flow
 
 import { ProjectsComponent } from './presentation/pages/dashboard/projects/projects.component';
 import { HomeComponent } from './presentation/pages/dashboard/home/home.component';
-import { ProjectDiagramsComponent } from './presentation/pages/dashboard/project-diagrams/project-diagrams.component';
 import { TrashBinComponent } from './presentation/pages/dashboard/trash-bin/trash-bin.component';
 
 import { GoogleCallbackComponent } from './presentation/components/google-callback/google-callback.component';
 import { UserProfileComponent } from './presentation/pages/user-profile/user-profile.component';
+import { ProjectDiagramsComponent } from './presentation/pages/dashboard/project-diagrams/project-diagrams.component';
 
 // Aquí se agregarían más rutas de las páginas faltantes de la aplicación
 

@@ -107,7 +107,7 @@
             <div class="col-span-7 p-4 flex items-center justify-between">
                 <div class="flex items-center flex-1">
                     <img src="/UMLForgeOnlyIcon.png" alt="UMLForgeIcon" class="h-5 w-5 mr-3">
-                    <span class="text-gray-800">{{ diagram.title }}</span>
+                    <span class="text-gray-800">{{ diagram.name }}</span>
                 </div>
                 <div class="relative">
                     <button #optionsButton
@@ -126,7 +126,7 @@
                 </div>
             </div>
             <div class="col-span-5 p-4 text-gray-600">
-                {{ diagram.modified }}
+                {{ diagram.updatedAt }}
             </div>
         </div>
         }
@@ -145,7 +145,7 @@
     }
 
     @if (showRenameModal && diagramToRename) {
-    <app-rename [itemName]="diagramToRename.title" [documentType]="'Diagrama'" [itemId]="diagramToRename.id"
+    <app-rename [itemName]="diagramToRename.name" [documentType]="'Diagrama'" [itemId]="diagramToRename.id"
         (close)="closeRenameModal()" (rename)="handleRename($event)">
     </app-rename>
     }
