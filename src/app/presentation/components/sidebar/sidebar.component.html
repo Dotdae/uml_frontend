@@ -1,8 +1,11 @@
 <aside class="w-52 bg-white border-r border-gray-200 flex flex-col h-full">
   <!--New document-->
   <div class="p-4">
-    <button (click)="openProjectModal()"
+    <button (click)="openProjectModal()" [disabled]="isCreatingProject"
       class="w-full text-white bg-yellow-500 hover:bg-yellow-400 focus:outline-none py-2 px-4 rounded-md flex items-center justify-center cursor-pointer">
+      @if (isCreatingProject) {
+      <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+      } @else {
       <span class="mr-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 mr-1.5 text-white" viewBox="0 -960 960 960"
           fill="currentColor">
@@ -11,7 +14,9 @@
         <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 mr-1.5 text-white" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 15h-2v-4H7v-2h4V7h2v4h4v2h-4z" />
         </svg>> -->
-      </span> Nuevo proyecto
+      </span>
+      }
+      {{ isCreatingProject ? 'Creando...' : 'Crear proyecto' }}
     </button>
   </div>
   <!--Navigation-->
@@ -110,7 +115,7 @@
 
   <!-- Modal de creación de proyecto -->
   @if (showProjectModal) {
-  <app-project-creation (close)="closeProjectModal()" (create)="handleCreateProject($event)">
+  <app-project-creation [isLoading]="isCreatingProject" (close)="closeProjectModal()" (create)="handleCreateProject($event)">
   </app-project-creation>
   }
 

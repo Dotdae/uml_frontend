@@ -31,6 +31,7 @@ export class ConfirmationComponent {
     cancelButtonText: 'Cancelar',
     accentColor: 'yellow'
   };
+  @Input() isLoading: boolean = false;
 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
@@ -84,6 +85,40 @@ export class ConfirmationComponent {
     }
   }
 
+  getLoadingMessage(): string {
+    switch (this.config.type) {
+      case 'trash':
+        return `Moviendo a papelera...`;
+      case 'delete':
+        return `Eliminando permanentemente...`;
+      case 'emptyTrash':
+        return `Vaciando papelera...`;
+      case 'restore':
+        return `Restaurando elemento...`;
+      case 'generateCode':
+        return `Generando código...`;
+      default:
+        return `Procesando...`;
+    }
+  }
+
+  getLoadingButtonText(): string {
+    switch (this.config.type) {
+      case 'trash':
+        return 'Moviendo...';
+      case 'delete':
+        return 'Eliminando...';
+      case 'emptyTrash':
+        return 'Vaciando...';
+      case 'restore':
+        return 'Restaurando...';
+      case 'generateCode':
+        return 'Generando...';
+      default:
+        return 'Procesando...';
+    }
+  }
+
   getTitle(): string {
     if (this.config.title) return this.config.title;
 
@@ -124,10 +159,14 @@ export class ConfirmationComponent {
   }
 
   onConfirm(): void {
+    if (!this.isLoading) {
     this.confirm.emit();
+    }
   }
 
   onCancel(): void {
+    if (!this.isLoading) {
     this.cancel.emit();
+    }
   }
 }

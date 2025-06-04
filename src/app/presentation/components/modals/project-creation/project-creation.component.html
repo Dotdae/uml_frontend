@@ -4,8 +4,8 @@
 
     <div class="bg-white w-[30rem] rounded-xl shadow-lg relative z-10 modal-content">
         <!-- Botón de cerrar -->
-        <button (click)="closeModal()"
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+        <button (click)="closeModal()" [disabled]="isLoading"
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -21,22 +21,36 @@
             <!-- Ilustración de proyecto -->
             <div class="mt-4 flex justify-center">
                 <div class="p-4 rounded-full bg-yellow-100">
+                    @if (isLoading) {
+                    <div class="h-20 w-20 flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+                    </div>
+                    } @else {
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-yellow-500" viewBox="0 -960 960 960"
                         fill="currentColor">
                         <path
                             d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h240l80 80h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H447l-80-80H160v480Zm0 0v-480 480Z" />
                     </svg>
+                    }
                 </div>
             </div>
 
+            <!-- Loading message -->
+            @if (isLoading) {
+            <div class="mt-4 text-center">
+                <p class="text-lg font-medium text-gray-700">Creando proyecto...</p>
+                <p class="text-sm text-gray-500 mt-1">Esto puede tardar unos segundos</p>
+            </div>
+            } @else {
             <!-- Formulario para el nombre del proyecto -->
             <div class="mt-6">
                 <label for="projectName" class="block text-lg font-semibold text-gray-700">
                     Nombre del proyecto:
                 </label>
-                <input type="text" id="projectName" [(ngModel)]="projectName"
+                <input type="text" id="projectName" [(ngModel)]="projectName" (input)="clearError()" (keypress)="onKeyPress($event)"
                     placeholder="Ingresa un nombre para tu proyecto..."
-                    class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" />
+                    class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                    [disabled]="isLoading" />
                 @if (errorMessage) {
                 <p class="mt-2 text-red-600 text-sm">{{ errorMessage }}</p>
                 }
@@ -46,12 +60,6 @@
             <div class="mt-4 p-4 bg-blue-50 rounded-lg">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 mt-0.5">
-                        <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                clip-rule="evenodd" />
-                        </svg> -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-700" viewBox="0 -960 960 960"
                             fill="currentColor">
                             <path
@@ -63,17 +71,22 @@
                     </p>
                 </div>
             </div>
+            }
 
             <!-- Botones de acción -->
             <div class="flex justify-end space-x-3 mt-8">
-                <button (click)="closeModal()"
-                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <button (click)="closeModal()" [disabled]="isLoading"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     Cancelar
                 </button>
-                <button (click)="createProject()" [disabled]="!isValidProjectName()"
-                    [class.opacity-50]="!isValidProjectName()" [class.cursor-not-allowed]="!isValidProjectName()"
-                    class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition">
-                    Crear proyecto
+                <button (click)="createProject()" [disabled]="!isValidProjectName() || isLoading"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                    @if (isLoading) {
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <span>Creando...</span>
+                    } @else {
+                    <span>Crear proyecto</span>
+                    }
                 </button>
             </div>
         </div>

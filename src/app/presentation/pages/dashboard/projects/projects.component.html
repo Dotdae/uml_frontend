@@ -15,33 +15,34 @@
         </div> -->
     </div>
 
+    <!-- Loading indicator -->
+    @if (isLoading) {
+    <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+        <span class="ml-3 text-gray-600">Cargando proyectos...</span>
+    </div>
+    }
+
     <!-- Lista de proyectos -->
+    @if (!isLoading) {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Solo mostramos los proyectos de la página actual -->
-        @for (project of displayedProjects; track $index) {
+        @for (project of displayedProjects; track project.id) {
         <div
             class="bg-white rounded-lg shadow p-5 border border-gray-200 flex flex-col min-h-[265px] hover:bg-yellow-50 transition group">
             <!-- Contenedor del título y botón de opciones -->
             <div class="flex justify-between items-center relative">
                 <div class="flex items-center space-x-3">
                     <img src="UMLForgeOnlyIcon.png" alt="UMLForge" class="w-10 h-10 mb-2">
-                    <h2 class="text-lg font-semibold text-gray-800">{{ project.name }}</h2>
+                    <h2 class="text-lg font-semibold text-gray-800">{{ project.projectName }}</h2>
                 </div>
 
-
-                <!-- <button
-                    class="p-1.5 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Más opciones">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path
-                            d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                    </svg>
-                </button> -->
                 <!-- Botón de opciones que aparece en hover -->
                 <div class="relative">
                     <button #optionsButton title="Más opciones"
                         class="p-1.5 rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Más opciones" (click)="toggleOptionsMenu($event, project, optionsButton)">
+                        title="Más opciones" (click)="toggleOptionsMenu($event, project, optionsButton)"
+                        [disabled]="isPerformingAction">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path
                                 d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
@@ -60,17 +61,18 @@
                 <p class="text-gray-600 text-justify">Este proyecto actualmente contiene diagramas pertenecientes a los
                     siguientes tipos:</p>
                 <div class="flex flex-wrap items-center mt-3">
-                    @for (diagram of project.diagrams; track diagram) {
-                    <span [class]="getDiagramTagClass(diagram)"
+                    @for (diagramType of getProjectDiagramTypes(project); track diagramType) {
+                    <span [class]="getDiagramTagClass(diagramType)"
                         class="text-xs font-medium rounded-full px-2.5 py-1 mr-2 mb-2">{{
-                        diagram }}</span>
+                        diagramType }}</span>
                     }
                 </div>
             </div>
 
             <div class="flex justify-center">
                 <button [routerLink]="['/dashboard/projects', project.id, 'diagrams']"
-                    class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-400 cursor-pointer transition">
+                    class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-400 cursor-pointer transition"
+                    [disabled]="isPerformingAction">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 -960 960 960"
                         fill="currentColor">
                         <path
@@ -89,17 +91,18 @@
         </div>
         }
     </div>
+    }
 
     <!-- Paginador (solo se muestra si hay más de 6 proyectos) -->
-    @if (totalPages > 1) {
+    @if (totalPages > 1 && !isLoading) {
     <app-paginator [currentPage]="currentPage" [totalPages]="totalPages" [accentColor]="accentColor"
         (pageChanged)="goToPage($event)" class="mt-8 flex justify-center space-x-2">
     </app-paginator>
     }
 
     @if (showRenameModal && projectToRename) {
-    <app-rename [itemName]="projectToRename.name" [documentType]="'Proyecto'" [itemId]="projectToRename.id"
-        (close)="closeRenameModal()" (rename)="handleRename($event)">
+    <app-rename [itemName]="projectToRename.projectName" [documentType]="'Proyecto'" [itemId]="projectToRename.id"
+        [isLoading]="isRenamingProject" (close)="closeRenameModal()" (rename)="handleRename($event)">
     </app-rename>
     }
 
@@ -109,7 +112,7 @@
     }
 
     @if (showConfirmationModal) {
-    <app-confirmation [config]="confirmationConfig" (confirm)="handleConfirmation()"
+    <app-confirmation [config]="confirmationConfig" [isLoading]="isMovingToTrash" (confirm)="handleConfirmation()"
         (cancel)="closeConfirmationModal()">
     </app-confirmation>
     }

@@ -7,6 +7,7 @@ export interface AuthRepository {
   getAccessToken(): string | null;
   refreshAccessToken(): Observable<boolean>;
   logout(): void;
+  logoutFromServer(): Promise<void>;
   rehydrateAccessToken(): Promise<void>;
 }
 

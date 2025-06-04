@@ -4,8 +4,8 @@
 
     <div class="bg-white w-[28rem] rounded-xl shadow-lg relative z-10 modal-content">
         <!-- Botón de cerrar -->
-        <button (click)="onCancel()"
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+        <button (click)="onCancel()" [disabled]="isLoading"
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -25,6 +25,20 @@
                 </h1>
             </div>
 
+            <!-- Loading state with icon -->
+            @if (isLoading) {
+            <div class="mt-4 flex justify-center">
+                <div [class]="'p-4 rounded-full ' + (config.type === 'delete' || config.type === 'emptyTrash' ? 'bg-red-100' : config.type === 'trash' ? 'bg-amber-100' : config.type === 'restore' ? 'bg-green-100' : 'bg-blue-100')">
+                    <div class="h-16 w-16 flex items-center justify-center">
+                        <div [class]="'animate-spin rounded-full h-12 w-12 border-b-2 ' + (config.type === 'delete' || config.type === 'emptyTrash' ? 'border-red-500' : config.type === 'trash' ? 'border-amber-500' : config.type === 'restore' ? 'border-green-500' : 'border-blue-500')"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-lg font-medium text-gray-700">{{ getLoadingMessage() }}</p>
+                <p class="text-sm text-gray-500 mt-1">Esto puede tardar unos segundos</p>
+            </div>
+            } @else {
             <div class="mt-4 text-gray-600">
                 @if (config.type === 'generateCode') {
                 <p class="text-lg text-justify">{{ getMessage() }}</p>
@@ -75,16 +89,22 @@
                 </div>
                 }
             </div>
+            }
 
             <!-- Botones de acción -->
             <div class="flex justify-end space-x-3 mt-6">
-                <button (click)="onCancel()"
-                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <button (click)="onCancel()" [disabled]="isLoading"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ config.cancelButtonText || 'Cancelar' }}
                 </button>
-                <button (click)="onConfirm()"
-                    [class]="'px-4 py-2 text-white rounded-lg transition ' + getButtonColor()">
-                    {{ config.confirmButtonText || 'Confirmar' }}
+                <button (click)="onConfirm()" [disabled]="isLoading"
+                    [class]="'px-4 py-2 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center ' + getButtonColor()">
+                    @if (isLoading) {
+                    <div [class]="'animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2'"></div>
+                    <span>{{ getLoadingButtonText() }}</span>
+                    } @else {
+                    <span>{{ config.confirmButtonText || 'Confirmar' }}</span>
+                    }
                 </button>
             </div>
         </div>

@@ -4,8 +4,8 @@
 
     <div class="bg-white w-[30rem] rounded-xl shadow-lg relative z-10 modal-content">
         <!-- Botón de cerrar -->
-        <button (click)="closeModal()"
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+        <button (click)="closeModal()" [disabled]="isLoading"
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -20,14 +20,27 @@
             <!-- Ilustración de edición -->
             <div class="mt-4 flex justify-center">
                 <div class="p-4 rounded-full bg-blue-100">
+                    @if (isLoading) {
+                    <div class="h-20 w-20 flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    </div>
+                    } @else {
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-blue-500" viewBox="0 -960 960 960"
                         fill="currentColor">
                         <path
                             d="M200-200h56l345-345-56-56-345 345v56Zm572-403L602-773l56-56q23-23 56.5-23t56.5 23l56 56q23 23 24 55.5T829-660l-57 57Zm-58 59L290-120H120v-170l424-424 170 170Zm-141-29-28-28 56 56-28-28Z" />
                     </svg>
+                    }
                 </div>
             </div>
 
+            <!-- Loading message -->
+            @if (isLoading) {
+            <div class="mt-4 text-center">
+                <p class="text-lg font-medium text-gray-700">Renombrando {{ documentType.toLowerCase() }}...</p>
+                <p class="text-sm text-gray-500 mt-1">Esto puede tardar unos segundos</p>
+            </div>
+            } @else {
             <!-- Formulario para el nombre -->
             <div class="mt-6">
                 <label for="newName" class="block text-lg font-semibold text-gray-700">
@@ -36,11 +49,13 @@
                 <input type="text" id="newName" [(ngModel)]="newName"
                     placeholder="Ingresa un nuevo nombre..."
                     (input)="onInputChange()"
-                    class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                    (keypress)="onKeyPress($event)"
+                    [disabled]="isLoading"
+                    class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" />
                 @if (errorMessage) {
                 <p class="mt-2 text-red-600 text-sm">{{ errorMessage }}</p>
                 }
-                @if (newName.trim() === originalName.trim()) {
+                @if (newName.trim() === originalName.trim() && !errorMessage) {
                 <p class="mt-2 text-amber-600 text-sm">El nombre no ha cambiado.</p>
                 }
             </div>
@@ -60,19 +75,23 @@
                     </p>
                 </div>
             </div>
+            }
 
             <!-- Botones de acción -->
             <div class="flex justify-end space-x-3 mt-8">
-                <button (click)="closeModal()"
-                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                <button (click)="closeModal()" [disabled]="isLoading"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     Cancelar
                 </button>
-                <button (click)="renameItem()" 
-                    [disabled]="!isValidName() || !hasChanged()"
-                    [class.opacity-50]="!isValidName() || !hasChanged()" 
-                    [class.cursor-not-allowed]="!isValidName() || !hasChanged()"
-                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition">
-                    Renombrar
+                <button (click)="renameItem()"
+                    [disabled]="!isValidName() || !hasChanged() || isLoading"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                    @if (isLoading) {
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <span>Renombrando...</span>
+                    } @else {
+                    <span>Renombrar</span>
+                    }
                 </button>
             </div>
         </div>

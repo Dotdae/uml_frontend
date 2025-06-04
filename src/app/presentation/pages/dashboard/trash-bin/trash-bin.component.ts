@@ -1,17 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil, finalize } from 'rxjs/operators';
 import { OptionsMenuComponent, MenuAction } from '../../../components/modals/options-menu/options-menu.component';
 import { PaginatorComponent } from 'src/app/presentation/components/paginator/paginator.component';
 import { SearchBarComponent } from 'src/app/presentation/components/modals/search-bar/search-bar.component';
 import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
+import { TrashBinService } from '../../../../core/services/trash-bin.service';
+import { AuthService } from '../../../../infrastructure/auth/auth.service';
+import { TrashBin } from '../../../../core/models/project.model';
 
-interface Diagram {
+interface TrashItem {
   id: number;
   title: string;
   type: string;
   modified: string;
   showOptions?: boolean;
+  originalId: number; // Original project or diagram ID
+  trashBinId: number; // ID in trash bin table
 }
 
 @Component({
@@ -27,14 +34,19 @@ interface Diagram {
   templateUrl: './trash-bin.component.html',
   styleUrl: './trash-bin.component.css'
 })
-export class TrashBinComponent implements OnInit {
+export class TrashBinComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
+  // Loading state
+  isLoading = false;
+
   projectId: number | null = null;
 
-  // Todos los diagramas
-  allDiagrams: Diagram[] = [];
+  // Todos los elementos en papelera
+  allDiagrams: TrashItem[] = [];
 
-  // Diagramas a mostrar en la página actual
-  diagrams: Diagram[] = [];
+  // Elementos a mostrar en la página actual
+  diagrams: TrashItem[] = [];
 
   // Configuración del paginador
   currentPage: number = 1;
@@ -46,10 +58,10 @@ export class TrashBinComponent implements OnInit {
   // Variable para controlar el orden
   isAscendingOrder: boolean = false;
 
-  // Añadir estas propiedades para la búsqueda
+  // Propiedades para la búsqueda
   showSearch = false;
   searchQuery = '';
-  filteredDiagrams: Diagram[] = [];
+  filteredDiagrams: TrashItem[] = [];
   isSearchActive = false;
 
   showConfirmationModal = false;
@@ -61,48 +73,107 @@ export class TrashBinComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private trashBinService: TrashBinService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
-    // Recuperar el ID del proyecto de los parámetros de la URL
-    this.route.params.subscribe(params => {
-      this.projectId = +params['id']; // El '+' convierte el string a número
+    this.isAscendingOrder = false; // Set descending order by default (most recent first)
+    this.loadTrashItems();
+  }
 
-      // Establecer la ordenación descendente (más reciente primero) por defecto
-      this.isAscendingOrder = false;
-      this.loadProjectDiagrams(this.projectId);
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadTrashItems() {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      console.error('No user ID available');
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.trashBinService.getTrashByUser(userId)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: (trashItems: TrashBin[]) => {
+          console.log('Loaded trash items:', trashItems);
+          this.allDiagrams = this.mapTrashBinToTrashItems(trashItems);
+          this.sortDiagrams();
+          this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
+          this.updateDisplayedDiagrams();
+        },
+        error: (error) => {
+          console.error('Error loading trash items:', error);
+          // Show empty state or error message
+          this.allDiagrams = [];
+          this.diagrams = [];
+          this.totalPages = 0;
+        }
+      });
+  }
+
+  private mapTrashBinToTrashItems(trashItems: TrashBin[]): TrashItem[] {
+    return trashItems.map(item => {
+      let title = 'Unknown Item';
+      let type = 'unknown';
+      let originalId = 0;
+
+      if (item.projectId && item.project) {
+        title = item.project.projectName;
+        type = 'project';
+        originalId = item.project.id;
+      } else if (item.diagramId && item.diagram) {
+        title = item.diagram.name;
+        type = this.getDiagramTypeString(item.diagram.type);
+        originalId = item.diagram.id;
+      }
+
+      return {
+        id: originalId,
+        title: title,
+        type: type,
+        modified: this.formatDate(item.deletedAt),
+        originalId: originalId,
+        trashBinId: item.id
+      };
     });
   }
 
-  loadProjectDiagrams(projectId: number) {
-    // Aquí normalmente harías una llamada a un servicio para obtener los diagramas
-    // Por ahora, usaremos datos de ejemplo
-    this.allDiagrams = [
-      { id: 1, title: 'Diagrama de Clases - Sistema de Usuarios', type: 'clase', modified: '30/5/2025 1:32' },
-      { id: 2, title: 'Diagrama de Secuencia - Login', type: 'secuencia', modified: '28/5/2025 0:16' },
-      { id: 3, title: 'Diagrama de Componentes - Arquitectura', type: 'componentes', modified: '27/5/2025 15:22' },
-      { id: 4, title: 'Diagrama de Paquetes - Estructura del proyecto', type: 'paquetes', modified: '25/5/2025 9:45' },
-      { id: 5, title: 'Diagrama de Casos de Uso - Funcionalidades', type: 'casos_de_uso', modified: '24/5/2025 11:08' },
-      { id: 6, title: 'Proyecto 777', type: 'project', modified: '01/6/2025 11:08' },
-      { id: 8, title: 'Diagrama de Componentes - Arquitectura', type: 'componentes', modified: '27/5/2025 15:22' },
-      { id: 9, title: 'Diagrama de Paquetes - Estructura del proyecto', type: 'paquetes', modified: '25/5/2025 9:45' },
-      { id: 10, title: 'Diagrama de Casos de Uso - Funcionalidades', type: 'casos_de_uso', modified: '24/5/2025 11:08' },
-      { id: 11, title: 'Proyecto 777', type: 'project', modified: '01/6/2025 11:08' },
-      { id: 12, title: 'Diagrama de Clases - Sistema Financiero', type: 'clase', modified: '22/5/2025 14:32' },
-      { id: 13, title: 'Diagrama de Secuencia - Logout', type: 'secuencia', modified: '21/5/2025 10:19' },
-      { id: 14, title: 'Diagrama de Componentes - Módulos', type: 'componentes', modified: '20/5/2025 16:42' },
-      { id: 15, title: 'Diagrama de Paquetes - Dependencias', type: 'paquetes', modified: '19/5/2025 13:27' },
-    ];
+  private getDiagramTypeString(diagramType: string): string {
+    const typeMap: { [key: string]: string } = {
+      'Class Diagram': 'clase',
+      'Sequence Diagram': 'secuencia',
+      'Use Case Diagram': 'casos_de_uso',
+      'Component Diagram': 'componentes',
+      'Package Diagram': 'paquetes'
+    };
+    return typeMap[diagramType] || 'diagrama';
+  }
 
-    // Ordenar por fecha más reciente al inicio
-    this.sortDiagrams();
+  private formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
 
-    // Calcular el total de páginas
-    this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
-
-    // Mostrar la primera página
-    this.updateDisplayedDiagrams();
+      return `${day}/${month}/${year} ${hours}:${minutes.toString().padStart(2, '0')}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Fecha inválida';
+    }
   }
 
   // Nuevo método para ordenar diagramas
@@ -170,7 +241,7 @@ export class TrashBinComponent implements OnInit {
     }
   }
 
-  toggleOptionsMenu(event: Event, diagram: Diagram, buttonElement: HTMLElement): void {
+  toggleOptionsMenu(event: Event, diagram: TrashItem, buttonElement: HTMLElement): void {
     event.stopPropagation();
 
     // Cerrar todos los demás menús abiertos
@@ -193,16 +264,14 @@ export class TrashBinComponent implements OnInit {
     // mantenemos el estado de búsqueda
   }
 
-
-
-  handleOptionSelected(action: MenuAction, diagram: Diagram): void {
+  handleOptionSelected(action: MenuAction, diagram: TrashItem): void {
     // Cerrar el menú
     diagram.showOptions = false;
 
     // Manejar la acción seleccionada
     switch (action) {
       case 'restore':
-        console.log('Restaurar diagrama:', diagram.id);
+        console.log('Restaurar diagrama:', diagram.trashBinId);
         // Configurar y mostrar el modal de confirmación
         this.confirmationConfig = {
           type: 'restore',
@@ -211,11 +280,11 @@ export class TrashBinComponent implements OnInit {
           confirmButtonText: 'Restaurar',
           accentColor: 'green'
         };
-        this.currentAction = { type: 'restore', itemId: diagram.id };
+        this.currentAction = { type: 'restore', itemId: diagram.trashBinId };
         this.showConfirmationModal = true;
         break;
       case 'delete':
-        console.log('Eliminar permanentemente diagrama:', diagram.id);
+        console.log('Eliminar permanentemente diagrama:', diagram.trashBinId);
         // Configurar y mostrar el modal de confirmación
         this.confirmationConfig = {
           type: 'delete',
@@ -224,7 +293,7 @@ export class TrashBinComponent implements OnInit {
           confirmButtonText: 'Eliminar',
           accentColor: 'red'
         };
-        this.currentAction = { type: 'delete', itemId: diagram.id };
+        this.currentAction = { type: 'delete', itemId: diagram.trashBinId };
         this.showConfirmationModal = true;
         break;
       case 'details':
@@ -276,39 +345,64 @@ export class TrashBinComponent implements OnInit {
   // Método para manejar la confirmación
   handleConfirmation(): void {
     switch (this.currentAction.type) {
-      case 'emptyTrash':
-        console.log('Confirmado: Vaciar papelera');
-        // Implementar la lógica para vaciar la papelera
-        this.allDiagrams = [];
-        this.filteredDiagrams = [];
-        this.totalPages = 0;
-        this.currentPage = 1;
-        this.updateDisplayedDiagrams();
-        break;
-        
       case 'restore':
-        console.log('Confirmado: Restaurar elemento', this.currentAction.itemId);
-        // Implementar la lógica para restaurar
         if (this.currentAction.itemId) {
-          this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
-          this.updateDisplayedDiagrams();
+          this.restoreItem(this.currentAction.itemId);
         }
         break;
-        
       case 'delete':
-        console.log('Confirmado: Eliminar permanentemente', this.currentAction.itemId);
-        // Implementar la lógica para eliminar
         if (this.currentAction.itemId) {
-          this.allDiagrams = this.allDiagrams.filter(d => d.id !== this.currentAction.itemId);
-          this.updateDisplayedDiagrams();
+          this.permanentlyDeleteItem(this.currentAction.itemId);
         }
         break;
     }
-    
-    // Cerrar el modal
+
     this.closeConfirmationModal();
   }
 
+  /**
+   * Restore item from trash
+   */
+  restoreItem(trashBinId: number): void {
+    this.trashBinService.restoreFromTrash(trashBinId)
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
+          console.log('Item restored successfully');
+          // Remove from UI immediately
+          this.allDiagrams = this.allDiagrams.filter(item => item.trashBinId !== trashBinId);
+          this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
+          this.updateDisplayedDiagrams();
+        },
+        error: (error) => {
+          console.error('Error restoring item:', error);
+        }
+      });
+  }
+
+  /**
+   * Permanently delete item from trash
+   */
+  permanentlyDeleteItem(trashBinId: number): void {
+    this.trashBinService.permanentlyDelete(trashBinId)
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
+          console.log('Item permanently deleted');
+          // Remove from UI immediately
+          this.allDiagrams = this.allDiagrams.filter(item => item.trashBinId !== trashBinId);
+          this.totalPages = Math.ceil(this.allDiagrams.length / this.itemsPerPage);
+          this.updateDisplayedDiagrams();
+        },
+        error: (error) => {
+          console.error('Error permanently deleting item:', error);
+        }
+      });
+  }
 
   openDiagram(type: string, id: number): void {
     this.router.navigate(['/canvas'], {

@@ -6,7 +6,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment.development';
 import { ProjectCreationComponent } from '../modals/project-creation/project-creation.component';
 import { OnDevelopmentComponent } from '../modals/on-development/on-development.component';
-
+import { ProjectsService } from '../../../core/services/projects.service';
+import { ProjectEventsService } from '../../../core/services/project-events.service';
+import { StatusService } from '../../../core/services/status.service';
 
 interface UserProfile {
   id: string;
@@ -19,10 +21,10 @@ interface UserProfile {
 @Component({
   selector: 'app-sidebar',
   imports: [
-    CommonModule, 
-    RouterModule, 
-    RouterLink, 
-    RouterLinkActive, 
+    CommonModule,
+    RouterModule,
+    RouterLink,
+    RouterLinkActive,
     ProjectCreationComponent,
     OnDevelopmentComponent
   ],
@@ -35,10 +37,14 @@ export class SidebarComponent implements OnInit {
   showProjectModal: boolean = false;
   showDevelopmentModal: boolean = false;
   developmentFeatureName: string = '';
+  isCreatingProject: boolean = false;
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private projectsService: ProjectsService,
+    private projectEventsService: ProjectEventsService,
+    private statusService: StatusService
   ) { }
 
   ngOnInit() {
@@ -67,15 +73,51 @@ export class SidebarComponent implements OnInit {
   }
 
   closeProjectModal(): void {
-    this.showProjectModal = false;
+    if (!this.isCreatingProject) {
+      this.showProjectModal = false;
+    }
   }
 
-  handleCreateProject(projectName: string): void {
-    console.log('Creando proyecto:', projectName);
-    // Aquí iría la lógica para crear el proyecto en el backend
-    
-    // Cerrar el modal después de crear el proyecto
-    this.showProjectModal = false;
+  async handleCreateProject(projectName: string): Promise<void> {
+    if (!this.userProfile) {
+      console.error('No user profile available');
+      return;
+    }
+
+    this.isCreatingProject = true;
+
+    try {
+      // Get default status ID (usually "Not Started")
+      const statuses = await this.statusService.getAllStatuses().toPromise();
+      const defaultStatus = statuses?.find(status => status.name === 'Not Started');
+      const statusId = defaultStatus?.id || 1;
+
+      console.log('Creating project:', { projectName, userUUID: this.userProfile.id, statusId });
+
+      const project = await this.projectsService.createProject({
+        userUUID: this.userProfile.id,
+        projectName,
+        statusId,
+        generatedCounter: 0
+      }).toPromise();
+
+      if (project) {
+        console.log('Project created successfully:', project);
+
+        // Emit event to notify other components and close modal
+        setTimeout(() => {
+          this.projectEventsService.projectCreated(project);
+          this.showProjectModal = false;
+          this.isCreatingProject = false;
+        }, 1400);
+
+      }
+
+    } catch (error) {
+      console.error('Error creating project:', error);
+      this.isCreatingProject = false;
+      this.showProjectModal = false;
+    }
   }
 
   openDevelopmentModal(featureName: string): void {

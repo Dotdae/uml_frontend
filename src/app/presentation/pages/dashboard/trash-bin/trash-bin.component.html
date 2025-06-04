@@ -49,7 +49,16 @@
         </div>
     </div>
 
+    <!-- Loading indicator -->
+    @if (isLoading) {
+    <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+        <span class="ml-3 text-gray-600">Cargando elementos de papelera...</span>
+    </div>
+    }
+
     <!-- Tabla de documentos -->
+    @if (!isLoading) {
     <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden">
         <!-- Cabecera de la tabla -->
         <div class="grid grid-cols-12 bg-gray-100 border-b border-gray-200">
@@ -118,6 +127,7 @@
         </div>
         }
     </div>
+    }
 
     <!-- Paginador (solo se muestra si hay más de 8 elementos) -->
     @if (totalPages > 1) {
