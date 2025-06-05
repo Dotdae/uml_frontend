@@ -1,0 +1,318 @@
+{
+  "type": "component",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "component",
+      "data": {
+        "label": "WebApplication",
+        "component": true,
+        "color": {
+          "bg": "#e3f2fd",
+          "border": "#0d47a1"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "2",
+      "type": "component",
+      "data": {
+        "label": "APIGateway",
+        "component": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 400,
+        "y": 100
+      }
+    },
+    {
+      "id": "3",
+      "type": "component",
+      "data": {
+        "label": "UserService",
+        "component": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 50
+      }
+    },
+    {
+      "id": "4",
+      "type": "component",
+      "data": {
+        "label": "OrderService",
+        "component": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 150
+      }
+    },
+    {
+      "id": "5",
+      "type": "component",
+      "data": {
+        "label": "PaymentService",
+        "component": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 250
+      }
+    },
+    {
+      "id": "6",
+      "type": "component",
+      "data": {
+        "label": "ProductService",
+        "component": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 350
+      }
+    },
+    {
+      "id": "7",
+      "type": "component",
+      "data": {
+        "label": "DatabaseService",
+        "component": true,
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#880e4f"
+        }
+      },
+      "position": {
+        "x": 1000,
+        "y": 200
+      }
+    },
+    {
+      "id": "8",
+      "type": "component",
+      "data": {
+        "label": "CacheService",
+        "component": true,
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#4a148c"
+        }
+      },
+      "position": {
+        "x": 1000,
+        "y": 100
+      }
+    },
+    {
+      "id": "9",
+      "type": "component",
+      "data": {
+        "label": "EmailService",
+        "component": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 1000,
+        "y": 300
+      }
+    },
+    {
+      "id": "10",
+      "type": "component",
+      "data": {
+        "label": "PaymentGateway",
+        "component": true,
+        "color": {
+          "bg": "#fff8e1",
+          "border": "#f57f17"
+        }
+      },
+      "position": {
+        "x": 1000,
+        "y": 400
+      }
+    },
+    {
+      "id": "11",
+      "type": "component",
+      "data": {
+        "label": "AuthenticationService",
+        "component": true,
+        "color": {
+          "bg": "#efebe9",
+          "border": "#3e2723"
+        }
+      },
+      "position": {
+        "x": 400,
+        "y": 300
+      }
+    },
+    {
+      "id": "12",
+      "type": "component",
+      "data": {
+        "label": "LoggingService",
+        "component": true,
+        "color": {
+          "bg": "#fafafa",
+          "border": "#212121"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 300
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "type": "dependency",
+      "label": "HTTP requests"
+    },
+    {
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "type": "dependency",
+      "label": "user operations"
+    },
+    {
+      "id": "e2-4",
+      "source": "2",
+      "target": "4",
+      "type": "dependency",
+      "label": "order management"
+    },
+    {
+      "id": "e2-5",
+      "source": "2",
+      "target": "5",
+      "type": "dependency",
+      "label": "payment processing"
+    },
+    {
+      "id": "e2-6",
+      "source": "2",
+      "target": "6",
+      "type": "dependency",
+      "label": "product data"
+    },
+    {
+      "id": "e3-7",
+      "source": "3",
+      "target": "7",
+      "type": "dependency",
+      "label": "user data"
+    },
+    {
+      "id": "e4-7",
+      "source": "4",
+      "target": "7",
+      "type": "dependency",
+      "label": "order data"
+    },
+    {
+      "id": "e5-7",
+      "source": "5",
+      "target": "7",
+      "type": "dependency",
+      "label": "payment data"
+    },
+    {
+      "id": "e6-7",
+      "source": "6",
+      "target": "7",
+      "type": "dependency",
+      "label": "product data"
+    },
+    {
+      "id": "e3-8",
+      "source": "3",
+      "target": "8",
+      "type": "dependency",
+      "label": "session cache"
+    },
+    {
+      "id": "e6-8",
+      "source": "6",
+      "target": "8",
+      "type": "dependency",
+      "label": "product cache"
+    },
+    {
+      "id": "e4-9",
+      "source": "4",
+      "target": "9",
+      "type": "dependency",
+      "label": "order confirmations"
+    },
+    {
+      "id": "e3-9",
+      "source": "3",
+      "target": "9",
+      "type": "dependency",
+      "label": "user notifications"
+    },
+    {
+      "id": "e5-10",
+      "source": "5",
+      "target": "10",
+      "type": "dependency",
+      "label": "external payments"
+    },
+    {
+      "id": "e2-11",
+      "source": "2",
+      "target": "11",
+      "type": "dependency",
+      "label": "authentication"
+    },
+    {
+      "id": "e1-12",
+      "source": "1",
+      "target": "12",
+      "type": "dependency",
+      "label": "application logs"
+    },
+    {
+      "id": "e2-12",
+      "source": "2",
+      "target": "12",
+      "type": "dependency",
+      "label": "API logs"
+    }
+  ]
+}

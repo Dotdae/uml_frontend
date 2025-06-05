@@ -12,8 +12,12 @@ export interface Edge {
   id: string;
   source: string;
   target: string;
-  type?: string;
   label?: string;
+  type: string;
+  data?: {
+    strokeStyle?: 'solid' | 'dashed';
+    arrowStyle?: 'filled' | 'open';
+  };
   animated?: boolean;
   message?: string;
   stereotype?: string;

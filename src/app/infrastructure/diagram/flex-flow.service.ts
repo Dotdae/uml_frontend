@@ -2,7 +2,17 @@ import { Injectable } from '@angular/core';
 import { Edge } from 'src/app/domain/models/edge.model';
 import { Node } from 'src/app/domain/models/node.model';
 
-export type DiagramType = 'class' | 'sequence' | 'package' | 'usecase' | 'component';
+export type DiagramType = 'CLASS' | 'SEQUENCE' | 'PACKAGE' | 'USECASE' | 'COMPONENTS';
+
+interface SequenceNodeData {
+  label: string;
+  type: 'object' | 'activation';
+  lifeline?: boolean;
+  activation?: boolean;
+  activationY?: number;
+  activationHeight?: number;
+  destroyed?: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +24,7 @@ export class FlexFlowService {
   //* Edges (connections) of the diagram
   private edges: Edge[] = [];
   //* The type of diagram to initialize (class, sequence, package, usecase, component)
-  private currentType: DiagramType = 'class';
+  private currentType: DiagramType = 'CLASS';
 
   constructor() { }
 
@@ -23,25 +33,25 @@ export class FlexFlowService {
    * @param type - The type of diagram to initialize
    * @returns The nodes and edges of the diagram
    */
-  public initDiagram(type: DiagramType = 'class'): { nodes: Node[], edges: Edge[] } {
+  public initDiagram(type: DiagramType = 'CLASS'): { nodes: Node[], edges: Edge[] } {
     this.currentType = type;
     this.nodes = [];
     this.edges = [];
 
     switch (type) {
-      case 'class':
+      case 'CLASS':
         this.initClassDiagram();
         break;
-      case 'sequence':
+      case 'SEQUENCE':
         this.initSequenceDiagram();
         break;
-      case 'package':
+      case 'PACKAGE':
         this.initPackageDiagram();
         break;
-      case 'usecase':
+      case 'USECASE':
         this.initUseCaseDiagram();
         break;
-      case 'component':
+      case 'COMPONENTS':
         this.initComponentDiagram();
         break;
     }
@@ -54,40 +64,9 @@ export class FlexFlowService {
    */
   private initClassDiagram(): void {
     this.nodes = [
-      {
-        id: '1',
-        type: 'class',
-        data: {
-          label: 'User',
-          properties: ['- id: string', '- name: string', '- email: string'],
-          methods: ['+ login()', '+ logout()', '+ updateProfile()']
-        },
-        position: { x: 100, y: 100 }
-      },
-      {
-        id: '2',
-        type: 'class',
-        data: {
-          label: 'Order',
-          properties: ['- orderId: string', '- date: Date', '- total: number'],
-          methods: ['+ create()', '+ cancel()', '+ updateStatus()']
-        },
-        position: { x: 400, y: 100 }
-      }
     ];
 
     this.edges = [
-      {
-        id: 'e1-2',
-        source: '1',
-        target: '2',
-        type: 'association',
-        label: 'creates',
-        multiplicity: {
-          source: '1',
-          target: '*'
-        }
-      }
     ];
   }
 
@@ -96,35 +75,9 @@ export class FlexFlowService {
    */
   private initSequenceDiagram(): void {
     this.nodes = [
-      {
-        id: '1',
-        type: 'actor',
-        data: {
-          label: 'User',
-          actor: true
-        },
-        position: { x: 100, y: 100 }
-      },
-      {
-        id: '2',
-        type: 'lifeline',
-        data: {
-          label: 'System',
-          lifeline: true
-        },
-        position: { x: 300, y: 100 }
-      }
     ];
 
     this.edges = [
-      {
-        id: 'e1-2',
-        source: '1',
-        target: '2',
-        type: 'message',
-        message: 'login()',
-        animated: true
-      }
     ];
   }
 
@@ -133,34 +86,9 @@ export class FlexFlowService {
    */
   private initPackageDiagram(): void {
     this.nodes = [
-      {
-        id: '1',
-        type: 'package',
-        data: {
-          label: 'com.example',
-          package: 'main'
-        },
-        position: { x: 100, y: 100 }
-      },
-      {
-        id: '2',
-        type: 'package',
-        data: {
-          label: 'com.example.util',
-          package: 'util'
-        },
-        position: { x: 400, y: 100 }
-      }
     ];
 
     this.edges = [
-      {
-        id: 'e1-2',
-        source: '1',
-        target: '2',
-        type: 'dependency',
-        label: 'uses'
-      }
     ];
   }
 
@@ -169,33 +97,9 @@ export class FlexFlowService {
    */
   private initUseCaseDiagram(): void {
     this.nodes = [
-      {
-        id: '1',
-        type: 'actor',
-        data: {
-          label: 'User',
-          actor: true
-        },
-        position: { x: 100, y: 200 }
-      },
-      {
-        id: '2',
-        type: 'usecase',
-        data: {
-          label: 'Login',
-          usecase: true
-        },
-        position: { x: 300, y: 100 }
-      }
     ];
 
     this.edges = [
-      {
-        id: 'e1-2',
-        source: '1',
-        target: '2',
-        type: 'association'
-      }
     ];
   }
 
@@ -204,34 +108,9 @@ export class FlexFlowService {
    */
   private initComponentDiagram(): void {
     this.nodes = [
-      {
-        id: '1',
-        type: 'component',
-        data: {
-          label: 'UserService',
-          component: true
-        },
-        position: { x: 100, y: 100 }
-      },
-      {
-        id: '2',
-        type: 'component',
-        data: {
-          label: 'Database',
-          component: true
-        },
-        position: { x: 400, y: 100 }
-      }
     ];
 
     this.edges = [
-      {
-        id: 'e1-2',
-        source: '1',
-        target: '2',
-        type: 'dependency',
-        label: 'uses'
-      }
     ];
   }
 
@@ -249,7 +128,8 @@ export class FlexFlowService {
       data: {
         label,
         properties: [],
-        methods: []
+        methods: [],
+        stereotype: 'class'
       },
       position
     };
@@ -270,7 +150,8 @@ export class FlexFlowService {
         label,
         properties: [],
         methods: [],
-        isInterface: true
+        isInterface: true,
+        stereotype: 'interface'
       },
       position
     };
@@ -289,7 +170,8 @@ export class FlexFlowService {
       type: 'actor',
       data: {
         label,
-        actor: true
+        actor: true,
+        stereotype: 'actor'
       },
       position
     };
@@ -308,7 +190,8 @@ export class FlexFlowService {
       type: 'package',
       data: {
         label,
-        package: label
+        package: label,
+        stereotype: 'package'
       },
       position
     };
@@ -327,7 +210,8 @@ export class FlexFlowService {
       type: 'usecase',
       data: {
         label,
-        usecase: true
+        usecase: true,
+        stereotype: 'use case'
       },
       position
     };
@@ -346,7 +230,8 @@ export class FlexFlowService {
       type: 'component',
       data: {
         label,
-        component: true
+        component: true,
+        stereotype: 'component'
       },
       position
     };
@@ -376,22 +261,69 @@ export class FlexFlowService {
   }
 
   /**
+   * Create a sequence object
+   * @param id - The id of the node
+   * @param label - The label of the node
+   * @param position - The position of the node
+   * @returns The created node
+   */
+  createSequenceObject(id: string, label: string, position: { x: number; y: number }): Node {
+    return {
+      id,
+      type: 'sequence-object',
+      position,
+      data: {
+        label,
+        type: 'object',
+        lifeline: true,
+        activation: false,
+        destroyed: false,
+        stereotype: 'object'
+      } as SequenceNodeData
+    };
+  }
+
+  /**
+   * Create an activation box
+   * @param id - The id of the node
+   * @param position - The position of the node
+   * @param height - The height of the node
+   * @returns The created node
+   */
+  createActivationBox(id: string, position: { x: number; y: number }, height: number = 80): Node {
+    return {
+      id,
+      type: 'activation-box',
+      position,
+      data: {
+        label: '',
+        type: 'activation',
+        activation: true,
+        activationY: position.y,
+        activationHeight: height
+      } as SequenceNodeData
+    };
+  }
+
+  /**
    * Create a sequence message
-   * @param sourceId - The id of the source node
-   * @param targetId - The id of the target node
-   * @param message - The message of the relationship
+   * @param source - The id of the source node
+   * @param target - The id of the target node
+   * @param type - The type of message
    * @returns The created edge
    */
-  createSequenceMessage(sourceId: string, targetId: string, message: string): Edge {
-    const edge = {
-      id: `e${sourceId}-${targetId}`,
-      source: sourceId,
-      target: targetId,
-      type: 'message',
-      message,
-      animated: true
+  createSequenceMessage(source: string, target: string, type: 'sync' | 'async' | 'return' | 'message'): Edge {
+    return {
+      id: `edge-${this.edges.length + 1}`,
+      source,
+      target,
+      label: type === 'return' ? 'return' : type === 'message' ? 'message()' : '',
+      type,
+      data: {
+        strokeStyle: type === 'sync' ? 'solid' : 'dashed',
+        arrowStyle: type === 'sync' ? 'filled' : 'open'
+      }
     };
-    return edge;
   }
 
   /**

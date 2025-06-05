@@ -1,0 +1,167 @@
+{
+  "type": "sequence",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "actor",
+      "data": {
+        "label": "User",
+        "actor": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#2e7d32"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 50
+      }
+    },
+    {
+      "id": "2",
+      "type": "lifeline",
+      "data": {
+        "label": "LoginPage",
+        "lifeline": true,
+        "color": {
+          "bg": "#e3f2fd",
+          "border": "#1565c0"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 50
+      }
+    },
+    {
+      "id": "3",
+      "type": "lifeline",
+      "data": {
+        "label": "AuthService",
+        "lifeline": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#f57c00"
+        }
+      },
+      "position": {
+        "x": 500,
+        "y": 50
+      }
+    },
+    {
+      "id": "4",
+      "type": "lifeline",
+      "data": {
+        "label": "Database",
+        "lifeline": true,
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#7b1fa2"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 50
+      }
+    },
+    {
+      "id": "5",
+      "type": "lifeline",
+      "data": {
+        "label": "TokenService",
+        "lifeline": true,
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#c2185b"
+        }
+      },
+      "position": {
+        "x": 900,
+        "y": 50
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "enterCredentials(username, password)",
+      "animated": true
+    },
+    {
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "type": "message",
+      "message": "authenticateUser(username, password)",
+      "animated": true
+    },
+    {
+      "id": "e3-4",
+      "source": "3",
+      "target": "4",
+      "type": "message",
+      "message": "getUserByUsername(username)",
+      "animated": true
+    },
+    {
+      "id": "e4-3",
+      "source": "4",
+      "target": "3",
+      "type": "message",
+      "message": "userData",
+      "animated": true
+    },
+    {
+      "id": "e3-3",
+      "source": "3",
+      "target": "3",
+      "type": "message",
+      "message": "validatePassword(password, hashedPassword)",
+      "animated": true
+    },
+    {
+      "id": "e3-5",
+      "source": "3",
+      "target": "5",
+      "type": "message",
+      "message": "generateToken(userId)",
+      "animated": true
+    },
+    {
+      "id": "e5-3",
+      "source": "5",
+      "target": "3",
+      "type": "message",
+      "message": "jwtToken",
+      "animated": true
+    },
+    {
+      "id": "e3-4-2",
+      "source": "3",
+      "target": "4",
+      "type": "message",
+      "message": "updateLastLogin(userId)",
+      "animated": true
+    },
+    {
+      "id": "e3-2",
+      "source": "3",
+      "target": "2",
+      "type": "message",
+      "message": "authenticationResult(token, userInfo)",
+      "animated": true
+    },
+    {
+      "id": "e2-1",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "redirectToDashboard()",
+      "animated": true
+    }
+  ]
+}

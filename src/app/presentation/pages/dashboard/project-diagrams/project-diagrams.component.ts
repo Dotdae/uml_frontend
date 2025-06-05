@@ -152,7 +152,7 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
         next: (diagrams) => {
           this.allDiagrams = diagrams;
           this.totalItems = diagrams.length;
-          this.updateDisplayedDiagrams();
+      this.updateDisplayedDiagrams();
         },
         error: (error) => {
           console.error('Error loading diagrams:', error);

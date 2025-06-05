@@ -1,0 +1,271 @@
+{
+  "type": "sequence",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "actor",
+      "data": {
+        "label": "Customer",
+        "actor": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#388e3c"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 50
+      }
+    },
+    {
+      "id": "2",
+      "type": "lifeline",
+      "data": {
+        "label": "ATM_Machine",
+        "lifeline": true,
+        "color": {
+          "bg": "#e1f5fe",
+          "border": "#0277bd"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 50
+      }
+    },
+    {
+      "id": "3",
+      "type": "lifeline",
+      "data": {
+        "label": "CardReader",
+        "lifeline": true,
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#8e24aa"
+        }
+      },
+      "position": {
+        "x": 500,
+        "y": 50
+      }
+    },
+    {
+      "id": "4",
+      "type": "lifeline",
+      "data": {
+        "label": "BankSystem",
+        "lifeline": true,
+        "color": {
+          "bg": "#fff8e1",
+          "border": "#ff8f00"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 50
+      }
+    },
+    {
+      "id": "5",
+      "type": "lifeline",
+      "data": {
+        "label": "AccountDB",
+        "lifeline": true,
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#ad1457"
+        }
+      },
+      "position": {
+        "x": 900,
+        "y": 50
+      }
+    },
+    {
+      "id": "6",
+      "type": "lifeline",
+      "data": {
+        "label": "CashDispenser",
+        "lifeline": true,
+        "color": {
+          "bg": "#e0f2f1",
+          "border": "#00695c"
+        }
+      },
+      "position": {
+        "x": 1100,
+        "y": 50
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "insertCard()",
+      "animated": true
+    },
+    {
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "type": "message",
+      "message": "readCard()",
+      "animated": true
+    },
+    {
+      "id": "e3-2",
+      "source": "3",
+      "target": "2",
+      "type": "message",
+      "message": "cardData",
+      "animated": true
+    },
+    {
+      "id": "e2-1",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "requestPIN()",
+      "animated": true
+    },
+    {
+      "id": "e1-2-pin",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "enterPIN(1234)",
+      "animated": true
+    },
+    {
+      "id": "e2-4",
+      "source": "2",
+      "target": "4",
+      "type": "message",
+      "message": "validateCard(cardNumber, pin)",
+      "animated": true
+    },
+    {
+      "id": "e4-5",
+      "source": "4",
+      "target": "5",
+      "type": "message",
+      "message": "checkAccount(cardNumber)",
+      "animated": true
+    },
+    {
+      "id": "e5-4",
+      "source": "5",
+      "target": "4",
+      "type": "message",
+      "message": "accountDetails",
+      "animated": true
+    },
+    {
+      "id": "e4-2",
+      "source": "4",
+      "target": "2",
+      "type": "message",
+      "message": "validationResult(success)",
+      "animated": true
+    },
+    {
+      "id": "e2-1-menu",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "displayMenu()",
+      "animated": true
+    },
+    {
+      "id": "e1-2-withdraw",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "selectWithdraw(amount: $200)",
+      "animated": true
+    },
+    {
+      "id": "e2-4-check",
+      "source": "2",
+      "target": "4",
+      "type": "message",
+      "message": "checkBalance(accountId, amount)",
+      "animated": true
+    },
+    {
+      "id": "e4-5-balance",
+      "source": "4",
+      "target": "5",
+      "type": "message",
+      "message": "getBalance(accountId)",
+      "animated": true
+    },
+    {
+      "id": "e5-4-balance",
+      "source": "5",
+      "target": "4",
+      "type": "message",
+      "message": "currentBalance($500)",
+      "animated": true
+    },
+    {
+      "id": "e4-5-debit",
+      "source": "4",
+      "target": "5",
+      "type": "message",
+      "message": "debitAccount(accountId, $200)",
+      "animated": true
+    },
+    {
+      "id": "e5-4-confirm",
+      "source": "5",
+      "target": "4",
+      "type": "message",
+      "message": "transactionConfirmed",
+      "animated": true
+    },
+    {
+      "id": "e4-2-approve",
+      "source": "4",
+      "target": "2",
+      "type": "message",
+      "message": "approveWithdrawal()",
+      "animated": true
+    },
+    {
+      "id": "e2-6",
+      "source": "2",
+      "target": "6",
+      "type": "message",
+      "message": "dispenseCash($200)",
+      "animated": true
+    },
+    {
+      "id": "e6-2",
+      "source": "6",
+      "target": "2",
+      "type": "message",
+      "message": "cashDispensed",
+      "animated": true
+    },
+    {
+      "id": "e2-1-receipt",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "printReceipt()",
+      "animated": true
+    },
+    {
+      "id": "e2-1-card",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "returnCard()",
+      "animated": true
+    }
+  ]
+}

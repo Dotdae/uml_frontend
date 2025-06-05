@@ -1,0 +1,228 @@
+{
+  "type": "package",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.ui",
+        "package": "User Interface Layer",
+        "color": {
+          "bg": "#e3f2fd",
+          "border": "#0d47a1"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 50
+      }
+    },
+    {
+      "id": "2",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.api",
+        "package": "API Gateway Layer",
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 400,
+        "y": 50
+      }
+    },
+    {
+      "id": "3",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.services",
+        "package": "Business Services Layer",
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 50
+      }
+    },
+    {
+      "id": "4",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.services.order",
+        "package": "Order Management Service",
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 650,
+        "y": 200
+      }
+    },
+    {
+      "id": "5",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.services.payment",
+        "package": "Payment Processing Service",
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 850,
+        "y": 200
+      }
+    },
+    {
+      "id": "6",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.services.user",
+        "package": "User Management Service",
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 550,
+        "y": 200
+      }
+    },
+    {
+      "id": "7",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.data",
+        "package": "Data Access Layer",
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#880e4f"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 350
+      }
+    },
+    {
+      "id": "8",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.integration",
+        "package": "External Integration Layer",
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#4a148c"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 350
+      }
+    },
+    {
+      "id": "9",
+      "type": "package",
+      "data": {
+        "label": "com.ecommerce.security",
+        "package": "Security & Authentication",
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 400,
+        "y": 350
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "type": "dependency",
+      "label": "uses"
+    },
+    {
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "type": "dependency",
+      "label": "calls"
+    },
+    {
+      "id": "e3-4",
+      "source": "3",
+      "target": "4",
+      "type": "dependency",
+      "label": "contains"
+    },
+    {
+      "id": "e3-5",
+      "source": "3",
+      "target": "5",
+      "type": "dependency",
+      "label": "contains"
+    },
+    {
+      "id": "e3-6",
+      "source": "3",
+      "target": "6",
+      "type": "dependency",
+      "label": "contains"
+    },
+    {
+      "id": "e4-7",
+      "source": "4",
+      "target": "7",
+      "type": "dependency",
+      "label": "accesses"
+    },
+    {
+      "id": "e5-7",
+      "source": "5",
+      "target": "7",
+      "type": "dependency",
+      "label": "accesses"
+    },
+    {
+      "id": "e6-7",
+      "source": "6",
+      "target": "7",
+      "type": "dependency",
+      "label": "accesses"
+    },
+    {
+      "id": "e5-8",
+      "source": "5",
+      "target": "8",
+      "type": "dependency",
+      "label": "integrates"
+    },
+    {
+      "id": "e2-9",
+      "source": "2",
+      "target": "9",
+      "type": "dependency",
+      "label": "authenticates"
+    },
+    {
+      "id": "e6-9",
+      "source": "6",
+      "target": "9",
+      "type": "dependency",
+      "label": "validates"
+    }
+  ]
+}

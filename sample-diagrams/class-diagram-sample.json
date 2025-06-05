@@ -1,0 +1,213 @@
+{
+  "type": "class",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "class",
+      "data": {
+        "label": "User",
+        "properties": [
+          "- id: UUID",
+          "- username: string",
+          "- email: string",
+          "- firstName: string",
+          "- lastName: string",
+          "- dateOfBirth: Date",
+          "- isActive: boolean",
+          "- createdAt: Date",
+          "- updatedAt: Date"
+        ],
+        "methods": [
+          "+ constructor(username: string, email: string)",
+          "+ login(password: string): boolean",
+          "+ logout(): void",
+          "+ updateProfile(data: UserProfile): void",
+          "+ changePassword(oldPassword: string, newPassword: string): boolean",
+          "+ validateEmail(): boolean",
+          "+ getFullName(): string",
+          "+ isAdult(): boolean",
+          "+ deactivate(): void"
+        ],
+        "color": {
+          "bg": "#e1f5fe",
+          "border": "#01579b"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "2",
+      "type": "class",
+      "data": {
+        "label": "Order",
+        "properties": [
+          "- orderId: UUID",
+          "- customerId: UUID",
+          "- orderDate: Date",
+          "- totalAmount: number",
+          "- currency: string",
+          "- status: OrderStatus",
+          "- shippingAddress: Address",
+          "- billingAddress: Address",
+          "- paymentMethod: PaymentMethod",
+          "- orderItems: OrderItem[]"
+        ],
+        "methods": [
+          "+ constructor(customerId: UUID)",
+          "+ addItem(product: Product, quantity: number): void",
+          "+ removeItem(productId: UUID): void",
+          "+ calculateTotal(): number",
+          "+ applyDiscount(discount: Discount): void",
+          "+ processPayment(): boolean",
+          "+ updateStatus(status: OrderStatus): void",
+          "+ cancel(): void",
+          "+ getOrderSummary(): OrderSummary"
+        ],
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#4a148c"
+        }
+      },
+      "position": {
+        "x": 450,
+        "y": 100
+      }
+    },
+    {
+      "id": "3",
+      "type": "class",
+      "data": {
+        "label": "Product",
+        "properties": [
+          "- productId: UUID",
+          "- name: string",
+          "- description: string",
+          "- price: number",
+          "- currency: string",
+          "- category: Category",
+          "- stockQuantity: number",
+          "- sku: string",
+          "- weight: number",
+          "- dimensions: Dimensions"
+        ],
+        "methods": [
+          "+ constructor(name: string, price: number)",
+          "+ updateStock(quantity: number): void",
+          "+ isInStock(): boolean",
+          "+ applyPriceChange(newPrice: number): void",
+          "+ getDiscountedPrice(discount: number): number",
+          "+ updateDescription(description: string): void",
+          "+ calculateShippingCost(destination: Address): number"
+        ],
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 800,
+        "y": 100
+      }
+    },
+    {
+      "id": "4",
+      "type": "class",
+      "data": {
+        "label": "Payment",
+        "properties": [
+          "- paymentId: UUID",
+          "- orderId: UUID",
+          "- amount: number",
+          "- currency: string",
+          "- paymentMethod: PaymentMethodType",
+          "- transactionId: string",
+          "- status: PaymentStatus",
+          "- processedAt: Date",
+          "- gatewayResponse: string"
+        ],
+        "methods": [
+          "+ constructor(orderId: UUID, amount: number)",
+          "+ processPayment(): boolean",
+          "+ refund(amount?: number): boolean",
+          "+ verifyTransaction(): boolean",
+          "+ updateStatus(status: PaymentStatus): void",
+          "+ getReceiptData(): ReceiptData"
+        ],
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 450,
+        "y": 400
+      }
+    },
+    {
+      "id": "5",
+      "type": "interface",
+      "data": {
+        "label": "Notifiable",
+        "methods": [
+          "+ sendNotification(message: string): void",
+          "+ getNotificationPreferences(): NotificationSettings",
+          "+ updateNotificationSettings(settings: NotificationSettings): void"
+        ],
+        "isInterface": true,
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#880e4f"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 400
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "type": "association",
+      "label": "creates",
+      "multiplicity": {
+        "source": "1",
+        "target": "0..*"
+      }
+    },
+    {
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "type": "composition",
+      "label": "contains",
+      "multiplicity": {
+        "source": "1",
+        "target": "1..*"
+      }
+    },
+    {
+      "id": "e2-4",
+      "source": "2",
+      "target": "4",
+      "type": "aggregation",
+      "label": "has",
+      "multiplicity": {
+        "source": "1",
+        "target": "1"
+      }
+    },
+    {
+      "id": "e1-5",
+      "source": "1",
+      "target": "5",
+      "type": "realization",
+      "label": "implements"
+    }
+  ]
+}

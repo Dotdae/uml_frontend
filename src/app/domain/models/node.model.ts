@@ -10,6 +10,10 @@
 export interface Node {
   id: string;
   type: string;
+  position: {
+    x: number;
+    y: number;
+  };
   data: {
     label: string;
     properties?: string[];
@@ -18,18 +22,17 @@ export interface Node {
     visibility?: string;
     lifeline?: boolean;
     activation?: boolean;
-    package?: string;
+    activationY?: number;
+    activationHeight?: number;
+    destroyed?: boolean;
     actor?: boolean;
     usecase?: boolean;
+    package?: string;
     component?: boolean;
     isInterface?: boolean;
     color?: {
       bg: string;
       border: string;
     };
-  };
-  position: {
-    x: number;
-    y: number;
   };
 }

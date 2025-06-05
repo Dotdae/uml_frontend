@@ -1,0 +1,118 @@
+{
+  "summary": {
+    "title": "UML Diagram Samples with Realistic Data",
+    "description": "Comprehensive collection of UML diagrams with realistic e-commerce system data",
+    "created": "2024-01-15",
+    "version": "1.0",
+    "total_diagrams": 5
+  },
+  "diagram_types": {
+    "class": {
+      "nodes": 5,
+      "edges": 4,
+      "description": "E-commerce system with User, Order, Product, Payment classes and Notifiable interface",
+      "features": [
+        "Comprehensive class properties and methods",
+        "Different relationship types (association, composition, aggregation, realization)",
+        "Interface implementation",
+        "Color-coded elements",
+        "Realistic business domain modeling"
+      ]
+    },
+    "sequence": {
+      "nodes": 6,
+      "edges": 12,
+      "description": "Complete customer checkout flow with web interface, services, payment gateway, database, and email notifications",
+      "features": [
+        "Multi-actor interaction flow",
+        "Realistic message sequences",
+        "Database operations",
+        "External service integration",
+        "Email notification workflow",
+        "Animated message flow"
+      ]
+    },
+    "package": {
+      "nodes": 9,
+      "edges": 11,
+      "description": "Layered e-commerce architecture with UI, API, services, data access, integration, and security layers",
+      "features": [
+        "Layered architecture pattern",
+        "Service decomposition",
+        "Dependency management",
+        "Separation of concerns",
+        "Microservices organization",
+        "Security layer integration"
+      ]
+    },
+    "usecase": {
+      "nodes": 13,
+      "edges": 13,
+      "description": "E-commerce platform use cases for customers and administrators with payment gateway integration",
+      "features": [
+        "Multiple actor types",
+        "Customer-facing use cases",
+        "Administrative functions",
+        "External system integration",
+        "Include and extend relationships",
+        "Role-based access patterns"
+      ]
+    },
+    "component": {
+      "nodes": 12,
+      "edges": 17,
+      "description": "Microservices architecture with web app, API gateway, business services, and external integrations",
+      "features": [
+        "Microservices architecture",
+        "Service dependencies",
+        "External integrations",
+        "Caching strategy",
+        "Logging and monitoring",
+        "API gateway pattern",
+        "Authentication service"
+      ]
+    }
+  },
+  "technical_details": {
+    "node_structure": {
+      "required_fields": ["id", "type", "data", "position"],
+      "data_fields": ["label", "properties", "methods", "color"],
+      "position_fields": ["x", "y"]
+    },
+    "edge_structure": {
+      "required_fields": ["id", "source", "target"],
+      "optional_fields": ["type", "label", "message", "multiplicity", "animated"]
+    },
+    "supported_node_types": [
+      "class",
+      "interface",
+      "actor",
+      "lifeline",
+      "package",
+      "usecase",
+      "component"
+    ],
+    "supported_edge_types": [
+      "association",
+      "composition",
+      "aggregation",
+      "realization",
+      "dependency",
+      "message",
+      "include",
+      "extend"
+    ]
+  },
+  "usage_examples": {
+    "import_export": "Use FlexFlowService.exportDiagram() to generate JSON",
+    "file_naming": "Follow pattern: {type}-diagram-sample.json",
+    "integration": "Use DiagramJsonExportService for bulk operations"
+  },
+  "data_quality": {
+    "realistic_business_domain": "E-commerce system with authentic business entities",
+    "comprehensive_properties": "Detailed class properties and methods",
+    "proper_relationships": "Correct UML relationship types and multiplicities",
+    "consistent_naming": "Professional naming conventions",
+    "color_coding": "Visual differentiation with meaningful colors"
+  }
+}

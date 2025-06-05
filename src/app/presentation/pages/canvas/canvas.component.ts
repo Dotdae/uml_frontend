@@ -1,15 +1,12 @@
-import { Component, ViewChild, type ElementRef, type AfterViewInit, type OnInit } from "@angular/core"
+import { Component, ViewChild, type AfterViewInit, type OnInit, type OnDestroy } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import * as go from "gojs"
-import type { DiagramType } from "@infrastructure/diagram/diagram.service"
-import { DiagramService } from "@infrastructure/diagram/diagram.service"
 import { ActivatedRoute } from "@angular/router"
-import { HttpClient } from "@angular/common/http"
-import { AuthService } from '@infrastructure/auth/auth.service';
 import { Router } from "@angular/router"
 import { FlexFlowComponent } from "../../components/flex-flow/flex-flow.component"
+import { DiagramType } from "@infrastructure/diagram/flex-flow.service";
+import { DIAGRAM_TYPES, getDiagramTypeName } from "../../../core/models/diagram.model";
 
 @Component({
   selector: 'app-canvas',
@@ -18,7 +15,7 @@ import { FlexFlowComponent } from "../../components/flex-flow/flex-flow.componen
   templateUrl: './canvas.component.html',
   styleUrl: './canvas.component.css'
 })
-export class CanvasComponent implements AfterViewInit, OnInit {
+export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild(FlexFlowComponent) flexFlowComponent!: FlexFlowComponent;
 
   title = "Clase UML"
@@ -35,12 +32,8 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   selectedColor = 0
 
-  // Opciones de fuente
-  fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24]
-  selectedFontSize = 5 // Índice para 14pt
-
   // Tipo de diagrama actual
-  currentDiagramType: DiagramType = "class"
+  currentDiagramType: DiagramType = 'CLASS';
 
   // Añadir propiedades para los parámetros del diagrama
   projectId: number | null = null;
@@ -48,20 +41,20 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   diagramTitle: string | null = null;
 
   // Lista de tipos de diagramas disponibles
-  diagramTypes: { type: DiagramType; label: string }[] = [
-    { type: "class", label: "Diagrama de Clases" },
-    { type: "sequence", label: "Diagrama de Secuencia" },
-    { type: "package", label: "Diagrama de Paquetes" },
-    { type: "usecase", label: "Diagrama de Casos de Uso" },
-    { type: "component", label: "Diagrama de Componentes" },
-    // { type: "blank", label: "Lienzo en Blanco" },
+  diagramTypes: { id: number; type: DiagramType; label: string }[] = [
+    { id: DIAGRAM_TYPES.CLASS, type: "CLASS", label: getDiagramTypeName(DIAGRAM_TYPES.CLASS) },
+    { id: DIAGRAM_TYPES.SEQUENCE, type: "SEQUENCE", label: getDiagramTypeName(DIAGRAM_TYPES.SEQUENCE) },
+    { id: DIAGRAM_TYPES.PACKAGE, type: "PACKAGE", label: getDiagramTypeName(DIAGRAM_TYPES.PACKAGE) },
+    { id: DIAGRAM_TYPES.USECASE, type: "USECASE", label: getDiagramTypeName(DIAGRAM_TYPES.USECASE) },
+    { id: DIAGRAM_TYPES.COMPONENTS, type: "COMPONENTS", label: getDiagramTypeName(DIAGRAM_TYPES.COMPONENTS) },
   ]
+
 
   menuArchivoOpen = false;
   menuEditarOpen = false;
   menuTipoOpen = false;
 
-  selectedDiagramType: DiagramType = 'class';
+  selectedDiagramType: DiagramType = 'CLASS';
 
   isModalOpen = false;
 
@@ -69,35 +62,17 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
   selectedNodeId: string | null = null;
 
+  // Add new properties for diagram state
+  isDiagramSaved: boolean = true;
+  isSaving: boolean = false;
+  lastSavedContent: string = '';
+  autoSaveInterval: any;
+
   constructor(
-    private diagramService: DiagramService,
     private route: ActivatedRoute,
-    private http: HttpClient,
-    private authService: AuthService,
     private router: Router,
   ) { }
 
-  // Método para manejar el cambio de tipo de diagrama desde el menú
-  onDiagramTypeChange(type: DiagramType) {
-    console.log('onDiagramTypeChange called with type:', type);
-    console.log('flexFlowComponent available:', !!this.flexFlowComponent);
-
-    this.selectedDiagramType = type;
-    this.currentDiagramType = type;
-
-    // Load the new diagram type in the FlexFlow component with a small delay to ensure ViewChild is ready
-    setTimeout(() => {
-      if (this.flexFlowComponent) {
-        this.loadDiagramWithType(type);
-        console.log('loadDiagram called successfully');
-      } else {
-        console.log('FlexFlowComponent is still not available after timeout');
-      }
-    }, 100);
-
-    // Actualiza la URL sin recargar la página
-    this.router.navigate(['/canvas', type], { replaceUrl: true });
-  }
 
   // Métodos para el modal
   openDiagramTypeModal(): void {
@@ -108,20 +83,7 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     this.isModalOpen = false;
   }
 
-  selectDiagramTypeAndClose(type: DiagramType): void {
-    this.onDiagramTypeChange(type);
-    this.closeModal();
-  }
-
-  getDiagramTypeLabel(type: DiagramType): string {
-    const diagramType = this.diagramTypes.find(dt => dt.type === type);
-    return diagramType ? diagramType.label : 'Tipo de diagrama';
-  }
-
   ngOnInit() {
-    // Llama al endpoint para crear el proyecto al cargar el componente
-    this.createProjectOnInit();
-
     // Leer parámetros de consulta (query parameters) en lugar de parámetros de ruta
     this.route.queryParams.subscribe(params => {
       // Obtener los parámetros del diagrama
@@ -134,15 +96,21 @@ export class CanvasComponent implements AfterViewInit, OnInit {
         this.title = this.diagramTitle;
       }
 
-      const type = params['type'] as DiagramType;
-      if (type && this.diagramTypes.some(dt => dt.type === type)) {
-        this.selectedDiagramType = type;
-        this.currentDiagramType = type;
+      const type = params['type'] as number;
+      const diagramType = this.diagramTypes.find(dt => dt.id == type);
+
+      if (type && diagramType) {
+        this.selectedDiagramType = diagramType.type as DiagramType;
+        this.currentDiagramType = this.selectedDiagramType;
+        console.log('selectedDiagramType', this.selectedDiagramType);
+        console.log('currentDiagramType', this.currentDiagramType);
 
         // Cargar el diagrama con el tipo correcto si tenemos FlexFlowComponent disponible
         // Si no está disponible aún, se cargará en ngAfterViewInit
+        console.log('flexFlowComponent', this.flexFlowComponent);
         if (this.flexFlowComponent) {
-          this.loadDiagramWithType(type);
+          console.log('loadDiagramWithType', this.selectedDiagramType);
+          this.loadDiagramWithType(this.selectedDiagramType);
         }
       }
     });
@@ -162,42 +130,37 @@ export class CanvasComponent implements AfterViewInit, OnInit {
 
     // const userId = this.authService.getUserId();
     // console.log('ID del usuario:', userId);
+
+    // Load diagram if diagramId is provided
+    if (this.diagramId) {
+      // this.loadDiagram(this.diagramId);
+    }
+
+    // Setup auto-save
+    // this.setupAutoSave();
   }
 
-  // Lógica para crear el proyecto al cargar el componente
-  createProjectOnInit() {
-
-    const createProyectDto = {
-      name: "Nuevo Proyecto", // Esto se puede hacer dinámico
-      userID: this.authService.getUserId()          // Esto no sé de donde lo vamos a sacar XD
-    };
-
-    // this.http.post('http://localhost:3000/api/proyects', createProyectDto)
-    //   .subscribe({
-    //     next: (proyect) => {
-    //       console.log('Proyecto creado:', proyect);
-    //     },
-    //     error: (err) => {
-    //       alert('Error al crear el proyecto');
-    //     }
-    //   });
+  ngOnDestroy() {
+    // Clear auto-save interval
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+    }
   }
+
 
   ngAfterViewInit() {
     console.log("ngAfterViewInit");
 
     // Si tenemos un tipo de diagrama y FlexFlowComponent está disponible, cargar el diagrama
     if (this.currentDiagramType && this.flexFlowComponent) {
-      this.loadDiagramWithType(this.currentDiagramType);
+        this.loadDiagramWithType(this.currentDiagramType);
     }
   }
 
-  // Nuevo método para cargar el diagrama con el tipo especificado
   private loadDiagramWithType(type: DiagramType): void {
+    console.log('loadDiagramWithType', type);
     if (this.flexFlowComponent) {
-      const flexFlowType = type === 'blank' ? 'class' : type;
-      console.log('Loading diagram with type:', flexFlowType);
-      this.flexFlowComponent.loadDiagram(flexFlowType as 'class' | 'sequence' | 'package' | 'usecase' | 'component');
+      this.flexFlowComponent.loadDiagram(type, this.diagramId?.toString() || '');
     }
   }
 
@@ -245,9 +208,45 @@ export class CanvasComponent implements AfterViewInit, OnInit {
     }
   }
 
+  addSequenceObject() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addSequenceObject();
+    }
+  }
+
+  addActivationBox() {
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.addActivationBox();
+    }
+  }
+
+  destroySelectedObject() {
+    if (this.flexFlowComponent && this.selectedNodeId) {
+      this.flexFlowComponent.destroyObject(this.selectedNodeId);
+    }
+  }
+
   exportDiagram() {
     if (this.flexFlowComponent) {
-      this.flexFlowComponent.exportDiagram();
+      const content = this.flexFlowComponent.exportDiagram();
+      const currentContent = JSON.stringify(content, null, 2);
+
+      // Check if there are unsaved changes
+      if (currentContent !== this.lastSavedContent) {
+        this.isDiagramSaved = false;
+        // this.saveDiagram(); // Save before export
+      }
+
+      // Create and trigger download
+      const blob = new Blob([currentContent], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${this.title || 'diagram'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     }
   }
 
@@ -309,5 +308,83 @@ export class CanvasComponent implements AfterViewInit, OnInit {
   getZoomPercentage(): number {
     return this.flexFlowComponent ? this.flexFlowComponent.getZoomPercentage() : 100;
   }
+
+  // Load diagram from backend
+  // private async loadDiagram(diagramId: number) {
+  //   try {
+  //     const diagram = await this.diagramService.getDiagram(diagramId).toPromise();
+  //     if (diagram) {
+  //       this.title = diagram.name;
+  //       this.currentDiagramType = diagram.type as DiagramType;
+  //       this.lastSavedContent = diagram.content;
+
+  //       // Load diagram content into FlexFlow
+  //       if (this.flexFlowComponent) {
+  //         this.flexFlowComponent.loadDiagram(this.currentDiagramType);
+  //         this.flexFlowComponent.loadContent(diagram.content);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading diagram:', error);
+  //     // Handle error (show message to user)
+  //   }
+  // }
+
+  // Save diagram to backend
+  // async saveDiagram() {
+  //   if (!this.projectId || this.isSaving) return;
+
+  //   this.isSaving = true;
+  //   try {
+  //     const content = this.flexFlowComponent.exportDiagram();
+
+  //     const diagramData = {
+  //       name: this.title,
+  //       type: this.currentDiagramType,
+  //       content: content,
+  //       projectId: this.projectId,
+  //     };
+
+  //     if (this.diagramId) {
+  //       // Update existing diagram
+  //       await this.diagramService.updateDiagram(this.diagramId, diagramData).toPromise();
+  //     } else {
+  //       // Create new diagram
+  //       // const newDiagram = await this.diagramService.createDiagram(diagramData).toPromise();
+  //       this.diagramId = newDiagram.id;
+  //       // Update URL with new diagram ID
+  //       this.router.navigate([], {
+  //         relativeTo: this.route,
+  //         queryParams: { diagramId: this.diagramId },
+  //         queryParamsHandling: 'merge'
+  //       });
+  //     }
+
+  //     this.lastSavedContent = content;
+  //     this.isDiagramSaved = true;
+  //   } catch (error) {
+  //     console.error('Error saving diagram:', error);
+  //     // Handle error (show message to user)
+  //   } finally {
+  //     this.isSaving = false;
+  //   }
+  // }
+
+  // Setup auto-save functionality
+  // private setupAutoSave() {
+  //   this.autoSaveInterval = setInterval(() => {
+  //     if (!this.isDiagramSaved && !this.isSaving) {
+  //       this.saveDiagram();
+  //     }
+  //   }, 30000); // Auto-save every 30 seconds if there are changes
+  // }
+
+  // Handle diagram content changes
+  // onDiagramChanged() {
+  //   if (this.flexFlowComponent) {
+  //     const currentContent = this.flexFlowComponent.exportDiagram();
+  //     this.isDiagramSaved = currentContent === this.lastSavedContent;
+  //   }
+  // }
 }
 

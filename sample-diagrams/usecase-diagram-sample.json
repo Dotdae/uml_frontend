@@ -1,0 +1,296 @@
+{
+  "type": "usecase",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "actor",
+      "data": {
+        "label": "Customer",
+        "actor": true,
+        "color": {
+          "bg": "#e3f2fd",
+          "border": "#0d47a1"
+        }
+      },
+      "position": {
+        "x": 50,
+        "y": 200
+      }
+    },
+    {
+      "id": "2",
+      "type": "actor",
+      "data": {
+        "label": "Administrator",
+        "actor": true,
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#880e4f"
+        }
+      },
+      "position": {
+        "x": 50,
+        "y": 400
+      }
+    },
+    {
+      "id": "3",
+      "type": "actor",
+      "data": {
+        "label": "Payment Gateway",
+        "actor": true,
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#4a148c"
+        }
+      },
+      "position": {
+        "x": 800,
+        "y": 300
+      }
+    },
+    {
+      "id": "4",
+      "type": "usecase",
+      "data": {
+        "label": "Browse Products",
+        "usecase": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 100
+      }
+    },
+    {
+      "id": "5",
+      "type": "usecase",
+      "data": {
+        "label": "Register Account",
+        "usecase": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 150
+      }
+    },
+    {
+      "id": "6",
+      "type": "usecase",
+      "data": {
+        "label": "Login",
+        "usecase": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 200
+      }
+    },
+    {
+      "id": "7",
+      "type": "usecase",
+      "data": {
+        "label": "Add to Cart",
+        "usecase": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 250
+      }
+    },
+    {
+      "id": "8",
+      "type": "usecase",
+      "data": {
+        "label": "Checkout",
+        "usecase": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 300
+      }
+    },
+    {
+      "id": "9",
+      "type": "usecase",
+      "data": {
+        "label": "Process Payment",
+        "usecase": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 500,
+        "y": 300
+      }
+    },
+    {
+      "id": "10",
+      "type": "usecase",
+      "data": {
+        "label": "Manage Products",
+        "usecase": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 400
+      }
+    },
+    {
+      "id": "11",
+      "type": "usecase",
+      "data": {
+        "label": "Manage Orders",
+        "usecase": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 450
+      }
+    },
+    {
+      "id": "12",
+      "type": "usecase",
+      "data": {
+        "label": "Generate Reports",
+        "usecase": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 500
+      }
+    },
+    {
+      "id": "13",
+      "type": "usecase",
+      "data": {
+        "label": "Manage Users",
+        "usecase": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 500,
+        "y": 450
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-4",
+      "source": "1",
+      "target": "4",
+      "type": "association"
+    },
+    {
+      "id": "e1-5",
+      "source": "1",
+      "target": "5",
+      "type": "association"
+    },
+    {
+      "id": "e1-6",
+      "source": "1",
+      "target": "6",
+      "type": "association"
+    },
+    {
+      "id": "e1-7",
+      "source": "1",
+      "target": "7",
+      "type": "association"
+    },
+    {
+      "id": "e1-8",
+      "source": "1",
+      "target": "8",
+      "type": "association"
+    },
+    {
+      "id": "e2-10",
+      "source": "2",
+      "target": "10",
+      "type": "association"
+    },
+    {
+      "id": "e2-11",
+      "source": "2",
+      "target": "11",
+      "type": "association"
+    },
+    {
+      "id": "e2-12",
+      "source": "2",
+      "target": "12",
+      "type": "association"
+    },
+    {
+      "id": "e2-13",
+      "source": "2",
+      "target": "13",
+      "type": "association"
+    },
+    {
+      "id": "e3-9",
+      "source": "3",
+      "target": "9",
+      "type": "association"
+    },
+    {
+      "id": "e8-9",
+      "source": "8",
+      "target": "9",
+      "type": "include",
+      "label": "<<include>>"
+    },
+    {
+      "id": "e7-6",
+      "source": "7",
+      "target": "6",
+      "type": "extend",
+      "label": "<<extend>>"
+    },
+    {
+      "id": "e8-6",
+      "source": "8",
+      "target": "6",
+      "type": "extend",
+      "label": "<<extend>>"
+    }
+  ]
+}

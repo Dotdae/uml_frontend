@@ -143,4 +143,13 @@ export class ProjectsService {
     console.error('ProjectsService Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+  /**
+   * Get the count of projects
+   */
+  getProjectCount(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/count`).pipe(
+      catchError(this.handleError)
+    );
+  }
 }

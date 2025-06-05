@@ -66,12 +66,12 @@ export const DIAGRAM_TYPES = {
 // Helper function to get type name from ID
 export function getDiagramTypeName(typeId: number): string {
   switch (typeId) {
-    case DIAGRAM_TYPES.CLASS: return 'Class Diagram';
-    case DIAGRAM_TYPES.SEQUENCE: return 'Sequence Diagram';
-    case DIAGRAM_TYPES.PACKAGE: return 'Package Diagram';
-    case DIAGRAM_TYPES.COMPONENTS: return 'Component Diagram';
-    case DIAGRAM_TYPES.USECASE: return 'Use Case Diagram';
-    default: return 'Unknown Type';
+    case DIAGRAM_TYPES.CLASS: return 'Diagrama de Clases';
+    case DIAGRAM_TYPES.SEQUENCE: return 'Diagrama de Secuencia';
+    case DIAGRAM_TYPES.PACKAGE: return 'Diagrama de Paquetes';
+    case DIAGRAM_TYPES.COMPONENTS: return 'Diagrama de Componentes';
+    case DIAGRAM_TYPES.USECASE: return 'Diagrama de Casos de Uso';
+    default: return 'Tipo de diagrama desconocido';
   }
 }
 

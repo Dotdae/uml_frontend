@@ -1,0 +1,199 @@
+{
+  "type": "sequence",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "actor",
+      "data": {
+        "label": "Customer",
+        "actor": true,
+        "color": {
+          "bg": "#e3f2fd",
+          "border": "#0d47a1"
+        }
+      },
+      "position": {
+        "x": 100,
+        "y": 50
+      }
+    },
+    {
+      "id": "2",
+      "type": "lifeline",
+      "data": {
+        "label": "WebInterface",
+        "lifeline": true,
+        "color": {
+          "bg": "#f1f8e9",
+          "border": "#33691e"
+        }
+      },
+      "position": {
+        "x": 300,
+        "y": 50
+      }
+    },
+    {
+      "id": "3",
+      "type": "lifeline",
+      "data": {
+        "label": "OrderService",
+        "lifeline": true,
+        "color": {
+          "bg": "#fff3e0",
+          "border": "#e65100"
+        }
+      },
+      "position": {
+        "x": 500,
+        "y": 50
+      }
+    },
+    {
+      "id": "4",
+      "type": "lifeline",
+      "data": {
+        "label": "PaymentGateway",
+        "lifeline": true,
+        "color": {
+          "bg": "#fce4ec",
+          "border": "#880e4f"
+        }
+      },
+      "position": {
+        "x": 700,
+        "y": 50
+      }
+    },
+    {
+      "id": "5",
+      "type": "lifeline",
+      "data": {
+        "label": "Database",
+        "lifeline": true,
+        "color": {
+          "bg": "#f3e5f5",
+          "border": "#4a148c"
+        }
+      },
+      "position": {
+        "x": 900,
+        "y": 50
+      }
+    },
+    {
+      "id": "6",
+      "type": "lifeline",
+      "data": {
+        "label": "EmailService",
+        "lifeline": true,
+        "color": {
+          "bg": "#e8f5e8",
+          "border": "#1b5e20"
+        }
+      },
+      "position": {
+        "x": 1100,
+        "y": 50
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "browseProducts()",
+      "animated": true
+    },
+    {
+      "id": "e2-1",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "displayProducts()",
+      "animated": true
+    },
+    {
+      "id": "e1-2-2",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "addToCart(productId, quantity)",
+      "animated": true
+    },
+    {
+      "id": "e1-2-3",
+      "source": "1",
+      "target": "2",
+      "type": "message",
+      "message": "checkout()",
+      "animated": true
+    },
+    {
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "type": "message",
+      "message": "createOrder(orderData)",
+      "animated": true
+    },
+    {
+      "id": "e3-5",
+      "source": "3",
+      "target": "5",
+      "type": "message",
+      "message": "saveOrder(order)",
+      "animated": true
+    },
+    {
+      "id": "e3-4",
+      "source": "3",
+      "target": "4",
+      "type": "message",
+      "message": "processPayment(paymentData)",
+      "animated": true
+    },
+    {
+      "id": "e4-3",
+      "source": "4",
+      "target": "3",
+      "type": "message",
+      "message": "paymentConfirmation()",
+      "animated": true
+    },
+    {
+      "id": "e3-5-2",
+      "source": "3",
+      "target": "5",
+      "type": "message",
+      "message": "updateOrderStatus(orderId, \"paid\")",
+      "animated": true
+    },
+    {
+      "id": "e3-6",
+      "source": "3",
+      "target": "6",
+      "type": "message",
+      "message": "sendConfirmationEmail(customerId, orderDetails)",
+      "animated": true
+    },
+    {
+      "id": "e3-2",
+      "source": "3",
+      "target": "2",
+      "type": "message",
+      "message": "orderCreated(orderId)",
+      "animated": true
+    },
+    {
+      "id": "e2-1-final",
+      "source": "2",
+      "target": "1",
+      "type": "message",
+      "message": "displayOrderConfirmation()",
+      "animated": true
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 <div class="w-full h-full relative overflow-hidden bg-gray-50">
   <!-- Diagram Type Selector -->
   <div class="absolute top-4 left-4 flex space-x-2 z-10">
-    <select [(ngModel)]="currentType" (change)="loadDiagram(currentType)"
+    <!-- <select [(ngModel)]="currentType" (change)="loadDiagram(currentType)"
             class="bg-white border border-gray-300 rounded px-3 py-2 text-sm">
       <option *ngFor="let type of diagramTypes" [value]="type">
         {{type | titlecase}} Diagram
       </option>
-    </select>
+    </select> -->
   </div>
 
   <!-- Zoom Controls -->
@@ -92,12 +92,13 @@
         <!-- Node Header -->
         <div class="flex justify-between items-center bg-gray-100 border-b border-gray-300 px-4 gap-2 py-2">
           <div class="flex-1">
-            <!-- Interface stereotype -->
-            <div *ngIf="node.data.isInterface" class="text-[11px] text-gray-600 font-mono italic text-center mb-1">
-              &lt;&lt;interface&gt;&gt;
-            </div>
-            <div *ngIf="!node.data.isInterface" class="text-[11px] text-gray-600 font-mono italic text-center mb-1">
-              &lt;&lt;class&gt;&gt;
+            <!-- Stereotype -->
+            <div class="text-[11px] text-gray-600 font-mono italic text-center mb-1">
+              &lt;&lt;{{ node.data.stereotype || (node.data.isInterface ? 'interface' :
+                node.data.actor ? 'actor' :
+                node.data.usecase ? 'use case' :
+                node.data.package ? 'package' :
+                node.data.component ? 'component' : 'class') }}&gt;&gt;
             </div>
             <!-- Node label -->
             <input
@@ -118,7 +119,7 @@
         <!-- Node Content -->
         <div class="px-4 py-2">
           <!-- Class Diagram Content -->
-          <ng-container *ngIf="currentType === 'class'">
+          <ng-container *ngIf="currentType === 'CLASS'">
             <!-- Properties -->
             <div class="mb-2">
               <div class="flex justify-between items-center mb-1">
@@ -189,29 +190,74 @@
           </ng-container>
 
           <!-- Sequence Diagram Content -->
-          <ng-container *ngIf="currentType === 'sequence'">
-            <div *ngIf="node.data.lifeline" class="h-64 border-l-2 border-dashed border-gray-300"></div>
+          <ng-container *ngIf="currentType === 'SEQUENCE'">
+            <!-- Object Box -->
+            <div class="border-2 border-gray-300 bg-white p-2 mb-2 text-center">
+              <input type="text"
+                     [(ngModel)]="node.data.label"
+                     (blur)="updateNodeLabel(node.id, $event)"
+                     class="w-full text-center border-none focus:outline-none"
+                     placeholder="Object Name">
+            </div>
+
+            <!-- Lifeline -->
+            <div class="w-0.5 h-full mx-auto border-l-2 border-dashed border-gray-300"></div>
+
+            <!-- Activation Box -->
+            <div *ngIf="node.data.activation"
+                 class="absolute left-1/2 transform -translate-x-1/2 bg-gray-200 border border-gray-400"
+                 [style.top.px]="node.data.activationY"
+                 [style.height.px]="node.data.activationHeight || 80"
+                 style="width: 20px;">
+            </div>
+
+            <!-- Destruction X -->
+            <div *ngIf="node.data.destroyed"
+                 class="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+              <svg width="20" height="20" viewBox="0 0 20 20">
+                <path d="M2 2L18 18M2 18L18 2" stroke="black" stroke-width="2"/>
+              </svg>
+            </div>
           </ng-container>
 
           <!-- Package Diagram Content -->
-          <ng-container *ngIf="currentType === 'package'">
+          <ng-container *ngIf="currentType === 'PACKAGE'">
             <div class="text-xs text-gray-600">{{ node.data.package }}</div>
           </ng-container>
 
           <!-- Use Case Diagram Content -->
-          <ng-container *ngIf="currentType === 'usecase'">
+          <ng-container *ngIf="currentType === 'USECASE'">
+            <!-- Actor Stick Figure -->
             <div *ngIf="node.data.actor" class="text-center">
-              <div class="w-8 h-8 border-2 border-gray-300 rounded-full mx-auto mb-1"></div>
-              <div class="text-xs">{{ node.data.label }}</div>
+              <svg width="40" height="60" viewBox="0 0 40 60" class="mx-auto mb-1">
+                <!-- Head -->
+                <circle cx="20" cy="10" r="8" fill="#FCD34D" stroke="#4B5563" stroke-width="2"/>
+
+                <!-- Body -->
+                <line x1="20" y1="18" x2="20" y2="35" stroke="#4B5563" stroke-width="2"/>
+
+                <!-- Arms -->
+                <line x1="20" y1="25" x2="5" y2="30" stroke="#4B5563" stroke-width="2"/>
+                <line x1="20" y1="25" x2="35" y2="30" stroke="#4B5563" stroke-width="2"/>
+
+                <!-- Legs -->
+                <line x1="20" y1="35" x2="10" y2="50" stroke="#4B5563" stroke-width="2"/>
+                <line x1="20" y1="35" x2="30" y2="50" stroke="#4B5563" stroke-width="2"/>
+              </svg>
+
+              <!-- Label -->
+              <div class="text-xs font-medium text-gray-700">{{ node.data.label }}</div>
             </div>
-            <div *ngIf="node.data.usecase" class="text-center">
-              <div class="w-24 h-12 border-2 border-gray-300 rounded-full mx-auto mb-1"></div>
-              <div class="text-xs">{{ node.data.label }}</div>
+            <div *ngIf="!node.data.actor">
+              <div *ngIf="node.data.usecase" class="text-center">
+                <div class="w-24 h-12 border-2 border-gray-300 rounded-full mx-auto mb-1"></div>
+                <div class="text-xs">{{ node.data.label }}</div>
+              </div>
             </div>
           </ng-container>
 
           <!-- Component Diagram Content -->
-          <ng-container *ngIf="currentType === 'component'">
+          <ng-container *ngIf="currentType === 'COMPONENTS'">
             <div class="text-center">
               <div class="w-24 h-12 border-2 border-gray-300 mx-auto mb-1"></div>
               <div class="text-xs">{{ node.data.label }}</div>
@@ -224,26 +270,41 @@
       <f-snap-connection [fSnapThreshold]="50"></f-snap-connection>
       <f-connection-for-create></f-connection-for-create>
 
-
+      <!-- Message Connections -->
       <f-connection *ngFor="let connection of connections; trackBy: trackByConnectionId"
                    [fReassignDisabled]="false"
                    [fBehavior]="eConnectionBehaviour.FIXED"
                    [fDraggingDisabled]="false"
-                   fType="bezier"
+                   [fType]="connection.type === 'sync' ? 'straight' : 'bezier'"
                    [fOutputId]="'output-' + connection.source"
-                   [fInputId]="'input-' + connection.target">
-        <!-- Start Marker -->
-        <svg viewBox="0 0 10 10" fMarker [type]="eMarkerType.START" [height]="10" [width]="10" [refX]="5" [refY]="5">
-          <circle cx="5" cy="5" r="2" stroke="none" fill="var(--connection-gradient-1)"></circle>
-        </svg>
-        <!-- End Marker -->
-        <svg viewBox="0 0 700 700" fMarker [type]="eMarkerType.END" [height]="5" [width]="5" [refX]="4" [refY]="2.5">
-          <path fill="var(--connection-gradient-2)" d="M0,0L700,350L0,700L150,350z"/>
-        </svg>
-        <!-- Connection Label -->
-        <div *ngIf="connection.label" class="absolute transform -translate-x-1/2 -translate-y-1/2 text-xs bg-white px-1 rounded shadow">
-          {{ connection.label }}
+                   [fInputId]="'input-' + connection.target"
+                   [class.dashed]="connection.type === 'async' || connection.type === 'return'">
+
+        <!-- Message Label -->
+        <div class="absolute transform -translate-y-1/2 text-xs bg-white px-1">
+          <input type="text"
+                 [(ngModel)]="connection.label"
+                 class="border-none focus:outline-none text-center w-full"
+                 placeholder="message()">
         </div>
+
+        <!-- Arrow Head -->
+        <svg *ngIf="connection.type === 'sync'"
+             viewBox="0 0 10 10"
+             fMarker
+             [type]="eMarkerType.END"
+             [height]="10"
+             [width]="10">
+          <path d="M0,0L10,5L0,10z" fill="black"/>
+        </svg>
+        <svg *ngIf="connection.type === 'async' || connection.type === 'return'"
+             viewBox="0 0 10 10"
+             fMarker
+             [type]="eMarkerType.END"
+             [height]="10"
+             [width]="10">
+          <path d="M0,0L10,5L0,10" fill="none" stroke="black"/>
+        </svg>
       </f-connection>
     </f-canvas>
 
@@ -253,3 +314,10 @@
     </f-minimap>
   </f-flow>
 </div>
+
+<!-- Add sequence diagram specific styles -->
+<style>
+  .dashed {
+    stroke-dasharray: 5,5;
+  }
+</style>

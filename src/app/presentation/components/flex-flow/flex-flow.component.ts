@@ -22,14 +22,15 @@ export class FlexFlowComponent implements AfterViewInit {
   @ViewChild('fCanvas') fCanvasRef!: ElementRef;
 
   @Input() selectedNodeId: string | null = null;
+  @Input() diagramId: string | null = null;
   @Output() nodeSelected = new EventEmitter<string>();
 
   public connections: Edge[] = [];
   public nodes: Node[] = [];
   public eConnectionBehaviour = EFConnectionBehavior;
   public eMarkerType = EFMarkerType;
-  public currentType: DiagramType = 'class';
-  public diagramTypes: DiagramType[] = ['class', 'sequence', 'package', 'usecase', 'component'];
+  public currentType: DiagramType = 'CLASS';
+  public diagramTypes: DiagramType[] = ['CLASS', 'SEQUENCE', 'PACKAGE', 'USECASE', 'COMPONENTS'];
 
 
   @ViewChild(FZoomDirective, { static: true })
@@ -47,7 +48,7 @@ export class FlexFlowComponent implements AfterViewInit {
     private changeDetectorRef: ChangeDetectorRef,
     private flexFlowService: FlexFlowService,
     private ngZone: NgZone,
-    private historyService: HistoryService
+    private historyService: HistoryService,
   ) {}
 
   onFlowLoaded() {
@@ -56,24 +57,17 @@ export class FlexFlowComponent implements AfterViewInit {
   ngAfterViewInit() {
     // Initialize the diagram after view is ready
     setTimeout(() => {
-      this.loadDiagram(this.currentType);
+      console.log('loadDiagram', this.currentType);
+      console.log('diagramId', this.diagramId);
+      this.loadDiagram(this.currentType, this.diagramId || '');
     });
   }
 
-  loadDiagram(type: DiagramType) {
-    console.log('FlexFlow loadDiagram called with type:', type);
-    console.log('Current nodes before:', this.nodes.length);
-    console.log('Current connections before:', this.connections.length);
-
+  loadDiagram(type: DiagramType, diagramId: string) {
     this.currentType = type;
     const { nodes, edges } = this.flexFlowService.initDiagram(type);
     this.nodes = nodes;
     this.connections = edges;
-    console.log('this.connections', this.connections);
-
-    console.log('New nodes count:', this.nodes.length);
-    console.log('New connections count:', this.connections.length);
-    console.log('Current type set to:', this.currentType);
 
     // Force change detection
     this.changeDetectorRef.detectChanges();
@@ -105,7 +99,6 @@ export class FlexFlowComponent implements AfterViewInit {
       this.flexFlowService.getEdges().push(...this.connections);
 
       this.changeDetectorRef.detectChanges();
-      console.log('Undo completed');
     }
   }
 
@@ -125,7 +118,6 @@ export class FlexFlowComponent implements AfterViewInit {
       this.flexFlowService.getEdges().push(...this.connections);
 
       this.changeDetectorRef.detectChanges();
-      console.log('Redo completed');
     }
   }
 
@@ -149,7 +141,6 @@ export class FlexFlowComponent implements AfterViewInit {
   zoomIn(): void {
     this.fZoom.zoomIn();
     this.zoomLevel = this.fZoom.getZoomValue();
-    console.log('Zoom in: from', this.zoomLevel, 'to', this.fZoom.getZoomValue());
   }
 
   /**
@@ -174,7 +165,6 @@ export class FlexFlowComponent implements AfterViewInit {
   fitToScreen(): void {
     // Set to a reasonable default zoom for fit to screen
     this.zoomLevel = 1;
-    console.log('Fit to screen:', this.zoomLevel);
     this.changeDetectorRef.detectChanges();
   }
 
@@ -223,41 +213,30 @@ export class FlexFlowComponent implements AfterViewInit {
     const sourceId = event.fOutputId?.replace('output-', '');
     const targetId = inputId.replace('input-', '');
 
-    console.log('Creating connection:');
-    console.log('- fOutputId:', event.fOutputId);
-    console.log('- fInputId:', event.fInputId);
-    console.log('- sourceId:', sourceId);
-    console.log('- targetId:', targetId);
-    console.log('- current nodes:', this.nodes.map(n => n.id));
-
     switch (this.currentType) {
-      case 'class':
+      case 'CLASS':
         newEdge = this.flexFlowService.createClassRelationship(sourceId!, targetId, 'association', 'association');
         break;
-      case 'sequence':
-        newEdge = this.flexFlowService.createSequenceMessage(sourceId!, targetId, 'message()');
+      case 'SEQUENCE':
+        newEdge = this.flexFlowService.createSequenceMessage(sourceId!, targetId, 'message');
         break;
-      case 'package':
+      case 'PACKAGE':
         newEdge = this.flexFlowService.createPackageDependency(sourceId!, targetId);
         break;
-      case 'usecase':
+      case 'USECASE':
         newEdge = this.flexFlowService.createUseCaseAssociation(sourceId!, targetId);
         break;
-      case 'component':
+      case 'COMPONENTS':
         newEdge = this.flexFlowService.createComponentDependency(sourceId!, targetId);
         break;
       default:
         return;
     }
 
-    console.log('Created edge:', newEdge);
-
     // Add the new edge to the component's connections array
     this.connections = [...this.connections, newEdge];
     // Also add to service for consistency
     this.flexFlowService.addEdge(newEdge);
-
-    console.log('Updated connections:', this.connections);
 
     // Force change detection
     this.changeDetectorRef.detectChanges();
@@ -273,27 +252,24 @@ export class FlexFlowComponent implements AfterViewInit {
     let newNode: Node;
 
     switch (this.currentType) {
-      case 'class':
+      case 'CLASS':
         newNode = this.flexFlowService.createClassNode(newId, 'NewClass', position);
         break;
-      case 'sequence':
+      case 'SEQUENCE':
         newNode = this.flexFlowService.createActorNode(newId, 'NewActor', position);
         break;
-      case 'package':
+      case 'PACKAGE':
         newNode = this.flexFlowService.createPackageNode(newId, 'NewPackage', position);
         break;
-      case 'usecase':
+      case 'USECASE':
         newNode = this.flexFlowService.createUseCaseNode(newId, 'NewUseCase', position);
         break;
-      case 'component':
+      case 'COMPONENTS':
         newNode = this.flexFlowService.createComponentNode(newId, 'NewComponent', position);
         break;
       default:
         return;
     }
-
-    console.log('newNode', newNode);
-    console.log('this.nodes', this.nodes);
 
     // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
@@ -308,8 +284,6 @@ export class FlexFlowComponent implements AfterViewInit {
     const newId = `${this.nodes.length + 10}`;
     const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
     const newNode = this.flexFlowService.createInterfaceNode(newId, 'NewInterface', position);
-
-    console.log('newInterfaceNode', newNode);
 
     // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
@@ -341,7 +315,6 @@ export class FlexFlowComponent implements AfterViewInit {
     const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
     const newNode = this.flexFlowService.createActorNode(newId, 'NewActor', position);
 
-    console.log('newActorNode', newNode);
 
     // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
@@ -598,5 +571,98 @@ export class FlexFlowComponent implements AfterViewInit {
     };
 
     return borderColorMap[node.data.color.border] || '#d1d5db';
+  }
+
+  addSequenceObject() {
+    const newId = `${this.nodes.length + 10}`;
+    const position = { x: 200 + this.nodes.length * 150, y: 50 };
+    const newNode = this.flexFlowService.createSequenceObject(newId, 'Object', position);
+
+    this.nodes = [...this.nodes, newNode];
+    this.flexFlowService.addNode(newNode);
+    this.saveCurrentState();
+  }
+
+  addActivationBox() {
+    const newId = `activation-${this.nodes.length + 10}`;
+    const position = { x: 200 + this.nodes.length * 150, y: 150 };
+    const newNode = {
+      id: newId,
+      type: 'activation',
+      position: position,
+      data: {
+        label: '',
+        type: 'activation',
+        width: 20,
+        height: 80
+      }
+    };
+
+    this.nodes = [...this.nodes, newNode];
+    this.flexFlowService.addNode(newNode);
+    this.saveCurrentState();
+  }
+
+  addSyncMessage(source: string, target: string) {
+    const newEdge: Edge = {
+      id: `edge-${this.connections.length + 1}`,
+      source: source,
+      target: target,
+      label: 'syncMessage()',
+      type: 'sync',
+      data: {
+        strokeStyle: 'solid',
+        arrowStyle: 'filled'
+      },
+    };
+
+    this.connections = [...this.connections, newEdge];
+    this.flexFlowService.addEdge(newEdge);
+    this.saveCurrentState();
+  }
+
+  addAsyncMessage(source: string, target: string) {
+    const newEdge: Edge = {
+      id: `edge-${this.connections.length + 1}`,
+      source: source,
+      target: target,
+      label: 'asyncMessage()',
+      type: 'async',
+      data: {
+        strokeStyle: 'dashed',
+        arrowStyle: 'open'
+      }
+    };
+
+    this.connections = [...this.connections, newEdge];
+    this.flexFlowService.addEdge(newEdge);
+    this.saveCurrentState();
+  }
+
+  addReturnMessage(source: string, target: string) {
+    const newEdge: Edge = {
+      id: `edge-${this.connections.length + 1}`,
+      source: source,
+      target: target,
+      label: 'return',
+      type: 'return',
+      data: {
+        strokeStyle: 'dashed',
+        arrowStyle: 'open'
+      }
+    };
+
+    this.connections = [...this.connections, newEdge];
+    this.flexFlowService.addEdge(newEdge);
+    this.saveCurrentState();
+  }
+
+  destroyObject(nodeId: string) {
+    const node = this.nodes.find(n => n.id === nodeId);
+    if (node) {
+      node.data.destroyed = true;
+      this.changeDetectorRef.detectChanges();
+      this.saveCurrentState();
+    }
   }
 }
