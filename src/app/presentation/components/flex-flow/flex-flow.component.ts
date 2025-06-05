@@ -1,12 +1,13 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, NgZone, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy, NgZone, Input, Output, EventEmitter, HostListener, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { EFConnectionBehavior, EFMarkerType, FZoomDirective, FCreateConnectionEvent, FFlowModule, FCanvasComponent } from '@foblex/flow';
+import { EFConnectionBehavior, EFMarkerType, FZoomDirective, FDragStartedEvent, FCreateConnectionEvent, FFlowModule, FCanvasComponent, FTriggerEvent } from '@foblex/flow';
 import { FormsModule } from '@angular/forms';
 import { FlexFlowService, DiagramType } from '../../../infrastructure/diagram/flex-flow.service';
 import { HistoryService } from '../../../infrastructure/diagram/history.service';
 import { Node } from '../../../domain/models/node.model';
 import { Edge } from '../../../domain/models/edge.model';
+import { DiagramService } from '../../../core/services/diagram.service';
 
 @Component({
   selector: 'app-flex-flow',
@@ -31,7 +32,7 @@ export class FlexFlowComponent implements AfterViewInit {
   public eMarkerType = EFMarkerType;
   public currentType: DiagramType = 'CLASS';
   public diagramTypes: DiagramType[] = ['CLASS', 'SEQUENCE', 'PACKAGE', 'USECASE', 'COMPONENTS'];
-
+  protected events = signal<string[]>([])
 
   @ViewChild(FZoomDirective, { static: true })
   protected fZoom!: FZoomDirective;
@@ -44,36 +45,65 @@ export class FlexFlowComponent implements AfterViewInit {
   public maxZoom: number = 2;
   public zoomStep: number = 0.1;
 
+  // Custom trigger for capturing node positions
+  protected nodePositionTrigger = (event: FTriggerEvent) => {
+    // This trigger will be active when no special key is pressed (default behavior)
+    // You can modify this condition based on your needs
+    return !event.ctrlKey && !event.shiftKey && !event.altKey;
+  };
+
+  // Store node positions during drag operations
+  private dragStartPositions: Map<string, { x: number, y: number }> = new Map();
+
+  // Loading state for diagram loading
+  public isLoading: boolean = false;
+  public loadingMessage: string = 'Cargando diagrama...';
+
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private flexFlowService: FlexFlowService,
     private ngZone: NgZone,
     private historyService: HistoryService,
+    private diagramService: DiagramService
   ) {}
 
   onFlowLoaded() {
     this.fCanvas.resetScaleAndCenter(true);
+    // Hide loading spinner when flow is loaded
+    this.isLoading = false;
+    console.log('Flow loaded, hiding spinner');
   }
   ngAfterViewInit() {
     // Initialize the diagram after view is ready
     setTimeout(() => {
+      this.showLoadingSpinner('Initializing diagram...');
+
       console.log('loadDiagram', this.currentType);
       console.log('diagramId', this.diagramId);
+      this.diagramService.getDiagram(Number(this.diagramId)).subscribe((diagram) => {
+        console.log('diagram', diagram);
+      });
       this.loadDiagram(this.currentType, this.diagramId || '');
     });
   }
 
   loadDiagram(type: DiagramType, diagramId: string) {
+    this.showLoadingSpinner('Cargando diagrama...');
+
     this.currentType = type;
-    const { nodes, edges } = this.flexFlowService.initDiagram(type);
-    this.nodes = nodes;
-    this.connections = edges;
+    // Don't initialize with default nodes when loading an existing diagram
+    if (!diagramId) {
+      const { nodes, edges } = this.flexFlowService.initDiagram(type);
+      this.nodes = nodes;
+      this.connections = edges;
+    }
+
+    this.nodes.forEach(node => {
+      console.log('node', node.position);
+    });
 
     // Force change detection
     this.changeDetectorRef.detectChanges();
-
-    // Save initial state
-    this.saveCurrentState();
   }
 
   /**
@@ -245,10 +275,30 @@ export class FlexFlowComponent implements AfterViewInit {
     this.saveCurrentState();
   }
 
+  // Add helper method for calculating new node position
+  private getNewNodePosition(): { x: number; y: number } {
+    if (this.nodes.length === 0) {
+      return { x: 100, y: 100 };
+    }
+
+    // Find the rightmost and bottommost positions
+    const positions = this.nodes.map(node => node.position);
+    const maxX = Math.max(...positions.map(p => p.x));
+    const maxY = Math.max(...positions.map(p => p.y));
+
+    // If we're getting too far to the right, start a new row
+    if (maxX > 600) {
+      return { x: 100, y: maxY + 100 };
+    }
+
+    // Otherwise, place the node to the right with some spacing
+    return { x: maxX + 150, y: positions[positions.length - 1].y };
+  }
+
   addNode() {
     // Generate a simple unique ID
-    const newId = `${this.nodes.length + 10}`; // Start from 10 to avoid conflicts with existing IDs
-    const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
+    const newId = `${this.nodes.length + 10}`;
+    const position = this.getNewNodePosition();
     let newNode: Node;
 
     switch (this.currentType) {
@@ -280,79 +330,52 @@ export class FlexFlowComponent implements AfterViewInit {
   }
 
   addInterfaceNode() {
-    // Generate a simple unique ID
     const newId = `${this.nodes.length + 10}`;
-    const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
+    const position = this.getNewNodePosition();
     const newNode = this.flexFlowService.createInterfaceNode(newId, 'NewInterface', position);
 
-    // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
     this.flexFlowService.addNode(newNode);
-
-    // Save state after modification
     this.saveCurrentState();
   }
 
   addPackageNode() {
-    // Generate a simple unique ID
     const newId = `${this.nodes.length + 10}`;
-    const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
+    const position = this.getNewNodePosition();
     const newNode = this.flexFlowService.createPackageNode(newId, 'NewPackage', position);
 
-    console.log('newPackageNode', newNode);
-
-    // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
     this.flexFlowService.addNode(newNode);
-
-    // Save state after modification
     this.saveCurrentState();
   }
 
   addActorNode() {
-    // Generate a simple unique ID
     const newId = `${this.nodes.length + 10}`;
-    const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
+    const position = this.getNewNodePosition();
     const newNode = this.flexFlowService.createActorNode(newId, 'NewActor', position);
 
-
-    // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
     this.flexFlowService.addNode(newNode);
-
-    // Save state after modification
     this.saveCurrentState();
   }
 
   addUseCaseNode() {
-    // Generate a simple unique ID
     const newId = `${this.nodes.length + 10}`;
-    const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
+    const position = this.getNewNodePosition();
     const newNode = this.flexFlowService.createUseCaseNode(newId, 'NewUseCase', position);
 
-    console.log('newUseCaseNode', newNode);
-
-    // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
     this.flexFlowService.addNode(newNode);
-
-    // Save state after modification
     this.saveCurrentState();
   }
 
   addComponentNode() {
-    // Generate a simple unique ID
     const newId = `${this.nodes.length + 10}`;
-    const position = { x: 200 + this.nodes.length * 40, y: 200 + this.nodes.length * 40 };
+    const position = this.getNewNodePosition();
     const newNode = this.flexFlowService.createComponentNode(newId, 'NewComponent', position);
 
-    console.log('newComponentNode', newNode);
-
-    // Add to both component array and service array for consistency
     this.nodes = [...this.nodes, newNode];
     this.flexFlowService.addNode(newNode);
-
-    // Save state after modification
     this.saveCurrentState();
   }
 
@@ -373,21 +396,53 @@ export class FlexFlowComponent implements AfterViewInit {
     this.saveCurrentState();
   }
 
-  exportDiagram() {
-    const diagram = {
-      type: this.currentType,
-      nodes: this.nodes,
-      connections: this.connections
-    };
+  @HostListener('mouseup', ['$event'])
+  handleMouseUp(event: MouseEvent) {
+    try {
+      const selection = window.getSelection();
+      if (selection) {
+        // Clear any existing selections to prevent IndexSizeError
+        selection.removeAllRanges();
+      }
+    } catch (error) {
+      console.error('Error handling mouse up:', error);
+    }
+  }
 
-    const jsonString = JSON.stringify(diagram, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${this.currentType}-diagram.json`;
-    link.click();
-    window.URL.revokeObjectURL(url);
+  exportDiagram() {
+    try {
+      // Create a clean export of nodes with their current positions
+      const nodes = this.nodes.map(node => {
+        console.log(`Exporting node ${node.id} with position:`, node.position);
+        return {
+          id: node.id,
+          type: node.type,
+          data: node.data,
+          position: {
+            x: node.position.x,
+            y: node.position.y
+          }
+        };
+      });
+
+      // Create a clean export of connections
+      const connections = this.connections.map(connection => ({
+        id: connection.id,
+        source: connection.source,
+        target: connection.target,
+        type: connection.type,
+        label: connection.label
+      }));
+
+      return {
+        type: this.currentType,
+        nodes: nodes,
+        connections: connections
+      };
+    } catch (error) {
+      console.error('Error exporting diagram:', error);
+      return null;
+    }
   }
 
   importDiagram(event: Event) {
@@ -665,4 +720,391 @@ export class FlexFlowComponent implements AfterViewInit {
       this.saveCurrentState();
     }
   }
+
+  loadContent(content: any) {
+    try {
+      this.showLoadingSpinner('Cargando contenido del diagrama...');
+
+      if (content && content.nodes && content.connections) {
+        console.log('Loading diagram content:', content);
+
+        // Clear existing nodes and connections
+        this.nodes = [];
+        this.connections = [];
+
+        // Load nodes with their exact saved positions
+        this.nodes = content.nodes.map((node: any) => {
+          const position = {
+            x: Number(node.position.x),
+            y: Number(node.position.y)
+          };
+          console.log(`Loading node ${node.id} with position:`, position);
+
+          return {
+            id: node.id,
+            type: node.type,
+            data: node.data,
+            position: position
+          };
+        });
+
+        // Load connections
+        this.connections = content.connections.map((connection: any) => ({
+          id: connection.id,
+          source: connection.source,
+          target: connection.target,
+          type: connection.type || 'association',
+          label: connection.label
+        }));
+
+        // Set the current type
+        if (content.type) {
+          this.currentType = content.type;
+        }
+
+        // Force change detection
+        this.changeDetectorRef.detectChanges();
+
+        // Hide loading spinner after content is loaded
+        setTimeout(() => {
+          this.hideLoadingSpinner();
+        }, 300);
+      } else {
+        this.hideLoadingSpinner();
+      }
+    } catch (error) {
+      console.error('Error loading diagram content:', error);
+      this.hideLoadingSpinner();
+    }
+  }
+
+  // Update the handleSelectionChange method to properly handle the selection error
+  @HostListener('document:selectionchange', ['$event'])
+  handleSelectionChange(event: Event) {
+    try {
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      // Only clear selection if it exists and has ranges
+      if (selection.rangeCount > 0) {
+        selection.removeAllRanges();
+      }
+    } catch (error) {
+      // Silently handle the error - no need to log or propagate
+      event.preventDefault();
+    }
+  }
+
+  protected onDragStarted(event: FDragStartedEvent): void {
+    console.log('onDragStarted', event);
+    console.log(this.nodes);
+
+    // Access node ID from the actual event structure
+    const nodeIds = event.fData?.fNodeIds;
+    if (nodeIds && nodeIds.length > 0) {
+      nodeIds.forEach((nodeId: string) => {
+        console.log('Node ID from event:', nodeId);
+
+        // Find the actual node to get its position
+        const node = this.nodes.find(n => n.id === nodeId);
+        if (node) {
+          console.log('Node position at drag start:', node.position);
+          console.log('Node data:', node.data);
+
+          // Store the initial position for this drag operation
+          this.dragStartPositions.set(nodeId, { ...node.position });
+
+          // You can now use the position for whatever you need
+          const { x, y } = node.position;
+          console.log(`Node ${nodeId} drag started at position: x=${x}, y=${y}`);
+
+          // Emit custom event with position data
+          this.onNodePositionChange(nodeId, node.position, 'drag-start');
+        } else {
+          console.warn('Node not found in nodes array:', nodeId);
+        }
+      });
+    } else {
+      console.warn('No node IDs found in event data');
+    }
+
+    this.events.update((x) => {
+      const nodeId = event.fData?.fNodeIds?.[0];
+      const node = nodeId ? this.nodes.find(n => n.id === nodeId) : null;
+      const position = node ? `x=${node.position.x}, y=${node.position.y}` : 'unknown';
+
+      x = x.concat(`EVENT: ${ event.fEventType }, NODE: ${nodeId}, POSITION: ${position}`);
+      console.log('events', x);
+      return x;
+    });
+  }
+
+  // Handle drag move events to capture real-time position updates
+  protected onDragMove(event: any): void {
+    console.log('onDragMove', event);
+
+    const nodeIds = event.fData?.fNodeIds;
+    if (nodeIds && nodeIds.length > 0) {
+      nodeIds.forEach((nodeId: string) => {
+        // Try to get position from event data
+        const eventPosition = event.fData?.position || event.fData;
+
+        if (eventPosition && (eventPosition.x !== undefined || eventPosition.y !== undefined)) {
+          const node = this.nodes.find(n => n.id === nodeId);
+          if (node) {
+            // Update node position with new coordinates
+            node.position = {
+              x: eventPosition.x || node.position.x,
+              y: eventPosition.y || node.position.y
+            };
+
+            console.log(`Node ${nodeId} moved to:`, node.position);
+            this.onNodePositionChange(nodeId, node.position, 'drag-move');
+          }
+        }
+      });
+    }
+
+    // Force change detection to update UI
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Handle drag end events to capture final position
+  protected onDragEnded(event: any): void {
+    console.log('onDragEnded', event);
+
+    // Use a more direct approach to get updated positions
+    setTimeout(() => {
+      this.syncAllNodePositions();
+    }, 100);
+
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // Method to sync all node positions from the canvas
+  private syncAllNodePositions(): void {
+    console.log('Syncing all node positions...');
+
+    this.nodes.forEach(node => {
+      const updatedPosition = this.getNodePositionFromCanvas(node.id);
+      if (updatedPosition) {
+        const hasChanged =
+          Math.abs(node.position.x - updatedPosition.x) > 1 ||
+          Math.abs(node.position.y - updatedPosition.y) > 1;
+
+        if (hasChanged) {
+          console.log(`Node ${node.id} position updated:`, {
+            old: node.position,
+            new: updatedPosition
+          });
+
+          node.position = updatedPosition;
+          this.onNodePositionChange(node.id, updatedPosition, 'position-sync');
+        }
+      }
+    });
+
+    // Save state after all positions are updated
+    this.saveCurrentState();
+  }
+
+  // Method to get a specific node's position from the canvas
+  private getNodePositionFromCanvas(nodeId: string): { x: number, y: number } | null {
+    try {
+      const nodeElement = document.getElementById(nodeId);
+      if (!nodeElement) {
+        return null;
+      }
+
+      // Get the computed transform
+      const computedStyle = window.getComputedStyle(nodeElement);
+      const transform = computedStyle.transform;
+
+      if (transform && transform !== 'none') {
+        // Parse the matrix transform: matrix(a, b, c, d, e, f)
+        // where e = translateX and f = translateY
+        const matrixMatch = transform.match(/matrix\(([^)]+)\)/);
+        if (matrixMatch) {
+          const values = matrixMatch[1].split(',').map(v => parseFloat(v.trim()));
+          if (values.length >= 6) {
+            const x = values[4]; // translateX (e)
+            const y = values[5]; // translateY (f)
+
+            console.log(`Node ${nodeId} transform extracted: x=${x}, y=${y}`);
+            return { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 }; // Round to 2 decimal places
+          }
+        }
+
+        // Fallback: try to parse translate() format
+        const translateMatch = transform.match(/translate\(([^)]+)\)/);
+        if (translateMatch) {
+          const values = translateMatch[1].split(',').map(v => parseFloat(v.replace('px', '').trim()));
+          if (values.length >= 2) {
+            const x = values[0];
+            const y = values[1];
+
+            console.log(`Node ${nodeId} translate extracted: x=${x}, y=${y}`);
+            return { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 };
+          }
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`Error getting position for node ${nodeId}:`, error);
+      return null;
+    }
+  }
+
+  // New method to handle position changes
+  onNodePositionChange(nodeId: string, position: { x: number, y: number }, eventType: string): void {
+    console.log(`Node Position Event: ${eventType}`, {
+      nodeId,
+      position,
+      timestamp: new Date().toISOString()
+    });
+
+    // You can add custom logic here based on position changes
+    // For example, save to history, sync with backend, etc.
+
+    // Example: Check if node moved significantly
+    const startPosition = this.dragStartPositions.get(nodeId);
+    if (startPosition && eventType === 'drag-end') {
+      const distance = Math.sqrt(
+        Math.pow(position.x - startPosition.x, 2) +
+        Math.pow(position.y - startPosition.y, 2)
+      );
+
+      if (distance > 5) { // Only log if moved more than 5 pixels
+        console.log(`Node ${nodeId} moved ${distance.toFixed(2)} pixels from start position`);
+
+        // Save state for undo/redo functionality
+        this.saveCurrentState();
+      }
+
+      // Clean up stored position
+      this.dragStartPositions.delete(nodeId);
+    }
+  }
+
+  // Method to get all current node positions
+  getAllNodePositions(): { [nodeId: string]: { x: number, y: number } } {
+    const positions: { [nodeId: string]: { x: number, y: number } } = {};
+
+    this.nodes.forEach(node => {
+      // Try to get the real position from DOM
+      const realPosition = this.getNodePositionFromCanvas(node.id);
+      if (realPosition) {
+        // Update the node's stored position with the real position
+        node.position = realPosition;
+        positions[node.id] = realPosition;
+      } else {
+        // Fall back to stored position
+        positions[node.id] = { ...node.position };
+      }
+    });
+
+    console.log('All current node positions:', positions);
+    return positions;
+  }
+
+  // Method to manually refresh all positions (for testing)
+  refreshNodePositions(): void {
+    console.log('Manually refreshing node positions...');
+
+    this.nodes.forEach(node => {
+      const currentStoredPosition = { ...node.position };
+      const realPosition = this.getNodePositionFromCanvas(node.id);
+
+      if (realPosition) {
+        console.log(`Node ${node.id}: stored=${JSON.stringify(currentStoredPosition)}, real=${JSON.stringify(realPosition)}`);
+
+        // Update stored position to match real position
+        node.position = realPosition;
+      }
+    });
+
+    // Force update
+    this.changeDetectorRef.detectChanges();
+
+    // Show updated positions
+    this.getAllNodePositions();
+  }
+
+  // Debug method to understand what's available
+  debugCanvasData(): void {
+    console.log('=== DEBUG CANVAS DATA ===');
+    console.log('fCanvas component:', this.fCanvas);
+    console.log('canvasRef element:', this.canvasRef);
+    console.log('fCanvasRef element:', this.fCanvasRef);
+
+    // Check all nodes in DOM
+    this.nodes.forEach(node => {
+      const element = document.getElementById(node.id);
+      if (element) {
+        console.log(`Node ${node.id} DOM element:`, {
+          element,
+          offsetLeft: element.offsetLeft,
+          offsetTop: element.offsetTop,
+          style: element.style.cssText,
+          transform: window.getComputedStyle(element).transform,
+          boundingRect: element.getBoundingClientRect()
+        });
+      }
+    });
+
+    // Try to access canvas internal data
+    if (this.fCanvas) {
+      console.log('Canvas internals:', {
+        fCanvas: this.fCanvas,
+        properties: Object.getOwnPropertyNames(this.fCanvas),
+        proto: Object.getPrototypeOf(this.fCanvas)
+      });
+    }
+  }
+
+  // Method to track position changes over time
+  trackNodePositions(): void {
+    const positions = this.getAllNodePositions();
+
+    // You can save this to local storage, send to backend, etc.
+    localStorage.setItem('nodePositions_' + this.diagramId, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      positions: positions
+    }));
+
+    console.log('Node positions tracked and saved');
+  }
+
+  // Simple test method to show positions
+  testPositions(): void {
+    console.log('=== TESTING POSITION EXTRACTION ===');
+
+    this.nodes.forEach(node => {
+      const storedPos = node.position;
+      const extractedPos = this.getNodePositionFromCanvas(node.id);
+
+      console.log(`Node ${node.id}:`, {
+        stored: storedPos,
+        extracted: extractedPos,
+        match: extractedPos ?
+          (Math.abs(storedPos.x - extractedPos.x) < 1 && Math.abs(storedPos.y - extractedPos.y) < 1) :
+          false
+      });
+    });
+  }
+
+  // Method to show loading spinner
+  showLoadingSpinner(message: string = 'Loading...') {
+    this.loadingMessage = message;
+    this.isLoading = true;
+    console.log('Showing loading spinner:', message);
+  }
+
+  // Method to hide loading spinner
+  hideLoadingSpinner() {
+    this.isLoading = false;
+    console.log('Hiding loading spinner');
+  }
+
 }

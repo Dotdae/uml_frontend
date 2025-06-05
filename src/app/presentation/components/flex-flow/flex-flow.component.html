@@ -1,12 +1,59 @@
 <div class="w-full h-full relative overflow-hidden bg-gray-50">
+  <!-- Loading Spinner Overlay -->
+  <div *ngIf="isLoading"
+       class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="flex flex-col items-center space-y-4">
+      <!-- Spinner -->
+      <div class="relative">
+        <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <!-- Inner spinner for a more dynamic effect -->
+        <div class="absolute top-2 left-2 w-12 h-12 border-4 border-transparent border-t-blue-400 rounded-full animate-spin"
+             style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+      </div>
+
+      <!-- Loading message -->
+      <div class="text-lg font-medium text-gray-700">{{ loadingMessage }}</div>
+
+      <!-- Loading dots animation -->
+      <div class="flex space-x-1">
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Diagram Type Selector -->
   <div class="absolute top-4 left-4 flex space-x-2 z-10">
-    <!-- <select [(ngModel)]="currentType" (change)="loadDiagram(currentType)"
-            class="bg-white border border-gray-300 rounded px-3 py-2 text-sm">
-      <option *ngFor="let type of diagramTypes" [value]="type">
-        {{type | titlecase}} Diagram
-      </option>
-    </select> -->
+    <!-- Position Tracking Controls -->
+    <div class="bg-white/90 backdrop-blur border border-gray-300 rounded-lg shadow-lg flex space-x-2 px-3 py-2">
+      <button (click)="getAllNodePositions()"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
+              title="Get All Node Positions">
+        Get Positions
+      </button>
+      <button (click)="testPositions()"
+              class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm transition-colors"
+              title="Test Position Extraction">
+        Test
+      </button>
+      <button (click)="refreshNodePositions()"
+              class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm transition-colors"
+              title="Refresh Node Positions">
+        Refresh
+      </button>
+      <button (click)="debugCanvasData()"
+              class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
+              title="Debug Canvas Data">
+        Debug
+      </button>
+      <button (click)="trackNodePositions()"
+              class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors"
+              title="Track and Save Positions">
+        Track Positions
+      </button>
+    </div>
+
   </div>
 
   <!-- Zoom Controls -->
@@ -62,7 +109,11 @@
   <f-flow fDraggable (fCreateConnection)="addConnection($event)"
           [fMinSize]="100"
           [fMaxSize]="200"
-          (fLoaded)="onFlowLoaded()">
+          (fLoaded)="onFlowLoaded()"
+          (fDragStarted)="onDragStarted($event)"
+          (fDragEnded)="onDragEnded($event)"
+          (fDragMove)="onDragMove($event)"
+          [fNodeMoveTrigger]="nodePositionTrigger">
     <f-line-alignment [fAlignThreshold]="20"></f-line-alignment>
     <f-background>
       <!-- <f-circle-pattern [color]="'#e7e7e7'" [radius]="12"></f-circle-pattern> -->
@@ -71,11 +122,12 @@
     <f-canvas [fZoom]="zoomLevel" #fCanvas>
       <!-- Nodes -->
       <div *ngFor="let node of nodes; trackBy: trackByNodeId"
+           [id]="node.id"
            fNode
            [fNodePosition]="node.position"
            fDragHandle
            (click)="selectNode(node.id)"
-           class="border-2 rounded cursor-move select-none relative transition-all"
+           class="border-2 rounded cursor-move select-none"
            [style.background-color]="getNodeBackgroundColor(node)"
            [style.border-color]="selectedNodeId === node.id ? '#3b82f6' : getNodeBorderColor(node)">
 
@@ -313,6 +365,12 @@
       class="absolute bottom-4 right-4 w-48 h-36 bg-white/90 rounded-lg shadow-lg border border-gray-200 z-50">
     </f-minimap>
   </f-flow>
+  <div class="overlay">
+    <div>Event list:</div>
+    @for (item of events(); track item) {
+      <div>{{ item }}</div>
+    }
+  </div>
 </div>
 
 <!-- Add sequence diagram specific styles -->

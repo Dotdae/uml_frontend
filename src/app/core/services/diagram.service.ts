@@ -190,6 +190,7 @@ export class DiagramService {
    * Update an existing diagram
    */
   updateDiagram(id: number, diagramData: UpdateDiagramDto): Observable<Diagram> {
+    console.log('updateDiagram', id, diagramData);
     return this.http.patch<DiagramResponse>(`${this.apiUrl}/${id}`, diagramData).pipe(
       map(diagram => ({
         ...diagram,

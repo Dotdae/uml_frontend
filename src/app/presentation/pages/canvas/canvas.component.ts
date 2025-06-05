@@ -5,8 +5,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from "@angular/router"
 import { Router } from "@angular/router"
 import { FlexFlowComponent } from "../../components/flex-flow/flex-flow.component"
-import { DiagramType } from "@infrastructure/diagram/flex-flow.service";
-import { DIAGRAM_TYPES, getDiagramTypeName } from "../../../core/models/diagram.model";
+import { DiagramType } from "../../../infrastructure/diagram/flex-flow.service";
+import { DIAGRAM_TYPES, getDiagramTypeName, CreateDiagramDto } from "../../../core/models/diagram.model";
+import { DiagramService } from "../../../core/services/diagram.service";
+import { HostListener } from "@angular/core";
 
 @Component({
   selector: 'app-canvas',
@@ -71,6 +73,7 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private diagramService: DiagramService
   ) { }
 
 
@@ -113,6 +116,11 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
           this.loadDiagramWithType(this.selectedDiagramType);
         }
       }
+
+      // Load diagram if we have an ID
+      if (this.diagramId) {
+        this.loadDiagram(this.diagramId);
+      }
     });
 
     // También mantener la lectura de parámetros de ruta para compatibilidad
@@ -130,11 +138,6 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // const userId = this.authService.getUserId();
     // console.log('ID del usuario:', userId);
-
-    // Load diagram if diagramId is provided
-    if (this.diagramId) {
-      // this.loadDiagram(this.diagramId);
-    }
 
     // Setup auto-save
     // this.setupAutoSave();
@@ -230,11 +233,11 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.flexFlowComponent) {
       const content = this.flexFlowComponent.exportDiagram();
       const currentContent = JSON.stringify(content, null, 2);
+      console.log('currentContent', currentContent);
 
       // Check if there are unsaved changes
       if (currentContent !== this.lastSavedContent) {
         this.isDiagramSaved = false;
-        // this.saveDiagram(); // Save before export
       }
 
       // Create and trigger download
@@ -247,6 +250,8 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+
+      this.saveDiagram(currentContent);
     }
   }
 
@@ -309,66 +314,113 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.flexFlowComponent ? this.flexFlowComponent.getZoomPercentage() : 100;
   }
 
-  // Load diagram from backend
-  // private async loadDiagram(diagramId: number) {
-  //   try {
-  //     const diagram = await this.diagramService.getDiagram(diagramId).toPromise();
-  //     if (diagram) {
-  //       this.title = diagram.name;
-  //       this.currentDiagramType = diagram.type as DiagramType;
-  //       this.lastSavedContent = diagram.content;
+  private async loadDiagram(diagramId: number) {
+    try {
+      const diagram = await this.diagramService.getDiagram(diagramId).toPromise();
+      if (diagram) {
+        this.title = diagram.name;
+        this.currentDiagramType = this.getDiagramTypeFromId(diagram.type);
 
-  //       // Load diagram content into FlexFlow
-  //       if (this.flexFlowComponent) {
-  //         this.flexFlowComponent.loadDiagram(this.currentDiagramType);
-  //         this.flexFlowComponent.loadContent(diagram.content);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading diagram:', error);
-  //     // Handle error (show message to user)
-  //   }
-  // }
+        // Parse the stored diagram data
+        const diagramContent = diagram.infoJson ?
+          (typeof diagram.infoJson === 'string' ? JSON.parse(diagram.infoJson) : diagram.infoJson) :
+          null;
 
-  // Save diagram to backend
-  // async saveDiagram() {
-  //   if (!this.projectId || this.isSaving) return;
+        console.log('Loaded diagram content:', diagramContent);
 
-  //   this.isSaving = true;
-  //   try {
-  //     const content = this.flexFlowComponent.exportDiagram();
+        // Load diagram content into FlexFlow
+        if (this.flexFlowComponent && diagramContent) {
+          this.flexFlowComponent.loadDiagram(this.currentDiagramType, this.diagramId?.toString() || '');
+          this.flexFlowComponent.loadContent(diagramContent);
+          this.lastSavedContent = JSON.stringify(diagramContent);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading diagram:', error);
+    }
+  }
 
-  //     const diagramData = {
-  //       name: this.title,
-  //       type: this.currentDiagramType,
-  //       content: content,
-  //       projectId: this.projectId,
-  //     };
+  // Helper method to convert numeric type to DiagramType
+  private getDiagramTypeFromId(typeId: number): DiagramType {
+    switch (typeId) {
+      case DIAGRAM_TYPES.CLASS:
+        return 'CLASS';
+      case DIAGRAM_TYPES.SEQUENCE:
+        return 'SEQUENCE';
+      case DIAGRAM_TYPES.PACKAGE:
+        return 'PACKAGE';
+      case DIAGRAM_TYPES.USECASE:
+        return 'USECASE';
+      case DIAGRAM_TYPES.COMPONENTS:
+        return 'COMPONENTS';
+      default:
+        return 'CLASS';
+    }
+  }
 
-  //     if (this.diagramId) {
-  //       // Update existing diagram
-  //       await this.diagramService.updateDiagram(this.diagramId, diagramData).toPromise();
-  //     } else {
-  //       // Create new diagram
-  //       // const newDiagram = await this.diagramService.createDiagram(diagramData).toPromise();
-  //       this.diagramId = newDiagram.id;
-  //       // Update URL with new diagram ID
-  //       this.router.navigate([], {
-  //         relativeTo: this.route,
-  //         queryParams: { diagramId: this.diagramId },
-  //         queryParamsHandling: 'merge'
-  //       });
-  //     }
+  async saveDiagram(content: string) {
+    if (!this.projectId || this.isSaving) return;
 
-  //     this.lastSavedContent = content;
-  //     this.isDiagramSaved = true;
-  //   } catch (error) {
-  //     console.error('Error saving diagram:', error);
-  //     // Handle error (show message to user)
-  //   } finally {
-  //     this.isSaving = false;
-  //   }
-  // }
+    this.isSaving = true;
+    try {
+      // Safely get the diagram content
+      console.log('content', content);
+
+      const diagramData: CreateDiagramDto = {
+        name: this.title,
+        type: DIAGRAM_TYPES.USECASE,
+        idProject: this.projectId,
+        infoJson: JSON.parse(content)
+      };
+
+      if (this.diagramId) {
+        try {
+          // Update existing diagram
+          await this.diagramService.updateDiagram(this.diagramId, {
+            name: this.title,
+            type: DIAGRAM_TYPES.USECASE,
+            infoJson: JSON.parse(content)
+          }).toPromise();
+          console.log('Diagram updated successfully:', this.diagramId);
+        } catch (updateError) {
+          console.error('Error updating diagram:', updateError);
+          throw updateError;
+        }
+      } else {
+        try {
+          // Create new diagram
+          const newDiagram = await this.diagramService.createDiagram(diagramData).toPromise();
+          if (newDiagram) {
+            this.diagramId = newDiagram.id;
+            // Update URL with new diagram ID
+            await this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { diagramId: this.diagramId },
+              queryParamsHandling: 'merge'
+            });
+            console.log('New diagram created successfully:', this.diagramId);
+          }
+        } catch (createError) {
+          console.error('Error creating diagram:', createError);
+          throw createError;
+        }
+      }
+
+      // Update save state
+      try {
+        this.lastSavedContent = JSON.stringify(content);
+        this.isDiagramSaved = true;
+      } catch (stateError) {
+        console.error('Error updating save state:', stateError);
+      }
+    } catch (error) {
+      console.error('Error in save operation:', error);
+      // TODO: Add user notification of error
+      this.isDiagramSaved = false;
+    } finally {
+      this.isSaving = false;
+    }
+  }
 
   // Setup auto-save functionality
   // private setupAutoSave() {
@@ -386,5 +438,20 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   //     this.isDiagramSaved = currentContent === this.lastSavedContent;
   //   }
   // }
+
+  // Add error handling for selection operations
+  @HostListener('document:selectionchange', ['$event'])
+  handleSelectionChange(event: Event) {
+    try {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        // Handle selection change
+      }
+    } catch (error) {
+      console.error('Selection error:', error);
+      // Prevent the IndexSizeError from bubbling up
+      event.preventDefault();
+    }
+  }
 }
 
