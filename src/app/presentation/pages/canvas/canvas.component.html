@@ -154,10 +154,10 @@
               >Asíncrono</button>
             <button class="w-full px-3 py-2 hover:cursor-pointer rounded bg-red-100 hover:bg-red-200 text-left font-medium transition"
               >Retorno</button>
-          </div>
-          <button class="w-full px-3 py-2 hover:cursor-pointer rounded bg-red-100 hover:bg-red-200 text-left font-medium transition"
-            (click)="destroySelectedObject()"
-            >Destruir Objeto</button>
+        </div>
+        <button class="w-full px-3 py-2 hover:cursor-pointer rounded bg-red-100 hover:bg-red-200 text-left font-medium transition"
+          (click)="destroySelectedObject()"
+          >Destruir Objeto</button>
         </div>
         }
         @if (currentDiagramType === 'PACKAGE') {
@@ -188,19 +188,202 @@
         </div>
         }
 
-        <!-- Relaciones comunes -->
+        <!-- Relaciones específicas por tipo de diagrama -->
         <div class="mt-4 border-t pt-4 space-y-2">
           <div class="font-semibold text-sm text-gray-500 mb-1">Relaciones</div>
-          <button class="w-full px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-left transition"
-            >Herencia</button>
-          <button class="w-full px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-left transition"
-            >Asociación</button>
-          <button class="w-full px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-left transition"
-            >Agregación</button>
-          <button class="w-full px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-left transition"
-            >Composición</button>
-          <button class="w-full px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-left transition"
-            >Dependencia</button>
+          <div *ngIf="selectedRelationLabel" class="text-xs text-blue-600 mb-2 font-medium">
+            Seleccionada: {{ selectedRelationLabel }}
+          </div>
+
+          @if (currentDiagramType === 'CLASS') {
+          <!-- CLASS: ASOCIACION, HERENCIA, COMPOSICION -->
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'asociacion'"
+                 [class.bg-gray-100]="selectedRelationType !== 'asociacion'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'asociacion'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'asociacion'">
+            <input type="radio"
+                   name="relation"
+                   value="asociacion"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('asociacion')"
+                   class="mr-2">
+            <span>Asociación</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'herencia'"
+                 [class.bg-gray-100]="selectedRelationType !== 'herencia'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'herencia'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'herencia'">
+            <input type="radio"
+                   name="relation"
+                   value="herencia"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('herencia')"
+                   class="mr-2">
+            <span>Herencia</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'composicion'"
+                 [class.bg-gray-100]="selectedRelationType !== 'composicion'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'composicion'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'composicion'">
+            <input type="radio"
+                   name="relation"
+                   value="composicion"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('composicion')"
+                   class="mr-2">
+            <span>Composición</span>
+          </label>
+          }
+
+          @if (currentDiagramType === 'PACKAGE') {
+          <!-- PACKAGES: DEPENDENCIA, IMPORTACION -->
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'dependencia'"
+                 [class.bg-gray-100]="selectedRelationType !== 'dependencia'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'dependencia'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'dependencia'">
+            <input type="radio"
+                   name="relation"
+                   value="dependencia"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('dependencia')"
+                   class="mr-2">
+            <span>Dependencia</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'importacion'"
+                 [class.bg-gray-100]="selectedRelationType !== 'importacion'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'importacion'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'importacion'">
+            <input type="radio"
+                   name="relation"
+                   value="importacion"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('importacion')"
+                   class="mr-2">
+            <span>Importación</span>
+          </label>
+          }
+
+          @if (currentDiagramType === 'COMPONENTS') {
+          <!-- COMPONENTS: DEPENDENCIA, USO DE INTERFACES -->
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'dependencia'"
+                 [class.bg-gray-100]="selectedRelationType !== 'dependencia'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'dependencia'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'dependencia'">
+            <input type="radio"
+                   name="relation"
+                   value="dependencia"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('dependencia')"
+                   class="mr-2">
+            <span>Dependencia</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'uso_interfaces'"
+                 [class.bg-gray-100]="selectedRelationType !== 'uso_interfaces'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'uso_interfaces'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'uso_interfaces'">
+            <input type="radio"
+                   name="relation"
+                   value="uso_interfaces"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('uso_interfaces')"
+                   class="mr-2">
+            <span>Uso de Interfaces</span>
+          </label>
+          }
+
+          @if (currentDiagramType === 'USECASE') {
+          <!-- USE CASES: ASOCIACION, INCLUDE, EXTEND -->
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'asociacion'"
+                 [class.bg-gray-100]="selectedRelationType !== 'asociacion'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'asociacion'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'asociacion'">
+            <input type="radio"
+                   name="relation"
+                   value="asociacion"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('asociacion')"
+                   class="mr-2">
+            <span>Asociación</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'include'"
+                 [class.bg-gray-100]="selectedRelationType !== 'include'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'include'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'include'">
+            <input type="radio"
+                   name="relation"
+                   value="include"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('include')"
+                   class="mr-2">
+            <span>Include</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'extend'"
+                 [class.bg-gray-100]="selectedRelationType !== 'extend'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'extend'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'extend'">
+            <input type="radio"
+                   name="relation"
+                   value="extend"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('extend')"
+                   class="mr-2">
+            <span>Extend</span>
+          </label>
+          }
+
+          @if (currentDiagramType === 'SEQUENCE') {
+          <!-- SEQUENCE: MENSAJE, ACTIVACION -->
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'mensaje'"
+                 [class.bg-gray-100]="selectedRelationType !== 'mensaje'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'mensaje'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'mensaje'">
+            <input type="radio"
+                   name="relation"
+                   value="mensaje"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('mensaje')"
+                   class="mr-2">
+            <span>Mensaje</span>
+          </label>
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-blue-100]="selectedRelationType === 'activacion'"
+                 [class.bg-gray-100]="selectedRelationType !== 'activacion'"
+                 [class.hover:bg-blue-200]="selectedRelationType === 'activacion'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'activacion'">
+            <input type="radio"
+                   name="relation"
+                   value="activacion"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('activacion')"
+                   class="mr-2">
+            <span>Activación</span>
+          </label>
+          <!-- Custom Message Option -->
+          <label class="flex items-center w-full px-3 py-2 rounded cursor-pointer transition"
+                 [class.bg-green-100]="selectedRelationType === 'custom'"
+                 [class.bg-gray-100]="selectedRelationType !== 'custom'"
+                 [class.hover:bg-green-200]="selectedRelationType === 'custom'"
+                 [class.hover:bg-gray-200]="selectedRelationType !== 'custom'">
+            <input type="radio"
+                   name="relation"
+                   value="custom"
+                   [(ngModel)]="selectedRelationType"
+                   (change)="addRelation('custom')"
+                   class="mr-2">
+            <span>🎨 Mensaje Personalizado</span>
+          </label>
+          }
         </div>
       </div>
     </div>

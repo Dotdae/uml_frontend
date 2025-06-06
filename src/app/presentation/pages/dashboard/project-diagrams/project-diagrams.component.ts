@@ -88,6 +88,9 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
 
   showDiagramCreationModal = false;
 
+  // Property to track existing diagram types in project
+  existingDiagramTypes: number[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -120,12 +123,12 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
     this.projectsService.getProject(projectId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (project) => {
+        next: (project: any) => {
           this.projectName = project.projectName;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading project:', error);
-          this.errorMessage = 'Error loading project information';
+          this.errorMessage = 'Error loading project details.';
         }
       });
   }
@@ -152,7 +155,11 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
         next: (diagrams) => {
           this.allDiagrams = diagrams;
           this.totalItems = diagrams.length;
-      this.updateDisplayedDiagrams();
+
+          // Update existing diagram types for modal
+          this.updateExistingDiagramTypes(diagrams);
+
+          this.updateDisplayedDiagrams();
         },
         error: (error) => {
           console.error('Error loading diagrams:', error);
@@ -161,6 +168,12 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
           this.updateDisplayedDiagrams();
         }
       });
+  }
+
+  private updateExistingDiagramTypes(diagrams: Diagram[]) {
+    // Get unique diagram types that exist in the project
+    this.existingDiagramTypes = [...new Set(diagrams.map(diagram => diagram.type))];
+    console.log('Existing diagram types in project:', this.existingDiagramTypes);
   }
 
   // Método para manejar el clic en el botón de ordenar
@@ -317,6 +330,7 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
     }
 
     this.isCreating = true;
+    this.errorMessage = ''; // Clear any previous errors
     const createDto: CreateDiagramDto = {
       name: data.name,
       type: data.type,
@@ -340,7 +354,15 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error creating diagram:', error);
-          this.errorMessage = 'Error creating diagram. Please try again.';
+
+          // Check if it's a validation error about duplicate diagram types
+          if (error.status === 400 && error.error?.message) {
+            this.errorMessage = error.error.message;
+          } else {
+            this.errorMessage = 'Error creating diagram. Please try again.';
+          }
+
+          // Don't close the modal so user can see the error and try again
         }
       });
   }

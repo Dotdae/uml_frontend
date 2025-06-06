@@ -62,6 +62,28 @@ export class AuthService implements AuthRepository {
   }
 
   async loginGoogle(): Promise<void> {
+    // Clear previous session completely before logging in with Google
+    try {
+      // Attempt to clear server-side cookies first
+      await firstValueFrom(
+        this.http.post(`${this.authUrl}/logout`, {}, {
+          withCredentials: true,
+          responseType: 'json'
+        }).pipe(
+          timeout(3000), // 3 second timeout
+          catchError((error) => {
+            console.warn('Server logout failed during Google login, continuing with local logout:', error);
+            return of({ message: 'Local logout only' });
+          })
+        )
+      );
+    } catch (error) {
+      console.warn('Could not clear server session, continuing with local logout:', error);
+    } finally {
+      // Always clear local session
+      this.logoutLocal();
+    }
+
     window.location.href = `${this.authUrl}/google/login?prompt=select_account`;
   }
 

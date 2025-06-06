@@ -162,7 +162,11 @@
     }
 
     @if (showDiagramCreationModal) {
-    <app-diagram-creation [projectId]="projectId" (close)="closeDiagramCreationModal()"
+    <app-diagram-creation
+        [projectId]="projectId"
+        [existingDiagramTypes]="existingDiagramTypes"
+        [errorMessage]="errorMessage"
+        (close)="closeDiagramCreationModal()"
         (create)="handleCreateDiagram($event)">
     </app-diagram-creation>
     }

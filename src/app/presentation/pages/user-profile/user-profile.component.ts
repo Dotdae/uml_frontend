@@ -5,6 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { PrimaryButtonComponent } from '../../components/buttons/primary-button/primary-button.component';
 import { SecondaryButtonComponent } from '../../components/buttons/secondary-button/secondary-button.component';
 import { LogoutUseCase } from '../../../application/auth/logout.usecase';
+import { UserService, UserProfile, UpdateProfileDto } from '../../../core/services/user.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-user-profile',
@@ -21,13 +23,20 @@ import { LogoutUseCase } from '../../../application/auth/logout.usecase';
 })
 export class UserProfileComponent implements OnInit {
   loading = true;
+  saving = false;
+  uploadingAvatar = false;
   error: string | null = null;
-  userProfile: any = null;
+  successMessage: string | null = null;
+  userProfile: UserProfile | null = null;
   isLoggingOut = false;
 
   // Variables para manejar nombre separado
   names: string = '';
   lastnames: string = '';
+
+  // Variables para manejar datos del formulario
+  phone: string = '';
+  birthdate: string = '';
 
   // Variables para manejar la carga de imagen
   isDragging = false;
@@ -36,7 +45,8 @@ export class UserProfileComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private logoutUseCase: LogoutUseCase
+    private logoutUseCase: LogoutUseCase,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -44,28 +54,38 @@ export class UserProfileComponent implements OnInit {
   }
 
   loadUserProfile(): void {
-    // Simulación de carga de datos, reemplazar con llamada real a API
-    setTimeout(() => {
-      this.userProfile = {
-        id: '1',
-        username: 'usuario_ejemplo',
-        fullName: 'Usuario Ejemplo',
-        email: 'usuarioskibidiiii@ejemplo.com',
-        isActive: true,
-        isVerified: true,
-        phone: '5551234567',
-        birthdate: '1990-01-01',
-        avatar: null,
-        lastPasswordChange: '30/marzo/2025'
-      };
+    this.loading = true;
+    this.error = null;
 
-      // Separar el nombre completo en nombres y apellidos
-      const nameParts = this.userProfile.fullName.split(' ');
-      this.names = nameParts[0] || '';
-      this.lastnames = nameParts.slice(1).join(' ') || '';
+    this.userService.getUserProfile()
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({
+        next: (profile) => {
+          this.userProfile = profile;
+          this.populateFormFields(profile);
+          console.log('User profile loaded:', profile);
+        },
+        error: (error) => {
+          console.error('Error loading user profile:', error);
+          this.error = 'Error al cargar el perfil del usuario. Inténtalo de nuevo.';
+        }
+      });
+  }
 
-      this.loading = false;
-    }, 1000);
+  private populateFormFields(profile: UserProfile): void {
+    // Separar el nombre completo en nombres y apellidos
+    const nameParts = profile.fullName.split(' ');
+    this.names = nameParts[0] || '';
+    this.lastnames = nameParts.slice(1).join(' ') || '';
+
+    // Llenar otros campos
+    this.phone = profile.phone || '';
+    this.birthdate = profile.birthdate || '';
+
+    // Si hay avatar, mostrarlo como preview
+    if (profile.avatar) {
+      this.previewUrl = profile.avatar;
+    }
   }
 
   onDragOver(event: Event): void {
@@ -102,17 +122,18 @@ export class UserProfileComponent implements OnInit {
     // Validar tipo de archivo
     const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
     if (!validTypes.includes(file.type)) {
-      alert('Tipo de archivo no válido. Por favor sube SVG, JPG o PNG.');
+      this.error = 'Tipo de archivo no válido. Por favor sube SVG, JPG o PNG.';
       return;
     }
 
     // Validar tamaño (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert('El archivo es demasiado grande. El tamaño máximo es 10MB.');
+      this.error = 'El archivo es demasiado grande. El tamaño máximo es 10MB.';
       return;
     }
 
     this.selectedFile = file;
+    this.error = null;
 
     // Crear preview de la imagen
     const reader = new FileReader();
@@ -123,17 +144,82 @@ export class UserProfileComponent implements OnInit {
   }
 
   onSave(): void {
+    if (!this.userProfile) {
+      this.error = 'No se pudo cargar el perfil del usuario.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = null;
+    this.successMessage = null;
+
     // Combinar nombres y apellidos para el nombre completo
-    this.userProfile.fullName = `${this.names} ${this.lastnames}`.trim();
+    const fullName = `${this.names} ${this.lastnames}`.trim();
 
-    console.log('Guardando cambios del perfil:', this.userProfile);
+    const updateData: UpdateProfileDto = {
+      fullName: fullName,
+      phone: this.phone || undefined,
+      birthdate: this.birthdate || undefined
+    };
 
-    // Aquí iría la lógica para enviar los datos actualizados al servidor
-    // Por ejemplo: this.userService.updateProfile(this.userProfile);
+    // Primero actualizar los datos del perfil
+    this.userService.updateProfile(updateData)
+      .pipe(finalize(() => this.saving = false))
+      .subscribe({
+        next: (updatedProfile) => {
+          this.userProfile = updatedProfile;
+          this.successMessage = 'Perfil actualizado correctamente.';
+
+          // Si hay un archivo seleccionado, subirlo después
+          if (this.selectedFile) {
+            this.uploadAvatar();
+          }
+
+          console.log('Profile updated successfully:', updatedProfile);
+        },
+        error: (error) => {
+          console.error('Error updating profile:', error);
+          this.error = 'Error al actualizar el perfil. Inténtalo de nuevo.';
+        }
+      });
+  }
+
+  private uploadAvatar(): void {
+    if (!this.selectedFile) return;
+
+    this.uploadingAvatar = true;
+
+    this.userService.uploadAvatar(this.selectedFile)
+      .pipe(finalize(() => this.uploadingAvatar = false))
+      .subscribe({
+        next: (response) => {
+          if (this.userProfile) {
+            this.userProfile.avatar = response.avatarUrl;
+            // Update the preview to show the new avatar
+            this.previewUrl = response.avatarUrl;
+          }
+          this.selectedFile = null;
+          this.successMessage = 'Perfil y avatar actualizados correctamente.';
+          console.log('Avatar uploaded successfully:', response);
+
+          // Trigger a page reload to update sidebar instantly
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        },
+        error: (error) => {
+          console.error('Error uploading avatar:', error);
+          this.error = 'Error al subir el avatar. El perfil se actualizó correctamente.';
+        }
+      });
   }
 
   onCancel(): void {
     // Recargar datos originales
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.error = null;
+    this.successMessage = null;
     this.loadUserProfile();
   }
 
@@ -156,5 +242,10 @@ export class UserProfileComponent implements OnInit {
       console.log('Logout process completed, resetting loading state');
       this.isLoggingOut = false;
     }
+  }
+
+  clearMessages(): void {
+    this.error = null;
+    this.successMessage = null;
   }
 }

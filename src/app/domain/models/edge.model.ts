@@ -17,6 +17,8 @@ export interface Edge {
   data?: {
     strokeStyle?: 'solid' | 'dashed';
     arrowStyle?: 'filled' | 'open';
+    relationTypeSelected?: string;
+    relationLabelSelected?: string;
   };
   animated?: boolean;
   message?: string;

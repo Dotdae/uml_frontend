@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DIAGRAM_TYPES, getDiagramTypeName, getDiagramTypeIcon } from 'src/app/core/models/diagram.model';
@@ -13,6 +13,7 @@ interface DiagramType {
   label: string;
   description: string;
   icon: string;
+  disabled?: boolean; // Add disabled property
 }
 
 @Component({
@@ -21,15 +22,20 @@ interface DiagramType {
   templateUrl: './diagram-creation.component.html',
   styleUrl: './diagram-creation.component.css'
 })
-export class DiagramCreationComponent {
+export class DiagramCreationComponent implements OnInit, OnChanges, OnDestroy {
   @Input() projectId: number | null = null;
+  @Input() existingDiagramTypes: number[] = []; // Array of existing diagram types in project
+  @Input() errorMessage: string = ''; // Error message from parent
   @Output() close = new EventEmitter<void>();
   @Output() create = new EventEmitter<DiagramCreationData>();
 
   currentStep: 1 | 2 = 1; // Paso actual: 1 = nombre, 2 = tipo
   diagramName: string = '';
   selectedType: number | null = null;
-  errorMessage: string = '';
+  localErrorMessage: string = '';
+
+  // Types that are restricted to 1 per project
+  private readonly RESTRICTED_TYPES = [DIAGRAM_TYPES.CLASS, DIAGRAM_TYPES.PACKAGE, DIAGRAM_TYPES.COMPONENTS, DIAGRAM_TYPES.USECASE];
 
   // Lista de tipos de diagramas disponibles
   diagramTypes: DiagramType[] = [
@@ -65,58 +71,130 @@ export class DiagramCreationComponent {
     }
   ];
 
+  ngOnInit() {
+    this.updateDiagramTypesAvailability();
+    this.disableBodyScroll();
+  }
+
+  ngOnChanges() {
+    this.updateDiagramTypesAvailability();
+  }
+
+  ngOnDestroy() {
+    this.enableBodyScroll();
+  }
+
+  private disableBodyScroll(): void {
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = this.getScrollbarWidth() + 'px';
+  }
+
+  private enableBodyScroll(): void {
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+
+  private getScrollbarWidth(): number {
+    // Create a temporary div to measure scrollbar width
+    const outer = document.createElement('div');
+    outer.style.visibility = 'hidden';
+    outer.style.overflow = 'scroll';
+    (outer.style as any).msOverflowStyle = 'scrollbar'; // needed for WinJS apps
+    document.body.appendChild(outer);
+
+    const inner = document.createElement('div');
+    outer.appendChild(inner);
+
+    const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+    outer.parentNode?.removeChild(outer);
+
+    return scrollbarWidth;
+  }
+
+  private updateDiagramTypesAvailability() {
+    this.diagramTypes = this.diagramTypes.map(type => ({
+      ...type,
+      disabled: this.RESTRICTED_TYPES.includes(type.type) && this.existingDiagramTypes.includes(type.type)
+    }));
+  }
+
+  isValidName(): boolean {
+    return this.diagramName.trim().length >= 3;
+  }
+
+  selectType(type: number): void {
+    const diagramType = this.diagramTypes.find(dt => dt.type === type);
+    if (diagramType?.disabled) {
+      this.localErrorMessage = `Ya existe un diagrama de tipo "${diagramType.label}" en este proyecto. Solo se permite uno por proyecto.`;
+      return;
+    }
+
+    this.selectedType = type;
+    this.localErrorMessage = '';
+  }
+
   nextStep(): void {
-    if (this.currentStep === 1) {
-      if (this.isValidName()) {
-        this.currentStep = 2;
-        this.errorMessage = '';
-      } else {
-        this.errorMessage = 'Por favor, ingresa un nombre válido para el diagrama.';
-      }
+    if (this.isValidName()) {
+      this.currentStep = 2;
+      this.localErrorMessage = '';
+    } else {
+      this.localErrorMessage = 'Por favor, ingresa un nombre válido para el diagrama (mínimo 3 caracteres).';
     }
   }
 
   previousStep(): void {
-    if (this.currentStep === 2) {
-      this.currentStep = 1;
-    }
-  }
-
-  selectType(type: number): void {
-    this.selectedType = type;
+    this.currentStep = 1;
+    this.localErrorMessage = '';
   }
 
   createDiagram(): void {
+    const selectedDiagramType = this.diagramTypes.find(dt => dt.type === this.selectedType);
+
+    if (selectedDiagramType?.disabled) {
+      this.localErrorMessage = `Ya existe un diagrama de tipo "${selectedDiagramType.label}" en este proyecto.`;
+      return;
+    }
+
     if (this.isValidName() && this.selectedType) {
       this.create.emit({
         name: this.diagramName.trim(),
         type: this.selectedType
       });
     } else if (!this.isValidName()) {
-      this.errorMessage = 'Por favor, ingresa un nombre válido para el diagrama.';
+      this.localErrorMessage = 'Por favor, ingresa un nombre válido para el diagrama.';
       this.currentStep = 1;
     } else {
-      this.errorMessage = 'Por favor, selecciona un tipo de diagrama.';
+      this.localErrorMessage = 'Por favor, selecciona un tipo de diagrama.';
     }
   }
 
   closeModal(): void {
+    this.enableBodyScroll();
     this.close.emit();
+    this.resetForm();
   }
 
-  isValidName(): boolean {
-    return this.diagramName.trim().length > 0;
+  private resetForm(): void {
+    this.currentStep = 1;
+    this.diagramName = '';
+    this.selectedType = null;
+    this.localErrorMessage = '';
+  }
+
+  // Helper method to get the effective error message
+  getEffectiveErrorMessage(): string {
+    return this.errorMessage || this.localErrorMessage;
+  }
+
+  // Helper method to check if selected type is disabled
+  isSelectedTypeDisabled(): boolean {
+    if (!this.selectedType) return false;
+    const selectedDiagramType = this.diagramTypes.find(dt => dt.type === this.selectedType);
+    return selectedDiagramType?.disabled || false;
   }
 
   getDiagramTypeName(type: number): string {
     const diagramType = this.diagramTypes.find(dt => dt.type === type);
     return diagramType ? diagramType.label : 'Tipo desconocido';
-  }
-
-  // Limpiar el mensaje de error cuando el usuario escribe
-  onDiagramNameInput(): void {
-    if (this.errorMessage) {
-      this.errorMessage = '';
-    }
   }
 }

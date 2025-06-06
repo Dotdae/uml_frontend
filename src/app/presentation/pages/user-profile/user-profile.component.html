@@ -47,14 +47,14 @@
           </span>
           <input type="text" id="username"
             class="w-full pl-12 pr-4 py-2 border text-gray-600 border-gray-300 rounded-3xl shadow-sm focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
-            placeholder="Nombre de usuario" [(ngModel)]="userProfile.username" />
+            placeholder="Nombre de usuario" [(ngModel)]="userProfile.fullName" />
         </div>
       </div>
     </div>
   </div>
 
   <!-- Formulario: Nombre completo del usuario -->
-  <div class="border-b-2 border-gray-300">
+  <!-- <div class="border-b-2 border-gray-300">
     <div class="p-4 flex justify-between items-center max-w-3xl gap-11">
       <div class="w-1/2">
         <label for="fullname" class="block text-lg font-semibold">Nombre completo</label>
@@ -69,7 +69,7 @@
           </span>
           <input type="text" placeholder="Nombres" [(ngModel)]="names"
             class="flex-1 px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-r-3xl placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" />
-        </div>
+        </div> -->
 
         <!-- <div class="flex items-center w-full max-w-xl mt-8">
           <span class="px-3 py-2 font-medium text-gray-500 bg-blue-50 border border-gray-300 rounded-l-3xl">
@@ -78,9 +78,9 @@
           <input type="text" placeholder="Apellidos" [(ngModel)]="lastnames"
             class="flex-1 px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-r-3xl placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" />
         </div> -->
-      </div>
+      <!-- </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Formulario: Numero de telefono del usuario -->
   <!-- <div class="border-b-2 border-gray-300">
@@ -139,15 +139,48 @@
 
       <!-- Columna derecha: Upload interface -->
       <div class="w-2/3">
+        <!-- Error/Success messages -->
+        @if (error) {
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p class="text-red-600 text-sm">{{ error }}</p>
+          <button (click)="clearMessages()" class="text-red-500 hover:text-red-700 text-xs mt-1">Cerrar</button>
+        </div>
+        }
+        @if (successMessage) {
+        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p class="text-green-600 text-sm">{{ successMessage }}</p>
+          <button (click)="clearMessages()" class="text-green-500 hover:text-green-700 text-xs mt-1">Cerrar</button>
+        </div>
+        }
+
         <div class="flex items-center gap-6">
-          <!-- Preview circle -->
-          <img [src]="userProfile.avatar || '/easteregg.png'" alt="Profile picture"
-            class="w-24 h-24 rounded-full border-2 border-dashed border-gray-400 object-cover" />
+          <!-- Preview circle with better preview handling -->
+          <div class="relative">
+            <img [src]="previewUrl || userProfile.avatar || '/easteregg.png'"
+                 alt="Profile picture"
+                 class="w-24 h-24 rounded-full border-2 border-dashed border-gray-400 object-cover" />
+            @if (uploadingAvatar) {
+            <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+            </div>
+            }
+            @if (selectedFile) {
+            <div class="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            }
+          </div>
 
           <!-- Upload area -->
           <div class="border-2 border-dashed border-gray-400 rounded-lg p-4 bg-white cursor-pointer"
-            [class.border-yellow-500]="isDragging" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)" (click)="fileInput.click()">
+            [class.border-yellow-500]="isDragging"
+            [class.bg-yellow-50]="isDragging"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+            (click)="fileInput.click()">
 
             <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
 
@@ -164,7 +197,11 @@
               <!-- Text content -->
               <div class="space-y-2 text-center">
                 <p class="text-yellow-500 font-medium">
-                  Da clic aquí para subir tú foto o arrastra la imágen.
+                  @if (selectedFile) {
+                    Archivo seleccionado: {{ selectedFile.name }}
+                  } @else {
+                    Da clic aquí para subir tu foto o arrastra la imagen.
+                  }
                 </p>
 
                 <p class="text-sm text-gray-400">

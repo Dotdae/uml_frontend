@@ -59,6 +59,17 @@ export class FlexFlowComponent implements AfterViewInit {
   public isLoading: boolean = false;
   public loadingMessage: string = 'Cargando diagrama...';
 
+  // Selected relation for connections
+  public selectedRelationType: string | null = null;
+  public selectedRelationLabel: string | null = null;
+
+  // Selected connection for deletion
+  public selectedConnectionId: string | null = null;
+
+  // Destruction marker dragging
+  private isDraggingDestruction: boolean = false;
+  private dragStartY: number = 0;
+
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private flexFlowService: FlexFlowService,
@@ -104,6 +115,15 @@ export class FlexFlowComponent implements AfterViewInit {
 
     // Force change detection
     this.changeDetectorRef.detectChanges();
+
+    // Restore selected relation from the most recent connection if available
+    if (this.connections.length > 0) {
+      const lastConnection = this.connections[this.connections.length - 1];
+      if (lastConnection.data?.relationTypeSelected && lastConnection.data?.relationLabelSelected) {
+        this.selectedRelationType = lastConnection.data.relationTypeSelected;
+        this.selectedRelationLabel = lastConnection.data.relationLabelSelected;
+      }
+    }
   }
 
   /**
@@ -210,6 +230,10 @@ export class FlexFlowComponent implements AfterViewInit {
    */
   @HostListener('window:keydown', ['$event'])
   handleKeyboardShortcuts(event: KeyboardEvent): void {
+    // Check if we're typing in an input field - if so, don't handle shortcuts
+    const target = event.target as HTMLElement;
+    const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
     if (event.ctrlKey || event.metaKey) {
       switch (event.key) {
         case '+':
@@ -230,6 +254,22 @@ export class FlexFlowComponent implements AfterViewInit {
           this.fitToScreen();
           break;
       }
+    } else if (!isInputField) {
+      // Only handle these shortcuts when NOT typing in input fields
+      switch (event.key) {
+        case 'Delete':
+        case 'Backspace':
+          event.preventDefault();
+          if (this.selectedConnectionId) {
+            this.removeConnection(this.selectedConnectionId);
+            this.selectedConnectionId = null;
+          }
+          break;
+        case 'Escape':
+          // Clear selection
+          this.selectedConnectionId = null;
+          break;
+      }
     }
   }
 
@@ -243,25 +283,46 @@ export class FlexFlowComponent implements AfterViewInit {
     const sourceId = event.fOutputId?.replace('output-', '');
     const targetId = inputId.replace('input-', '');
 
+    // Use selected relation if available, otherwise fall back to default
+    const relationLabel = this.selectedRelationLabel || 'relation';
+    const relationType = this.selectedRelationType || 'association';
+
     switch (this.currentType) {
       case 'CLASS':
-        newEdge = this.flexFlowService.createClassRelationship(sourceId!, targetId, 'association', 'association');
+        newEdge = this.flexFlowService.createClassRelationship(sourceId!, targetId, relationType, relationLabel);
         break;
       case 'SEQUENCE':
         newEdge = this.flexFlowService.createSequenceMessage(sourceId!, targetId, 'message');
+        // Update the label and type for sequence messages
+        newEdge.label = relationLabel;
+        newEdge.type = relationType;
         break;
       case 'PACKAGE':
-        newEdge = this.flexFlowService.createPackageDependency(sourceId!, targetId);
+        newEdge = this.flexFlowService.createPackageDependency(sourceId!, targetId, relationLabel);
+        // Set the relation type for package dependencies
+        newEdge.type = relationType;
         break;
       case 'USECASE':
         newEdge = this.flexFlowService.createUseCaseAssociation(sourceId!, targetId);
+        // Update the label and type for use case relations
+        newEdge.label = relationLabel;
+        newEdge.type = relationType;
         break;
       case 'COMPONENTS':
-        newEdge = this.flexFlowService.createComponentDependency(sourceId!, targetId);
+        newEdge = this.flexFlowService.createComponentDependency(sourceId!, targetId, relationLabel);
+        // Set the relation type for component dependencies
+        newEdge.type = relationType;
         break;
       default:
         return;
     }
+
+    // Store additional relation metadata in the edge data
+    if (!newEdge.data) {
+      newEdge.data = {};
+    }
+    newEdge.data.relationTypeSelected = this.selectedRelationType || undefined;
+    newEdge.data.relationLabelSelected = this.selectedRelationLabel || undefined;
 
     // Add the new edge to the component's connections array
     this.connections = [...this.connections, newEdge];
@@ -431,7 +492,13 @@ export class FlexFlowComponent implements AfterViewInit {
         source: connection.source,
         target: connection.target,
         type: connection.type,
-        label: connection.label
+        label: connection.label,
+        data: connection.data ? {
+          strokeStyle: connection.data.strokeStyle,
+          arrowStyle: connection.data.arrowStyle,
+          relationTypeSelected: connection.data.relationTypeSelected,
+          relationLabelSelected: connection.data.relationLabelSelected
+        } : undefined
       }));
 
       return {
@@ -487,6 +554,22 @@ export class FlexFlowComponent implements AfterViewInit {
     }
   }
 
+  onPropertyInput(nodeId: string, index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const node = this.nodes.find(n => n.id === nodeId);
+    if (node && node.data.properties) {
+      node.data.properties[index] = input.value;
+    }
+  }
+
+  onMethodInput(nodeId: string, index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const node = this.nodes.find(n => n.id === nodeId);
+    if (node && node.data.methods) {
+      node.data.methods[index] = input.value;
+    }
+  }
+
   addProperty(nodeId: string): void {
     const node = this.nodes.find(n => n.id === nodeId);
     if (node) {
@@ -509,15 +592,6 @@ export class FlexFlowComponent implements AfterViewInit {
     const node = this.nodes.find(n => n.id === nodeId);
     if (node && node.data.properties && newProperty) {
       node.data.properties[index] = newProperty;
-      // Update in service as well
-      this.flexFlowService.updateNodeData(nodeId, { properties: node.data.properties });
-    }
-  }
-
-  updatePropertyValue(nodeId: string, index: number, value: string): void {
-    const node = this.nodes.find(n => n.id === nodeId);
-    if (node && node.data.properties) {
-      node.data.properties[index] = value;
       // Update in service as well
       this.flexFlowService.updateNodeData(nodeId, { properties: node.data.properties });
     }
@@ -562,15 +636,6 @@ export class FlexFlowComponent implements AfterViewInit {
     }
   }
 
-  updateMethodValue(nodeId: string, index: number, value: string): void {
-    const node = this.nodes.find(n => n.id === nodeId);
-    if (node && node.data.methods) {
-      node.data.methods[index] = value;
-      // Update in service as well
-      this.flexFlowService.updateNodeData(nodeId, { methods: node.data.methods });
-    }
-  }
-
   removeMethod(nodeId: string, index: number): void {
     const node = this.nodes.find(n => n.id === nodeId);
     if (node && node.data.methods) {
@@ -585,6 +650,11 @@ export class FlexFlowComponent implements AfterViewInit {
 
   selectNode(nodeId: string): void {
     this.nodeSelected.emit(nodeId);
+  }
+
+  selectConnection(connectionId: string): void {
+    this.selectedConnectionId = connectionId;
+    console.log(`Selected connection: ${connectionId}`);
   }
 
   changeNodeColor(nodeId: string, color: any): void {
@@ -749,13 +819,24 @@ export class FlexFlowComponent implements AfterViewInit {
         });
 
         // Load connections
-        this.connections = content.connections.map((connection: any) => ({
-          id: connection.id,
-          source: connection.source,
-          target: connection.target,
-          type: connection.type || 'association',
-          label: connection.label
-        }));
+        this.connections = content.connections.map((connection: any) => {
+          // Prioritize stored relation label over generic connection label
+          let connectionLabel = connection.data?.relationLabelSelected || connection.label || '';
+
+          return {
+            id: connection.id,
+            source: connection.source,
+            target: connection.target,
+            type: connection.type || 'association',
+            label: connectionLabel,
+            data: connection.data ? {
+              strokeStyle: connection.data.strokeStyle,
+              arrowStyle: connection.data.arrowStyle,
+              relationTypeSelected: connection.data.relationTypeSelected,
+              relationLabelSelected: connection.data.relationLabelSelected
+            } : undefined
+          };
+        });
 
         // Set the current type
         if (content.type) {
@@ -764,6 +845,15 @@ export class FlexFlowComponent implements AfterViewInit {
 
         // Force change detection
         this.changeDetectorRef.detectChanges();
+
+        // Restore selected relation from the most recent connection if available
+        if (this.connections.length > 0) {
+          const lastConnection = this.connections[this.connections.length - 1];
+          if (lastConnection.data?.relationTypeSelected && lastConnection.data?.relationLabelSelected) {
+            this.selectedRelationType = lastConnection.data.relationTypeSelected;
+            this.selectedRelationLabel = lastConnection.data.relationLabelSelected;
+          }
+        }
 
         // Hide loading spinner after content is loaded
         setTimeout(() => {
@@ -1104,7 +1194,92 @@ export class FlexFlowComponent implements AfterViewInit {
   // Method to hide loading spinner
   hideLoadingSpinner() {
     this.isLoading = false;
-    console.log('Hiding loading spinner');
+    this.changeDetectorRef.detectChanges();
+  }
+
+  /**
+   * Set the selected relation type for new connections
+   */
+  setSelectedRelation(relationType: string, relationLabel: string): void {
+    this.selectedRelationType = relationType;
+    this.selectedRelationLabel = relationLabel;
+    console.log(`Relation selected in FlexFlow: ${relationType} (${relationLabel})`);
+  }
+
+  getPlaceholderForConnection(connection: Edge): string {
+    if (this.currentType === 'SEQUENCE') {
+      switch (connection.type) {
+        case 'mensaje': return 'mensaje()';
+        case 'activacion': return 'activate';
+        case 'custom': return 'Enter custom message...';
+        default:
+          // If it has a selected relation label, use it as placeholder
+          if (connection.data?.relationLabelSelected && connection.data.relationLabelSelected !== 'Custom Message') {
+            return connection.data.relationLabelSelected;
+          }
+          return connection.data?.relationLabelSelected || 'message()';
+      }
+    }
+    return connection.data?.relationLabelSelected || 'relation';
+  }
+
+  getDestructionY(node: Node): number {
+    return (node.data as any).destructionY || 350;
+  }
+
+  // Destruction marker management
+  addDestructionMarker(nodeId: string): void {
+    const node = this.nodes.find(n => n.id === nodeId);
+    if (node) {
+      (node.data as any).destroyed = true;
+      (node.data as any).destructionY = 300; // Default position
+      this.saveCurrentState();
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  removeDestructionMarker(nodeId: string): void {
+    const node = this.nodes.find(n => n.id === nodeId);
+    if (node) {
+      (node.data as any).destroyed = false;
+      delete (node.data as any).destructionY;
+      this.saveCurrentState();
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  // Destruction marker dragging
+  startDragDestruction(event: MouseEvent, nodeId: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.isDraggingDestruction = true;
+    this.dragStartY = event.clientY;
+
+    const node = this.nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const currentY = (node.data as any).destructionY || 300;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!this.isDraggingDestruction) return;
+
+      const deltaY = moveEvent.clientY - this.dragStartY;
+      const newY = Math.max(150, Math.min(500, currentY + deltaY));
+
+      (node.data as any).destructionY = newY;
+      this.changeDetectorRef.detectChanges();
+    };
+
+    const onMouseUp = () => {
+      this.isDraggingDestruction = false;
+      this.saveCurrentState();
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }
 
 }

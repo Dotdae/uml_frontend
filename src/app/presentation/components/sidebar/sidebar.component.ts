@@ -1,22 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../../../environments/environment.development';
+import { UserService, UserProfile } from '../../../core/services/user.service';
 import { ProjectCreationComponent } from '../modals/project-creation/project-creation.component';
 import { OnDevelopmentComponent } from '../modals/on-development/on-development.component';
 import { ProjectsService } from '../../../core/services/projects.service';
 import { ProjectEventsService } from '../../../core/services/project-events.service';
 import { StatusService } from '../../../core/services/status.service';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  fullName: string;
-  isVerified: boolean;
-  isActive: boolean;
-}
+import { Subject, takeUntil, interval } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -32,16 +24,17 @@ interface UserProfile {
   styleUrl: './sidebar.component.css'
 })
 
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   userProfile: UserProfile | null = null;
   showProjectModal: boolean = false;
   showDevelopmentModal: boolean = false;
   developmentFeatureName: string = '';
   isCreatingProject: boolean = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient,
+    private userService: UserService,
     private projectsService: ProjectsService,
     private projectEventsService: ProjectEventsService,
     private statusService: StatusService
@@ -49,15 +42,23 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit() {
     this.loadUserProfile();
+
+    // Refresh user profile every 30 seconds to get latest avatar
+    interval(30000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadUserProfile();
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadUserProfile() {
-    const token = this.authService.getAccessToken();
-    if (!token) return;
-
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-    this.http.get<UserProfile>(`${environment.api_url}/users/profile`, { headers })
+    this.userService.getUserProfile()
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (profile) => {
           this.userProfile = profile;
@@ -66,6 +67,11 @@ export class SidebarComponent implements OnInit {
           console.error('Error loading profile:', error);
         }
       });
+  }
+
+  // Method to manually refresh user profile (can be called from other components)
+  refreshUserProfile() {
+    this.loadUserProfile();
   }
 
   openProjectModal(): void {

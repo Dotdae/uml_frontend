@@ -2,17 +2,17 @@
     <!-- Fondo con efecto blur -->
     <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm modal-overlay"></div>
 
-    <div class="bg-white w-[36rem] rounded-xl shadow-lg relative z-10 modal-content">
+    <div class="bg-white w-[36rem] max-h-[90vh] rounded-xl shadow-lg relative z-10 modal-content overflow-hidden flex flex-col">
         <!-- Botón de cerrar -->
         <button (click)="closeModal()"
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+            class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-transparent p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 z-10">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
 
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto flex-1">
             <!-- Encabezado según el paso actual -->
             <h1 class="font-semibold text-3xl text-gray-800">
                 @if (currentStep === 1) {
@@ -58,11 +58,11 @@
                     <label for="diagramName" class="block text-lg font-semibold text-gray-700">
                         Nombre del diagrama:
                     </label>
-                    <input type="text" id="diagramName" [(ngModel)]="diagramName" (input)="onDiagramNameInput()"
+                    <input type="text" id="diagramName" [(ngModel)]="diagramName"
                         placeholder="Ingresa un nombre para tu diagrama"
                         class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" />
-                    @if (errorMessage) {
-                    <p class="mt-2 text-red-600 text-sm">{{ errorMessage }}</p>
+                    @if (getEffectiveErrorMessage() && currentStep === 1) {
+                    <p class="mt-2 text-red-600 text-sm">{{ getEffectiveErrorMessage() }}</p>
                     }
                 </div>
 
@@ -90,33 +90,62 @@
             <div class="mt-6">
                 <p class="text-gray-600 mb-4">Selecciona el tipo de diagrama que deseas crear:</p>
 
-                <div class="grid grid-cols-1 gap-3 mt-2 max-h-[360px] overflow-y-auto pr-2">
+                <!-- Error message for step 2 -->
+                @if (getEffectiveErrorMessage() && currentStep === 2) {
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-600 text-sm">{{ getEffectiveErrorMessage() }}</p>
+                </div>
+                }
+
+                <div class="grid grid-cols-1 gap-3 mt-2 max-h-[300px] overflow-y-auto pr-2 border border-gray-100 rounded-lg">
                     @for (type of diagramTypes; track type.type) {
                     <button
-                        class="flex items-start px-4 py-3 border rounded-lg transition-all hover:bg-blue-50 hover:border-blue-300 text-left"
-                        [class.bg-yellow-100]="selectedType === type.type"
-                        [class.border-yellow-500]="selectedType === type.type"
-                        [class.border-gray-200]="selectedType !== type.type"
+                        class="flex items-start px-4 py-3 border rounded-lg transition-all text-left"
+                        [class.bg-yellow-100]="selectedType === type.type && !type.disabled"
+                        [class.border-yellow-500]="selectedType === type.type && !type.disabled"
+                        [class.border-gray-200]="selectedType !== type.type || type.disabled"
+                        [class.bg-gray-100]="type.disabled"
+                        [class.opacity-50]="type.disabled"
+                        [class.cursor-not-allowed]="type.disabled"
+                        [class.hover:bg-blue-50]="!type.disabled"
+                        [class.hover:border-blue-300]="!type.disabled"
+                        [disabled]="type.disabled"
                         (click)="selectType(type.type)">
                         <div class="p-2 rounded-full mr-3"
-                             [class.bg-yellow-100]="selectedType === type.type"
-                             [class.bg-gray-100]="selectedType !== type.type">
+                             [class.bg-yellow-100]="selectedType === type.type && !type.disabled"
+                             [class.bg-gray-100]="selectedType !== type.type || type.disabled">
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                 [class]="selectedType === type.type ? 'h-6 w-6 text-yellow-600' : 'h-6 w-6 text-gray-600'"
+                                 [class]="selectedType === type.type && !type.disabled ? 'h-6 w-6 text-yellow-600' : 'h-6 w-6 text-gray-600'"
+                                 [class.text-gray-400]="type.disabled"
                                  viewBox="0 -960 960 960"
                                  fill="currentColor">
                                 <path [attr.d]="type.icon" />
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <div class="font-medium">{{ type.label }}</div>
-                            <div class="text-sm text-gray-600 mt-1">{{ type.description }}</div>
+                            <div class="font-medium" [class.text-gray-500]="type.disabled">
+                                {{ type.label }}
+                                @if (type.disabled) {
+                                <span class="text-xs text-red-500 ml-2">(Ya existe)</span>
+                                }
+                            </div>
+                            <div class="text-sm text-gray-600 mt-1" [class.text-gray-400]="type.disabled">
+                                {{ type.description }}
+                            </div>
                         </div>
-                        @if (selectedType === type.type) {
+                        @if (selectedType === type.type && !type.disabled) {
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 mt-1" viewBox="0 0 20 20"
                             fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        }
+                        @if (type.disabled) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mt-1" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM4 10a6 6 0 1012 0A6 6 0 004 10z"
                                 clip-rule="evenodd" />
                         </svg>
                         }
@@ -125,7 +154,7 @@
                 </div>
 
                 <!-- Información adicional -->
-                @if (selectedType) {
+                @if (selectedType && !isSelectedTypeDisabled()) {
                 <div class="mt-4 p-4 bg-yellow-50 rounded-lg">
                     <div class="flex items-start">
                         <div class="flex-shrink-0 mt-0.5">
@@ -138,6 +167,25 @@
                         </div>
                         <p class="ml-3 text-sm text-yellow-700">
                             Has seleccionado: <strong>{{ getDiagramTypeName(selectedType) }}</strong>. Al hacer clic en "Crear diagrama" se abrirá el editor.
+                        </p>
+                    </div>
+                </div>
+                }
+
+                <!-- Information about restrictions -->
+                @if (existingDiagramTypes.length > 0) {
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <p class="ml-3 text-sm text-blue-700">
+                            <strong>Restricción:</strong> Solo se permite un diagrama de cada tipo: Clase, Paquetes, Casos de uso y Componentes por proyecto.
                         </p>
                     </div>
                 </div>

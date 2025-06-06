@@ -70,6 +70,10 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   lastSavedContent: string = '';
   autoSaveInterval: any;
 
+  // Selected relation type for connections
+  selectedRelationType: string | null = null;
+  selectedRelationLabel: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -162,8 +166,15 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private loadDiagramWithType(type: DiagramType): void {
     console.log('loadDiagramWithType', type);
+
+    // Clear selected relation when changing diagram type
+    this.selectedRelationType = null;
+    this.selectedRelationLabel = null;
+
     if (this.flexFlowComponent) {
       this.flexFlowComponent.loadDiagram(type, this.diagramId?.toString() || '');
+      // Also clear the relation in the flex-flow component
+      this.flexFlowComponent.setSelectedRelation('', '');
     }
   }
 
@@ -451,6 +462,39 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
       console.error('Selection error:', error);
       // Prevent the IndexSizeError from bubbling up
       event.preventDefault();
+    }
+  }
+
+  // Add relation based on type
+  addRelation(relationType: string) {
+    if (!this.flexFlowComponent) return;
+
+    // Set the selected relation type and label
+    this.selectedRelationType = relationType;
+    this.selectedRelationLabel = this.getRelationLabel(relationType);
+
+    console.log(`Selected relation: ${relationType} (${this.selectedRelationLabel})`);
+
+    // Pass the selected relation to the flex-flow component
+    if (this.flexFlowComponent) {
+      this.flexFlowComponent.setSelectedRelation(relationType, this.selectedRelationLabel);
+    }
+  }
+
+  private getRelationLabel(relationType: string): string {
+    switch (relationType) {
+      case 'asociacion': return 'Asociación';
+      case 'herencia': return 'Herencia';
+      case 'composicion': return 'Composición';
+      case 'dependencia': return 'Dependencia';
+      case 'importacion': return 'Importación';
+      case 'uso_interfaces': return 'Uso de Interfaces';
+      case 'include': return 'Include';
+      case 'extend': return 'Extend';
+      case 'mensaje': return 'Mensaje';
+      case 'activacion': return 'Activación';
+      case 'custom': return 'Custom Message'; // This will be editable
+      default: return relationType;
     }
   }
 }

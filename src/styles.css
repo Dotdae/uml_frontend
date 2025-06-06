@@ -134,7 +134,6 @@
   .f-connection-path {
     fill: none;
     stroke: var(--connection-color);
-    stroke-width: 2;
   }
   .f-connection-text, .f-connection-center {
     fill: var(--connection-color);
