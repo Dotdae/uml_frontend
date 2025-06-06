@@ -232,7 +232,7 @@ export class FlexFlowComponent implements AfterViewInit {
   handleKeyboardShortcuts(event: KeyboardEvent): void {
     // Check if we're typing in an input field - if so, don't handle shortcuts
     const target = event.target as HTMLElement;
-    const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+    const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || (target as HTMLElement)?.contentEditable === 'true';
 
     if (event.ctrlKey || event.metaKey) {
       switch (event.key) {
@@ -254,7 +254,7 @@ export class FlexFlowComponent implements AfterViewInit {
           this.fitToScreen();
           break;
       }
-    } else if (!isInputField) {
+    } else if (!isInputFocused) {
       // Only handle these shortcuts when NOT typing in input fields
       switch (event.key) {
         case 'Delete':
@@ -462,8 +462,14 @@ export class FlexFlowComponent implements AfterViewInit {
     try {
       const selection = window.getSelection();
       if (selection) {
-        // Clear any existing selections to prevent IndexSizeError
-        selection.removeAllRanges();
+        // Check if the selection is within an input field
+        const activeElement = document.activeElement;
+        const isInputFocused = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA' || (activeElement as HTMLElement)?.contentEditable === 'true';
+
+        // Only clear selection if not in an input field
+        if (!isInputFocused) {
+          selection.removeAllRanges();
+        }
       }
     } catch (error) {
       console.error('Error handling mouse up:', error);
@@ -875,9 +881,19 @@ export class FlexFlowComponent implements AfterViewInit {
       const selection = window.getSelection();
       if (!selection) return;
 
-      // Only clear selection if it exists and has ranges
-      if (selection.rangeCount > 0) {
-        selection.removeAllRanges();
+      // Check if the selection is within an input field
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA' || (activeElement as HTMLElement)?.contentEditable === 'true';
+
+      // Only clear selection if it exists, has ranges, and is not within an input field
+      if (selection.rangeCount > 0 && !isInputFocused) {
+        // Additional check: see if the selection is within a node input field
+        const selectedElement = selection.anchorNode?.parentElement;
+        const isWithinNodeInput = selectedElement?.closest('input') !== null;
+
+        if (!isWithinNodeInput) {
+          selection.removeAllRanges();
+        }
       }
     } catch (error) {
       // Silently handle the error - no need to log or propagate
