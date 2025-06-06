@@ -9,6 +9,8 @@ import { DiagramType } from "../../../infrastructure/diagram/flex-flow.service";
 import { DIAGRAM_TYPES, getDiagramTypeName, CreateDiagramDto } from "../../../core/models/diagram.model";
 import { DiagramService } from "../../../core/services/diagram.service";
 import { HostListener } from "@angular/core";
+import { HotToastService } from '@ngxpert/hot-toast';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-canvas',
@@ -19,6 +21,7 @@ import { HostListener } from "@angular/core";
 })
 export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild(FlexFlowComponent) flexFlowComponent!: FlexFlowComponent;
+  private toast = inject(HotToastService);
 
   title = "Clase UML"
   selectedNode: any = null
@@ -71,8 +74,9 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   autoSaveInterval: any;
 
   // Selected relation type for connections
-  selectedRelationType: string | null = null;
-  selectedRelationLabel: string | null = null;
+  selectedRelationType: string = '';
+  selectedRelationLabel: string = '';
+  customMessage: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -168,8 +172,9 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
     console.log('loadDiagramWithType', type);
 
     // Clear selected relation when changing diagram type
-    this.selectedRelationType = null;
-    this.selectedRelationLabel = null;
+    this.selectedRelationType = '';
+    this.selectedRelationLabel = '';
+    this.customMessage = '';
 
     if (this.flexFlowComponent) {
       this.flexFlowComponent.loadDiagram(type, this.diagramId?.toString() || '');
@@ -251,17 +256,7 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
         this.isDiagramSaved = false;
       }
 
-      // Create and trigger download
-      const blob = new Blob([currentContent], { type: 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${this.title || 'diagram'}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
+      // Save to backend and show success toast
       this.saveDiagram(currentContent);
     }
   }
@@ -393,8 +388,10 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
             infoJson: JSON.parse(content)
           }).toPromise();
           console.log('Diagram updated successfully:', this.diagramId);
+          this.toast.success("Diagrama actualizado correctamente", { position: 'top-right' });
         } catch (updateError) {
           console.error('Error updating diagram:', updateError);
+          this.toast.error("Error al actualizar el diagrama", { position: 'top-right' });
           throw updateError;
         }
       } else {
@@ -410,9 +407,11 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
               queryParamsHandling: 'merge'
             });
             console.log('New diagram created successfully:', this.diagramId);
+            this.toast.success("Diagrama creado correctamente", { position: 'top-right' });
           }
         } catch (createError) {
           console.error('Error creating diagram:', createError);
+          this.toast.error("Error al crear el diagrama", { position: 'top-right' });
           throw createError;
         }
       }
@@ -426,7 +425,6 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error in save operation:', error);
-      // TODO: Add user notification of error
       this.isDiagramSaved = false;
     } finally {
       this.isSaving = false;
@@ -466,18 +464,18 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   // Add relation based on type
-  addRelation(relationType: string) {
-    if (!this.flexFlowComponent) return;
+  addRelation(type: string): void {
+    this.selectedRelationType = type;
+    this.selectedRelationLabel = this.getRelationLabel(type);
 
-    // Set the selected relation type and label
-    this.selectedRelationType = relationType;
-    this.selectedRelationLabel = this.getRelationLabel(relationType);
-
-    console.log(`Selected relation: ${relationType} (${this.selectedRelationLabel})`);
+    // Clear custom message when switching to non-custom types
+    if (type !== 'custom') {
+      this.customMessage = '';
+    }
 
     // Pass the selected relation to the flex-flow component
     if (this.flexFlowComponent) {
-      this.flexFlowComponent.setSelectedRelation(relationType, this.selectedRelationLabel);
+      this.flexFlowComponent.setSelectedRelation(type, this.selectedRelationLabel);
     }
   }
 
@@ -493,8 +491,21 @@ export class CanvasComponent implements AfterViewInit, OnInit, OnDestroy {
       case 'extend': return 'Extend';
       case 'mensaje': return 'Mensaje';
       case 'activacion': return 'Activación';
-      case 'custom': return 'Custom Message'; // This will be editable
+      case 'custom': return this.customMessage || 'Mensaje Personalizado';
       default: return relationType;
+    }
+  }
+
+  // Method to handle custom message input
+  setCustomMessage(message: string): void {
+    this.customMessage = message;
+    if (this.selectedRelationType === 'custom') {
+      this.selectedRelationLabel = message || 'Mensaje Personalizado';
+
+      // Update the flex-flow component with the new custom message
+      if (this.flexFlowComponent) {
+        this.flexFlowComponent.setSelectedRelation('custom', this.selectedRelationLabel);
+      }
     }
   }
 }

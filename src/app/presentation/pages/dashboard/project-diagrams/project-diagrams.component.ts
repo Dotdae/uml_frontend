@@ -9,11 +9,13 @@ import { RenameComponent } from 'src/app/presentation/components/modals/rename/r
 import { DetailsComponent, ItemDetails } from 'src/app/presentation/components/modals/details/details.component';
 import { ConfirmationComponent, ConfirmationConfig } from 'src/app/presentation/components/modals/confirmation/confirmation.component';
 import { DiagramCreationComponent, DiagramCreationData } from 'src/app/presentation/components/modals/diagram-creation/diagram-creation.component';
+import { CodeGenerationComponent } from 'src/app/presentation/components/modals/code-generation/code-generation.component';
 
 // Import the service and models
 import { DiagramService } from 'src/app/core/services/diagram.service';
 import { Diagram, CreateDiagramDto, DiagramSearchFilters, getDiagramTypeName } from 'src/app/core/models/diagram.model';
 import { ProjectsService } from 'src/app/core/services/projects.service';
+import { CodeGenerationService } from 'src/app/core/services/code-generation.service';
 
 @Component({
   selector: 'app-project-diagrams',
@@ -27,7 +29,8 @@ import { ProjectsService } from 'src/app/core/services/projects.service';
     RenameComponent,
     DetailsComponent,
     ConfirmationComponent,
-    DiagramCreationComponent
+    DiagramCreationComponent,
+    CodeGenerationComponent
   ],
   templateUrl: './project-diagrams.component.html',
   styleUrl: './project-diagrams.component.css'
@@ -49,6 +52,7 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
   isCreating: boolean = false;
   isDeleting: boolean = false;
   isRenaming: boolean = false;
+  isGeneratingCode: boolean = false;
 
   // Error handling
   errorMessage: string = '';
@@ -87,6 +91,7 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
   currentAction: { type: string; itemId?: number } = { type: '' };
 
   showDiagramCreationModal = false;
+  showCodeGenerationModal = false;
 
   // Property to track existing diagram types in project
   existingDiagramTypes: number[] = [];
@@ -95,7 +100,8 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private diagramService: DiagramService,
-    private projectsService: ProjectsService
+    private projectsService: ProjectsService,
+    private codeGenerationService: CodeGenerationService
   ) { }
 
   ngOnInit() {
@@ -278,23 +284,49 @@ export class ProjectDiagramsComponent implements OnInit, OnDestroy {
 
   // Método para iniciar la generación de código
   generateCode(): void {
-    console.log('Iniciar generación de código para el proyecto', this.projectId);
+    if (!this.projectId) {
+      this.errorMessage = 'Project ID is required';
+      return;
+    }
 
-    // Configurar y mostrar el modal de confirmación
-    this.confirmationConfig = {
-      type: 'generateCode',
-      itemName: this.projectName,
-      confirmButtonText: 'Generar código',
-      accentColor: 'blue'
-    };
-    this.currentAction = { type: 'generateCode' };
-    this.showConfirmationModal = true;
+    console.log('Iniciando generación de código para el proyecto', this.projectId);
+
+    this.isGeneratingCode = true;
+    this.showCodeGenerationModal = true;
+
+    this.codeGenerationService.generateProjectCode(this.projectId)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isGeneratingCode = false;
+          this.showCodeGenerationModal = false;
+        })
+      )
+      .subscribe({
+        next: (blob) => {
+          console.log('Code generation completed successfully');
+
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${this.projectName}-code.zip`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: (error) => {
+          console.error('Error generating code:', error);
+          this.errorMessage = 'Error generating code. Please try again.';
+        }
+      });
   }
 
   // Método para iniciar el proceso de generación de código
   private startCodeGeneration(): void {
-    // Aquí implementarías la lógica para llamar al backend
-    console.log('Iniciando generación de código para el proyecto:', this.projectId);
+    // Este método ya no se usa, la lógica se movió a generateCode()
+    this.generateCode();
   }
 
   // Método para manejar la confirmación

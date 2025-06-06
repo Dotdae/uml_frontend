@@ -126,7 +126,7 @@
                 </div>
             </div>
             <div class="col-span-5 p-4 text-gray-600">
-                {{ diagram.updatedAt }}
+                {{ diagram.updatedAt | date:'dd/MM/yyyy HH:mm' }}
             </div>
         </div>
         }
@@ -169,5 +169,10 @@
         (close)="closeDiagramCreationModal()"
         (create)="handleCreateDiagram($event)">
     </app-diagram-creation>
+    }
+
+    @if (showCodeGenerationModal) {
+    <app-code-generation [projectName]="projectName">
+    </app-code-generation>
     }
 </div>
